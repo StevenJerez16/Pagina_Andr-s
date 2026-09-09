@@ -1,0 +1,10 @@
+{
+  "name": "snowy-resonance-db18",
+  "main": "worker.js",
+  "compatibility_date": "2026-09-09",
+
+  "assets": {
+    "directory": ".",
+    "binding": "ASSETS"
+  }
+}
