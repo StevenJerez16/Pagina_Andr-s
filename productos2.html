@@ -1,0 +1,1813 @@
+
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>
+    Productos | VR Turbolub
+  </title>
+
+
+  <!-- CSS GENERAL -->
+
+  <link
+    rel="stylesheet"
+    href="css/style.css"
+  >
+
+
+  <!-- CSS PRODUCTOS -->
+
+  <link
+    rel="stylesheet"
+    href="css/productos.css"
+  >
+
+
+  <!-- GOOGLE FONTS -->
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700;800&family=Open+Sans:wght@300;400;600&display=swap"
+    rel="stylesheet"
+  >
+
+</head>
+
+
+<body>
+
+
+<!-- =====================================================
+     HEADER
+===================================================== -->
+
+<header class="main-header">
+
+  <div class="header-container">
+
+
+    <!-- LOGO -->
+
+    <a
+      href="index.html"
+      class="logo"
+    >
+
+      VR <span>TURBOLUB</span>
+
+    </a>
+
+
+    <!-- NAV -->
+
+    <nav class="main-nav">
+
+      <a href="index.html">
+        Inicio
+      </a>
+
+      <a
+        href="productos2.html"
+        class="active"
+      >
+        Productos
+      </a>
+
+      <a href="servicios.html">
+        Servicios
+      </a>
+
+      <a href="nosotros.html">
+        Nosotros
+      </a>
+
+      <a href="contacto.html">
+        Contacto
+      </a>
+
+    </nav>
+
+
+    <!-- ACCIONES HEADER -->
+
+    <div class="header-actions">
+
+      <a
+        href="contacto.html"
+        class="header-btn"
+      >
+        Solicitar asesoría
+      </a>
+
+
+      <!-- CARRITO -->
+
+      <button
+        id="cartButton"
+        class="cart-button"
+        type="button"
+        aria-label="Abrir carrito"
+      >
+
+        🛒
+
+        <span id="cartCount">
+          0
+        </span>
+
+      </button>
+
+    </div>
+
+
+    <!-- MENÚ MÓVIL -->
+
+    <div class="menu-toggle">
+      ☰
+    </div>
+
+
+  </div>
+
+</header>
+
+
+
+<!-- =====================================================
+     HERO PRODUCTOS
+===================================================== -->
+
+<section class="products-hero">
+
+  <div class="products-hero-container">
+
+    <span>
+      CATÁLOGO VR TURBOLUB
+    </span>
+
+    <h1>
+
+      Productos para
+
+      <strong>
+        proteger tu motor.
+      </strong>
+
+    </h1>
+
+    <p>
+
+      Encuentra lubricantes, aceites y aditivos seleccionados
+      para carros, motos y vehículos de trabajo pesado.
+
+    </p>
+
+  </div>
+
+</section>
+
+
+
+<!-- =====================================================
+     CATÁLOGO
+===================================================== -->
+
+<section class="catalog-section">
+
+  <div class="section-header">
+
+    <span>
+      NUESTRO CATÁLOGO
+    </span>
+
+    <h2>
+
+      Encuentra lo que
+
+      <strong>
+        necesitas.
+      </strong>
+
+    </h2>
+
+  </div>
+
+
+  <!-- FILTROS -->
+
+  <div class="catalog-filters">
+
+
+    <!-- VEHÍCULO -->
+
+    <div class="filter-group">
+
+      <label for="vehicleFilter">
+        VEHÍCULO
+      </label>
+
+      <select id="vehicleFilter">
+
+        <option value="all">
+          Todos los vehículos
+        </option>
+
+        <option value="carro">
+          Carro
+        </option>
+
+        <option value="moto">
+          Moto
+        </option>
+
+        <option value="camion">
+          Camión
+        </option>
+
+      </select>
+
+    </div>
+
+
+    <!-- CATEGORÍA -->
+
+    <div class="filter-group">
+
+      <label for="categoryFilter">
+        CATEGORÍA
+      </label>
+
+      <select id="categoryFilter">
+
+        <option value="all">
+          Todas las categorías
+        </option>
+
+        <option value="aceite">
+          Aceites
+        </option>
+
+        <option value="aditivo">
+          Aditivos
+        </option>
+
+        <option value="lubricante">
+          Lubricantes
+        </option>
+
+      </select>
+
+    </div>
+
+  </div>
+
+
+
+  <!-- ===================================================
+       PRODUCTOS
+  ==================================================== -->
+
+  <div class="product-grid">
+
+
+    <!-- PRODUCTO 1 -->
+
+    <article
+      class="product-card"
+      data-vehicle="carro"
+      data-category="aceite"
+      data-product="Valvulina GoldMax Gear para Cajas"
+      data-price="120000"
+    >
+
+      <div class="product-image">
+
+        <img
+          src="img/Valvulina GoldMax Gear para Cajas.png"
+          alt="Valvulina GoldMax Gear para Cajas"
+        >
+
+      </div>
+
+      <div class="product-info">
+
+        <span class="product-category">
+          ACEITES · CARRO
+        </span>
+
+        <h3>
+          Valvulina GoldMax Gear para Cajas
+        </h3>
+
+        <p>
+          Lubricante de alto rendimiento para sistemas
+          de transmisión y cajas.
+        </p>
+
+        <div class="product-bottom">
+
+          <strong>
+            $120.000
+          </strong>
+
+          <button
+            class="add-cart-btn"
+            type="button"
+          >
+            🛒 Agregar
+          </button>
+
+        </div>
+
+      </div>
+
+    </article>
+
+
+
+    <!-- PRODUCTO 2 -->
+
+    <article
+      class="product-card"
+      data-vehicle="moto"
+      data-category="aceite"
+      data-product="Aceite Moto 2T Terpel Celerity"
+      data-price="68000"
+    >
+
+      <div class="product-image">
+
+        <img
+          src="img/motocelerity2T.png"
+          alt="Aceite Moto 2T Terpel Celerity"
+        >
+
+      </div>
+
+      <div class="product-info">
+
+        <span class="product-category">
+          ACEITES · MOTO
+        </span>
+
+        <h3>
+          Aceite Moto 2T Terpel Celerity
+        </h3>
+
+        <p>
+          Aceite para motores de dos tiempos con
+          protección y rendimiento confiable.
+        </p>
+
+        <div class="product-bottom">
+
+          <strong>
+            $68.000
+          </strong>
+
+          <button
+            class="add-cart-btn"
+            type="button"
+          >
+            🛒 Agregar
+          </button>
+
+        </div>
+
+      </div>
+
+    </article>
+
+
+
+    <!-- PRODUCTO 3 -->
+
+    <article
+      class="product-card"
+      data-vehicle="moto"
+      data-category="aceite"
+      data-product="Aceite Moto 4T Terpel Celerity 20W-50 Titanio"
+      data-price="68000"
+    >
+
+      <div class="product-image">
+
+        <img
+          src="img/motocelerity4T.png"
+          alt="Aceite Moto 4T Terpel Celerity 20W-50 Titanio"
+        >
+
+      </div>
+
+      <div class="product-info">
+
+        <span class="product-category">
+          ACEITES · MOTO
+        </span>
+
+        <h3>
+          Aceite Moto 4T Terpel Celerity 20W-50 Titanio
+        </h3>
+
+        <p>
+          Lubricante diseñado para brindar protección
+          y desempeño en motores de cuatro tiempos.
+        </p>
+
+        <div class="product-bottom">
+
+          <strong>
+            $68.000
+          </strong>
+
+          <button
+            class="add-cart-btn"
+            type="button"
+          >
+            🛒 Agregar
+          </button>
+
+        </div>
+
+      </div>
+
+    </article>
+
+
+
+    <!-- PRODUCTO 4 -->
+
+    <article
+      class="product-card"
+      data-vehicle="camion"
+      data-category="lubricante"
+      data-product="Lubricante Diésel"
+      data-price="180000"
+    >
+
+      <div class="product-image">
+
+        <img
+          src="https://images.unsplash.com/photo-1586864387789-628af9feed72"
+          alt="Lubricante para vehículos diésel"
+        >
+
+      </div>
+
+      <div class="product-info">
+
+        <span class="product-category">
+          LUBRICANTES · CAMIÓN
+        </span>
+
+        <h3>
+          Lubricante Diésel
+        </h3>
+
+        <p>
+          Solución para vehículos de trabajo pesado
+          y motores diésel.
+        </p>
+
+        <div class="product-bottom">
+
+          <strong>
+            $180.000
+          </strong>
+
+          <button
+            class="add-cart-btn"
+            type="button"
+          >
+            🛒 Agregar
+          </button>
+
+        </div>
+
+      </div>
+
+    </article>
+
+
+
+    <!-- PRODUCTO 5 -->
+
+    <article
+      class="product-card"
+      data-vehicle="carro"
+      data-category="aditivo"
+      data-product="Aditivo Premium"
+      data-price="45000"
+    >
+
+      <div class="product-image">
+
+        <img
+          src="https://images.unsplash.com/photo-1605559424843-9c6d1b5c2d30"
+          alt="Aditivo Premium"
+        >
+
+      </div>
+
+      <div class="product-info">
+
+        <span class="product-category">
+          ADITIVOS · CARRO
+        </span>
+
+        <h3>
+          Aditivo Premium
+        </h3>
+
+        <p>
+          Solución para ayudar a mantener limpio
+          el sistema interno del motor.
+        </p>
+
+        <div class="product-bottom">
+
+          <strong>
+            $45.000
+          </strong>
+
+          <button
+            class="add-cart-btn"
+            type="button"
+          >
+            🛒 Agregar
+          </button>
+
+        </div>
+
+      </div>
+
+    </article>
+
+
+  </div>
+
+</section>
+
+
+
+<!-- =====================================================
+     ASESORÍA
+===================================================== -->
+
+<section class="product-advisor">
+
+  <div class="advisor-container">
+
+    <div>
+
+      <span>
+        ¿NO SABES CUÁL ELEGIR?
+      </span>
+
+      <h2>
+
+        Te ayudamos a encontrar
+
+        <strong>
+          el producto adecuado.
+        </strong>
+
+      </h2>
+
+      <p>
+
+        Cada vehículo tiene necesidades diferentes.
+        Cuéntanos qué vehículo tienes y nuestro equipo
+        podrá orientarte sobre la opción más adecuada.
+
+      </p>
+
+    </div>
+
+    <a
+      href="contacto.html"
+      class="btn-primary"
+    >
+      Solicitar asesoría
+    </a>
+
+  </div>
+
+</section>
+
+
+
+<!-- =====================================================
+     CTA
+===================================================== -->
+
+<section class="final-cta">
+
+  <div class="cta-container">
+
+    <span>
+      VR TURBOLUB
+    </span>
+
+    <h2>
+
+      Protege tu motor.
+
+      <strong>
+        Empieza hoy.
+      </strong>
+
+    </h2>
+
+    <p>
+
+      Encuentra productos de calidad y recibe
+      asesoría profesional.
+
+    </p>
+
+    <a
+      href="contacto.html"
+      class="btn-primary"
+    >
+      Hablar con un asesor
+    </a>
+
+  </div>
+
+</section>
+
+
+
+<!-- =====================================================
+     FOOTER
+===================================================== -->
+
+<footer>
+
+  <div class="footer-container">
+
+
+    <!-- EMPRESA -->
+
+    <div>
+
+      <div class="footer-logo">
+        VR TURBOLUB
+      </div>
+
+      <p>
+
+        Lubricantes y soluciones automotrices para proteger
+        y mejorar el rendimiento de tu vehículo.
+
+      </p>
+
+    </div>
+
+
+
+    <!-- ENLACES -->
+
+    <div class="footer-links">
+
+      <strong>
+        Explorar
+      </strong>
+
+      <a href="index.html">
+        Inicio
+      </a>
+
+      <a href="productos2.html">
+        Productos
+      </a>
+
+      <a href="servicios.html">
+        Servicios
+      </a>
+
+      <a href="nosotros.html">
+        Nosotros
+      </a>
+
+    </div>
+
+
+
+    <!-- CONTACTO -->
+
+    <div class="footer-contact">
+
+      <strong>
+        Contacto
+      </strong>
+
+      <a
+        href="https://wa.me/573125267295"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        WhatsApp
+      </a>
+
+      <a
+        href="https://www.instagram.com/vr_turbolub"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Instagram
+      </a>
+
+      <a href="contacto.html">
+        Solicitar asesoría
+      </a>
+
+    </div>
+
+
+  </div>
+
+
+  <div class="footer-bottom">
+
+    © 2026 VR Turbolub · Lubricantes y soluciones automotrices
+
+  </div>
+
+</footer>
+
+
+
+<!-- =====================================================
+     CARRITO LATERAL
+===================================================== -->
+
+<div
+  id="cartOverlay"
+  class="cart-overlay"
+>
+</div>
+
+
+<aside
+  id="cartSidebar"
+  class="cart-sidebar"
+>
+
+
+  <!-- ENCABEZADO -->
+
+  <div class="cart-header">
+
+    <div>
+
+      <span>
+        VR TURBOLUB
+      </span>
+
+      <h2>
+        Mi carrito
+      </h2>
+
+    </div>
+
+    <button
+      id="closeCart"
+      class="close-cart"
+      type="button"
+      aria-label="Cerrar carrito"
+    >
+      ×
+    </button>
+
+  </div>
+
+
+
+  <!-- PRODUCTOS -->
+
+  <div
+    id="cartItems"
+    class="cart-items"
+  >
+  </div>
+
+
+
+  <!-- FOOTER -->
+
+  <div class="cart-footer">
+
+    <div class="cart-total-row">
+
+      <span>
+        Total
+      </span>
+
+      <strong id="cartTotal">
+        $0
+      </strong>
+
+    </div>
+
+    <button
+      id="clearCart"
+      class="clear-cart"
+      type="button"
+    >
+      Vaciar carrito
+    </button>
+
+    <button
+      id="checkoutButton"
+      class="checkout-button"
+      type="button"
+    >
+      Finalizar compra
+    </button>
+
+  </div>
+
+</aside>
+
+
+
+<!-- =====================================================
+     CHECKOUT
+===================================================== -->
+
+<div
+  id="checkoutOverlay"
+  class="checkout-overlay"
+>
+
+
+  <div
+    id="checkoutModal"
+    class="checkout-modal"
+  >
+
+
+    <!-- HEADER CHECKOUT -->
+
+    <div class="checkout-header">
+
+      <div>
+
+        <span>
+          VR TURBOLUB
+        </span>
+
+        <h2>
+          Finalizar compra
+        </h2>
+
+      </div>
+
+      <button
+        id="closeCheckout"
+        class="close-checkout"
+        type="button"
+        aria-label="Cerrar checkout"
+      >
+        ×
+      </button>
+
+    </div>
+
+
+
+    <!-- PASOS -->
+
+    <div class="checkout-steps">
+
+      <div
+        class="checkout-step active"
+        data-step-indicator="1"
+      >
+
+        <span>
+          1
+        </span>
+
+        <small>
+          Datos
+        </small>
+
+      </div>
+
+
+      <div class="checkout-line"></div>
+
+
+      <div
+        class="checkout-step"
+        data-step-indicator="2"
+      >
+
+        <span>
+          2
+        </span>
+
+        <small>
+          Pago
+        </small>
+
+      </div>
+
+
+      <div class="checkout-line"></div>
+
+
+      <div
+        class="checkout-step"
+        data-step-indicator="3"
+      >
+
+        <span>
+          3
+        </span>
+
+        <small>
+          Resumen
+        </small>
+
+      </div>
+
+    </div>
+
+
+
+    <!-- =================================================
+         PASO 1 - DATOS
+    ================================================== -->
+
+    <section
+      id="checkoutStep1"
+      class="checkout-step-content active"
+    >
+
+      <div class="checkout-section-title">
+
+        <span>
+          INFORMACIÓN DEL CLIENTE
+        </span>
+
+        <h3>
+          ¿A dónde enviamos tu pedido?
+        </h3>
+
+        <p>
+          Completa tus datos para continuar con la compra.
+        </p>
+
+      </div>
+
+
+      <form id="customerForm">
+
+        <div class="checkout-form-grid">
+
+
+          <!-- NOMBRE -->
+
+          <div class="checkout-field">
+
+            <label for="customerName">
+              Nombre *
+            </label>
+
+            <input
+              type="text"
+              id="customerName"
+              name="customerName"
+              placeholder="Tu nombre"
+              autocomplete="given-name"
+              required
+            >
+
+          </div>
+
+
+
+          <!-- APELLIDO -->
+
+          <div class="checkout-field">
+
+            <label for="customerLastName">
+              Apellido *
+            </label>
+
+            <input
+              type="text"
+              id="customerLastName"
+              name="customerLastName"
+              placeholder="Tu apellido"
+              autocomplete="family-name"
+              required
+            >
+
+          </div>
+
+
+
+          <!-- TELÉFONO -->
+
+          <div class="checkout-field">
+
+            <label for="customerPhone">
+              WhatsApp / Teléfono *
+            </label>
+
+            <input
+              type="tel"
+              id="customerPhone"
+              name="customerPhone"
+              placeholder="Ej: 3125267295"
+              autocomplete="tel"
+              required
+            >
+
+          </div>
+
+
+
+          <!-- CORREO -->
+
+          <div class="checkout-field">
+
+            <label for="customerEmail">
+              Correo electrónico *
+            </label>
+
+            <input
+              type="email"
+              id="customerEmail"
+              name="customerEmail"
+              placeholder="correo@ejemplo.com"
+              autocomplete="email"
+              required
+            >
+
+          </div>
+
+
+
+          <!-- DIRECCIÓN -->
+
+          <div class="checkout-field checkout-field-full">
+
+            <label for="customerAddress">
+              Dirección de entrega *
+            </label>
+
+            <input
+              type="text"
+              id="customerAddress"
+              name="customerAddress"
+              placeholder="Calle, carrera, número, apartamento..."
+              autocomplete="street-address"
+              required
+            >
+
+          </div>
+
+
+
+          <!-- CIUDAD -->
+
+          <div class="checkout-field">
+
+            <label for="customerCity">
+              Ciudad *
+            </label>
+
+            <input
+              type="text"
+              id="customerCity"
+              name="customerCity"
+              placeholder="Ej: Bucaramanga"
+              autocomplete="address-level2"
+              required
+            >
+
+          </div>
+
+
+
+          <!-- DEPARTAMENTO -->
+
+          <div class="checkout-field">
+
+            <label for="customerDepartment">
+              Departamento
+            </label>
+
+            <input
+              type="text"
+              id="customerDepartment"
+              name="customerDepartment"
+              placeholder="Ej: Santander"
+              autocomplete="address-level1"
+            >
+
+          </div>
+
+
+
+          <!-- OBSERVACIONES -->
+
+          <div class="checkout-field checkout-field-full">
+
+            <label for="customerNotes">
+              Observaciones
+            </label>
+
+            <textarea
+              id="customerNotes"
+              name="customerNotes"
+              rows="3"
+              placeholder="Información adicional para tu pedido..."
+            ></textarea>
+
+          </div>
+
+
+        </div>
+
+
+
+        <!-- BOTONES -->
+
+        <div class="checkout-actions">
+
+          <button
+            type="button"
+            id="cancelCheckout"
+            class="checkout-secondary-button"
+          >
+            Cancelar
+          </button>
+
+          <button
+            type="submit"
+            class="checkout-primary-button"
+          >
+            Continuar al pago
+          </button>
+
+        </div>
+
+
+      </form>
+
+    </section>
+
+
+
+    <!-- =================================================
+         PASO 2 - PAGO
+    ================================================== -->
+
+    <section
+      id="checkoutStep2"
+      class="checkout-step-content"
+    >
+
+
+      <div class="checkout-section-title">
+
+        <span>
+          MÉTODO DE PAGO
+        </span>
+
+        <h3>
+          ¿Cómo quieres pagar?
+        </h3>
+
+        <p>
+          Selecciona el método de pago que prefieras.
+        </p>
+
+      </div>
+
+
+
+      <!-- MÉTODOS -->
+
+      <div class="payment-methods">
+
+
+        <!-- NEQUI -->
+
+        <label class="payment-option">
+
+          <input
+            type="radio"
+            name="paymentMethod"
+            value="nequi"
+          >
+
+          <div class="payment-option-content">
+
+            <div class="payment-icon">
+              📱
+            </div>
+
+            <div>
+
+              <strong>
+                Nequi
+              </strong>
+
+              <p>
+                Pago electrónico mediante Nequi.
+              </p>
+
+            </div>
+
+          </div>
+
+        </label>
+
+
+
+        <!-- TRANSFERENCIA -->
+
+        <label class="payment-option">
+
+          <input
+            type="radio"
+            name="paymentMethod"
+            value="transferencia"
+          >
+
+          <div class="payment-option-content">
+
+            <div class="payment-icon">
+              🏦
+            </div>
+
+            <div>
+
+              <strong>
+                PSE / Transferencia bancaria
+              </strong>
+
+              <p>
+                Paga desde tu cuenta bancaria.
+              </p>
+
+            </div>
+
+          </div>
+
+        </label>
+
+
+
+        <!-- TARJETA -->
+
+        <label class="payment-option">
+
+          <input
+            type="radio"
+            name="paymentMethod"
+            value="tarjeta"
+          >
+
+          <div class="payment-option-content">
+
+            <div class="payment-icon">
+              💳
+            </div>
+
+            <div>
+
+              <strong>
+                Tarjeta
+              </strong>
+
+              <p>
+                Crédito o débito.
+              </p>
+
+            </div>
+
+          </div>
+
+        </label>
+
+
+
+        <!-- CONTRA ENTREGA -->
+
+        <label class="payment-option">
+
+          <input
+            type="radio"
+            name="paymentMethod"
+            value="contra_entrega"
+          >
+
+          <div class="payment-option-content">
+
+            <div class="payment-icon">
+              🚚
+            </div>
+
+            <div>
+
+              <strong>
+                Contra entrega
+              </strong>
+
+              <p>
+                Paga cuando recibas tu pedido.
+              </p>
+
+            </div>
+
+          </div>
+
+        </label>
+
+
+      </div>
+
+
+
+      <!-- MENSAJE DE ERROR -->
+
+      <div
+        id="paymentMessage"
+        class="payment-message"
+        role="alert"
+      ></div>
+
+
+
+      <!-- =================================================
+           INFORMACIÓN DEL PAGO
+      ================================================== -->
+
+      <div
+        id="paymentInstructions"
+        class="payment-instructions"
+      >
+
+
+        <!-- =================================================
+             NEQUI
+        ================================================== -->
+
+        <div
+          id="nequiInstructions"
+          class="payment-instruction"
+          style="display:none;"
+        >
+
+          <span class="payment-instruction-label">
+            PAGO POR NEQUI
+          </span>
+
+          <h4>
+            Realiza el pago antes de continuar
+          </h4>
+
+          <p>
+            Envía el valor total de tu pedido al siguiente número:
+          </p>
+
+          <div class="payment-data">
+
+            <strong>
+              Nequi: 312 526 7295
+            </strong>
+
+          </div>
+
+          <p class="payment-note">
+            Después de realizar el pago, adjunta el comprobante.
+          </p>
+
+
+          <div class="receipt-upload">
+
+            <label for="nequiReceipt">
+              Comprobante de pago *
+            </label>
+
+            <input
+              type="file"
+              id="nequiReceipt"
+              name="nequiReceipt"
+              accept="image/*,.pdf"
+            >
+
+            <small>
+              JPG, PNG o PDF.
+            </small>
+
+          </div>
+
+        </div>
+
+
+
+        <!-- =================================================
+             TRANSFERENCIA
+        ================================================== -->
+
+        <div
+          id="transferInstructions"
+          class="payment-instruction"
+          style="display:none;"
+        >
+
+          <span class="payment-instruction-label">
+            TRANSFERENCIA BANCARIA
+          </span>
+
+          <h4>
+            Realiza la transferencia
+          </h4>
+
+          <p>
+            Realiza la transferencia utilizando estos datos:
+          </p>
+
+          <div class="payment-data">
+
+            <strong>
+              Banco: AQUÍ VA EL BANCO
+            </strong>
+
+            <strong>
+              Tipo de cuenta: AQUÍ VA EL TIPO
+            </strong>
+
+            <strong>
+              Número: AQUÍ VA EL NÚMERO
+            </strong>
+
+            <strong>
+              Titular: VR Turbolub
+            </strong>
+
+          </div>
+
+          <p class="payment-note">
+            Después de realizar la transferencia, adjunta el comprobante.
+          </p>
+
+
+          <div class="receipt-upload">
+
+            <label for="transferReceipt">
+              Comprobante de pago *
+            </label>
+
+            <input
+              type="file"
+              id="transferReceipt"
+              name="transferReceipt"
+              accept="image/*,.pdf"
+            >
+
+            <small>
+              JPG, PNG o PDF.
+            </small>
+
+          </div>
+
+        </div>
+
+
+
+        <!-- =================================================
+             TARJETA
+        ================================================== -->
+
+        <div
+          id="cardInstructions"
+          class="payment-instruction"
+          style="display:none;"
+        >
+
+          <span class="payment-instruction-label">
+            PAGO CON TARJETA
+          </span>
+
+          <h4>
+            Pago seguro
+          </h4>
+
+          <p>
+            El pago con tarjeta se realizará mediante una
+            plataforma de pago segura.
+          </p>
+
+          <p class="payment-note">
+            Esta opción será conectada a la pasarela de pago
+            correspondiente en la siguiente etapa.
+          </p>
+
+        </div>
+
+
+
+        <!-- =================================================
+             CONTRA ENTREGA
+        ================================================== -->
+
+        <div
+          id="cashInstructions"
+          class="payment-instruction"
+          style="display:none;"
+        >
+
+          <span class="payment-instruction-label">
+            CONTRA ENTREGA
+          </span>
+
+          <h4>
+            Paga cuando recibas tu pedido
+          </h4>
+
+          <p>
+            No necesitas realizar ningún pago ahora.
+            El valor será cobrado al momento de la entrega.
+          </p>
+
+        </div>
+
+
+      </div>
+
+
+
+      <!-- BOTONES -->
+
+      <div class="checkout-actions">
+
+        <button
+          type="button"
+          id="backToCustomer"
+          class="checkout-secondary-button"
+        >
+          ← Volver
+        </button>
+
+        <button
+          type="button"
+          id="continueToSummary"
+          class="checkout-primary-button"
+        >
+          Revisar pedido
+        </button>
+
+      </div>
+
+
+    </section>
+
+
+
+    <!-- =================================================
+         PASO 3 - RESUMEN
+    ================================================== -->
+
+    <section
+      id="checkoutStep3"
+      class="checkout-step-content"
+    >
+
+
+      <div class="checkout-section-title">
+
+        <span>
+          RESUMEN DE COMPRA
+        </span>
+
+        <h3>
+          Revisa tu pedido
+        </h3>
+
+        <p>
+          Verifica que toda la información sea correcta.
+        </p>
+
+      </div>
+
+
+
+      <!-- DATOS -->
+
+      <div class="checkout-summary-box">
+
+        <div class="summary-box-header">
+
+          <strong>
+            Datos de entrega
+          </strong>
+
+          <button
+            type="button"
+            id="editCustomer"
+            class="summary-edit-button"
+          >
+            Editar
+          </button>
+
+        </div>
+
+        <div id="customerSummary"></div>
+
+      </div>
+
+
+
+      <!-- PAGO -->
+
+      <div class="checkout-summary-box">
+
+        <div class="summary-box-header">
+
+          <strong>
+            Método de pago
+          </strong>
+
+          <button
+            type="button"
+            id="editPayment"
+            class="summary-edit-button"
+          >
+            Editar
+          </button>
+
+        </div>
+
+        <div id="paymentSummary"></div>
+
+      </div>
+
+
+
+      <!-- PRODUCTOS -->
+
+      <div class="checkout-summary-box">
+
+        <div class="summary-box-header">
+
+          <strong>
+            Productos
+          </strong>
+
+        </div>
+
+        <div id="orderSummaryItems"></div>
+
+        <div class="summary-total">
+
+          <span>
+            Total
+          </span>
+
+          <strong id="checkoutTotal">
+            $0
+          </strong>
+
+        </div>
+
+      </div>
+
+
+
+      <!-- SEGURIDAD -->
+
+      <div class="checkout-security-message">
+
+        🔒
+
+        <span>
+          Tu información será utilizada únicamente
+          para gestionar tu pedido.
+        </span>
+
+      </div>
+
+
+
+      <!-- BOTONES -->
+
+      <div class="checkout-actions">
+
+        <button
+          type="button"
+          id="backToPayment"
+          class="checkout-secondary-button"
+        >
+          ← Volver
+        </button>
+
+        <button
+          type="button"
+          id="confirmOrder"
+          class="checkout-primary-button"
+        >
+          Confirmar pedido
+        </button>
+
+      </div>
+
+
+    </section>
+
+
+
+    <!-- =================================================
+         CONFIRMACIÓN
+    ================================================== -->
+
+    <section
+      id="checkoutSuccess"
+      class="checkout-step-content checkout-success"
+    >
+
+      <div class="success-icon">
+        ✓
+      </div>
+
+      <span>
+        VR TURBOLUB
+      </span>
+
+      <h3>
+        ¡Pedido recibido!
+      </h3>
+
+      <p id="successMessage">
+        Tu pedido fue registrado correctamente.
+      </p>
+
+      <div
+        id="orderNumber"
+        class="order-number"
+      ></div>
+
+      <button
+        type="button"
+        id="finishCheckout"
+        class="checkout-primary-button"
+      >
+        Finalizar
+      </button>
+
+    </section>
+
+
+  </div>
+
+</div>
+
+
+
+<!-- =====================================================
+     WHATSAPP
+===================================================== -->
+
+<a
+  href="https://wa.me/573125267295"
+  target="_blank"
+  rel="noopener noreferrer"
+  class="whatsapp"
+  aria-label="Contactar por WhatsApp"
+>
+  💬
+</a>
+
+
+
+<!-- =====================================================
+     JAVASCRIPT
+===================================================== -->
+
+<script
+  src="js/productos.js"
+></script>
+
+
+</body>
+
+</html>
+
