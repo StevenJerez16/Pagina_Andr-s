@@ -1,9 +1,9 @@
 /* =====================================================
    VR TURBOLUB
    PRODUCTOS + CARRITO + CHECKOUT
-   VERSIÓN CORREGIDA
    + COMPROBANTES
-   + NETLIFY
+   + CLOUDFLARE WORKER
+   + HUBSPOT
 ===================================================== */
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -301,13 +301,9 @@ document.addEventListener("DOMContentLoaded", () => {
     return new Intl.NumberFormat(
       "es-CO",
       {
-
         style: "currency",
-
         currency: "COP",
-
         maximumFractionDigits: 0
-
       }
     ).format(
       Number(price) || 0
@@ -1453,16 +1449,6 @@ document.addEventListener("DOMContentLoaded", () => {
             );
 
 
-          /*
-           * FileReader entrega:
-           *
-           * data:image/png;base64,XXXX
-           *
-           * Nosotros solo necesitamos:
-           *
-           * XXXX
-           */
-
           const commaIndex =
             result.indexOf(",");
 
@@ -1519,9 +1505,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return (
         nequiReceipt
           ?.files
-          ?.[
-            0
-          ] || null
+          ?.[0] || null
       );
 
     }
@@ -1534,9 +1518,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return (
         transferReceipt
           ?.files
-          ?.[
-            0
-          ] || null
+          ?.[0] || null
       );
 
     }
@@ -1656,14 +1638,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
       }
 
-
-      /*
-       * 4 MB.
-       *
-       * Se usa 4 MB porque el archivo
-       * viaja convertido a Base64 y
-       * Base64 aumenta el tamaño.
-       */
 
       const maxSize =
         4 * 1024 * 1024;
@@ -2047,7 +2021,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     return (
-      `VT-${year}${month}${day}-${random}`
+      `VT-${year}${month}-${day}-${random}`
     );
 
   }
@@ -2228,7 +2202,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
           /* =============================================
-             PAYLOAD NETLIFY
+             PAYLOAD
           ============================================= */
 
           const payload = {
@@ -2245,35 +2219,35 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
           /* =============================================
-             NETLIFY
+             CLOUDFLARE WORKER
           ============================================= */
 
-/* =============================================
-   NETLIFY / WORKER
-============================================= */
+          const response =
+            await fetch(
+              "/crear-pedido",
+              {
 
-const response =
-  await fetch(
-    "https://vr-turbolub.jerezsteven85.workers.dev//",
-    {
+                method: "POST",
 
-      method: "POST",
+                headers: {
 
-      headers: {
+                  "Content-Type":
+                    "application/json"
 
-        "Content-Type":
-          "application/json"
+                },
 
-      },
+                body:
+                  JSON.stringify(
+                    payload
+                  )
 
-      body:
-        JSON.stringify(
-          payload
-        )
+              }
+            );
 
-    }
-  );
 
+          /* =============================================
+             LEER RESPUESTA
+          ============================================= */
 
           let result = {};
 
@@ -2285,17 +2259,27 @@ const response =
 
           } catch (jsonError) {
 
+            console.error(
+              "Respuesta no válida del servidor:",
+              jsonError
+            );
+
             result = {};
 
           }
 
 
+          /* =============================================
+             VALIDAR RESPUESTA DEL WORKER
+          ============================================= */
+
           if (
             !response.ok ||
-            !result.success
+            !result.ok
           ) {
 
             throw new Error(
+              result.error ||
               result.message ||
               "No se pudo registrar el pedido."
             );
@@ -2340,10 +2324,15 @@ const response =
               message +=
                 " El pedido quedó registrado, pero el comprobante está pendiente de configuración en HubSpot.";
 
-            } else {
+            } else if (receipt) {
 
               message +=
                 " Hemos recibido tu comprobante de pago.";
+
+            } else {
+
+              message +=
+                " Hemos recibido tu solicitud.";
 
             }
 
@@ -2466,3 +2455,4 @@ const response =
   renderCart();
 
 });
+
