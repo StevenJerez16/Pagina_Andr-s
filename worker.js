@@ -1598,62 +1598,137 @@ con VR Turbolub.
     });
 
     // --------------------------------------------------
-    // LLAMAR A GEMINI
-    // --------------------------------------------------
+// LLAMAR A GEMINI CON REINTENTOS
+// --------------------------------------------------
 
-    const geminiResponse =
-      await fetch(
-        GEMINI_API_URL,
-        {
-          method: "POST",
+let geminiResponse = null;
+let geminiText = "";
+let geminiData = null;
 
-          headers: {
-            "Content-Type":
-              "application/json",
+const MAX_RETRIES = 3;
 
-            "x-goog-api-key":
-              env.GEMINI_API_KEY
+for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+
+  try {
+
+    geminiResponse = await fetch(
+      GEMINI_API_URL,
+      {
+        method: "POST",
+
+        headers: {
+          "Content-Type": "application/json",
+
+          "x-goog-api-key":
+            env.GEMINI_API_KEY
+        },
+
+        body: JSON.stringify({
+          system_instruction: {
+            parts: [
+              {
+                text: systemPrompt
+              }
+            ]
           },
 
-          body: JSON.stringify({
-            system_instruction: {
-              parts: [
-                {
-                  text:
-                    systemPrompt
-                }
-              ]
-            },
+          contents,
 
-            contents,
+          generationConfig: {
+            temperature: 0.4,
+            maxOutputTokens: 500
+          }
+        })
+      }
+    );
 
-            generationConfig: {
-              temperature: 0.4,
-              maxOutputTokens: 500
-            }
-          })
-        }
-      );
-
-    // --------------------------------------------------
-    // LEER RESPUESTA
-    // --------------------------------------------------
-
-    const geminiText =
+    geminiText =
       await geminiResponse.text();
-
-    let geminiData = null;
 
     try {
       geminiData =
-        JSON.parse(
-          geminiText
-        );
+        JSON.parse(geminiText);
     } catch {
       geminiData = {
         raw: geminiText
       };
     }
+
+    // ----------------------------------------------
+    // SI FUNCIONÓ, SALIMOS DEL BUCLE
+    // ----------------------------------------------
+
+    if (geminiResponse.ok) {
+      break;
+    }
+
+    // ----------------------------------------------
+    // SOLO REINTENTAR ERRORES TEMPORALES
+    // ----------------------------------------------
+
+    const retryable =
+      geminiResponse.status === 429 ||
+      geminiResponse.status === 500 ||
+      geminiResponse.status === 502 ||
+      geminiResponse.status === 503 ||
+      geminiResponse.status === 504;
+
+    if (!retryable) {
+      break;
+    }
+
+    console.warn(
+      `Gemini intento ${attempt}/${MAX_RETRIES} falló con ${geminiResponse.status}`
+    );
+
+    if (attempt < MAX_RETRIES) {
+
+      // Espera progresiva:
+      // 1.5 s → 3 s → 6 s
+
+      const delay =
+        1500 * Math.pow(2, attempt - 1);
+
+      await new Promise(
+        resolve =>
+          setTimeout(resolve, delay)
+      );
+    }
+
+  } catch (error) {
+
+    console.error(
+      `Error de conexión con Gemini en intento ${attempt}:`,
+      error
+    );
+
+    if (attempt < MAX_RETRIES) {
+
+      const delay =
+        1500 * Math.pow(2, attempt - 1);
+
+      await new Promise(
+        resolve =>
+          setTimeout(resolve, delay)
+      );
+
+    } else {
+
+      return jsonResponse(
+        {
+          ok: false,
+          error:
+            "No se pudo conectar con Gemini",
+          details:
+            error?.message ||
+            "Error de conexión"
+        },
+        502,
+        corsHeaders
+      );
+    }
+  }
+}
 
     // --------------------------------------------------
     // ERROR GEMINI
