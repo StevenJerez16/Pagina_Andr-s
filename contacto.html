@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="es">
 
@@ -331,17 +332,125 @@
 
         <div class="hubspot-form">
 
+          <!-- HUBSPOT -->
           <script
-            src="https://js.hsforms.net/forms/embed/51906917.js"
-            defer>
+            charset="utf-8"
+            type="text/javascript"
+            src="https://js.hsforms.net/forms/embed/v2.js">
           </script>
 
-          <div
-            class="hs-form-frame"
-            data-region="na1"
-            data-form-id="6414f23d-81b1-4337-9018-80596db4fc2d"
-            data-portal-id="51906917">
-          </div>
+          <script>
+            hbspt.forms.create({
+              region: "na1",
+              portalId: "51906917",
+              formId: "6414f23d-81b1-4337-9018-80596db4fc2d",
+
+              onFormSubmitted: function ($form) {
+
+                try {
+
+                  function getField(name) {
+
+                    const field = $form.find(
+                      '[name="' + name + '"]'
+                    );
+
+                    if (!field || !field.length) {
+                      return "";
+                    }
+
+                    return field.val() || "";
+                  }
+
+
+                  const lead = {
+
+                    nombre: getField("firstname"),
+
+                    apellidos: getField("lastname"),
+
+                    telefono: getField("phone"),
+
+                    correo: getField("email"),
+
+                    producto: getField(
+                      "producto_o_servicio_de_interes"
+                    ),
+
+                    mensaje: getField("message"),
+
+                    estado: "Nuevo"
+
+                  };
+
+
+                  console.log(
+                    "Lead recibido desde HubSpot:",
+                    lead
+                  );
+
+
+                  fetch("/registrar-lead", {
+
+                    method: "POST",
+
+                    headers: {
+                      "Content-Type":
+                        "application/json"
+                    },
+
+                    body: JSON.stringify(lead)
+
+                  })
+
+                  .then(function (response) {
+
+                    return response.json();
+
+                  })
+
+                  .then(function (result) {
+
+                    if (result.ok) {
+
+                      console.log(
+                        "✅ Lead guardado en Google Sheets:",
+                        result
+                      );
+
+                    } else {
+
+                      console.error(
+                        "❌ Google Sheets no guardó el lead:",
+                        result
+                      );
+
+                    }
+
+                  })
+
+                  .catch(function (error) {
+
+                    console.error(
+                      "❌ Error enviando lead al Worker:",
+                      error
+                    );
+
+                  });
+
+                } catch (error) {
+
+                  console.error(
+                    "❌ Error procesando el lead:",
+                    error
+                  );
+
+                }
+
+              }
+
+            });
+          </script>
 
         </div>
 
@@ -477,3 +586,4 @@
 </body>
 
 </html>
+```

@@ -2627,4 +2627,3 @@ document.addEventListener("DOMContentLoaded", () => {
   renderCart();
 
 });
-
