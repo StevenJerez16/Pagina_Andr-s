@@ -10,6 +10,163 @@
   <link rel="stylesheet" href="css/style.css">
 
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700;800&family=Open+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+
+  <!-- =====================================================
+       ESTILOS DEL FORMULARIO
+       Solo afectan al formulario de contacto.
+  ====================================================== -->
+
+  <style>
+    .custom-lead-form {
+      width: 100%;
+    }
+
+    .custom-lead-form .form-field {
+      margin-bottom: 18px;
+    }
+
+    .custom-lead-form .form-field label {
+      display: block;
+      margin-bottom: 8px;
+
+      color: #fff;
+
+      font-family: 'Montserrat', sans-serif;
+
+      font-size: 0.78rem;
+
+      font-weight: 700;
+
+      letter-spacing: 0.5px;
+    }
+
+    .custom-lead-form .form-field input,
+    .custom-lead-form .form-field textarea {
+      width: 100%;
+
+      box-sizing: border-box;
+
+      padding: 14px 16px;
+
+      border: 1px solid rgba(255,255,255,0.15);
+
+      border-radius: 4px;
+
+      background: #080808;
+
+      color: #fff;
+
+      font-family: 'Open Sans', sans-serif;
+
+      font-size: 0.9rem;
+
+      outline: none;
+
+      transition:
+        border-color 0.25s,
+        background 0.25s;
+    }
+
+    .custom-lead-form .form-field input {
+      min-height: 48px;
+    }
+
+    .custom-lead-form .form-field textarea {
+      min-height: 120px;
+
+      resize: vertical;
+    }
+
+    .custom-lead-form .form-field input:focus,
+    .custom-lead-form .form-field textarea:focus {
+      border-color: var(--naranja);
+
+      background: #0b0b0b;
+    }
+
+    .custom-lead-form .form-field input::placeholder,
+    .custom-lead-form .form-field textarea::placeholder {
+      color: #666;
+    }
+
+    .custom-lead-form .lead-consent {
+      display: flex;
+
+      align-items: flex-start;
+
+      gap: 10px;
+
+      margin: 8px 0 22px;
+
+      color: #999;
+
+      font-family: 'Open Sans', sans-serif;
+
+      font-size: 0.8rem;
+
+      line-height: 1.5;
+
+      cursor: pointer;
+    }
+
+    .custom-lead-form .lead-consent input {
+      width: 16px;
+
+      height: 16px;
+
+      margin-top: 2px;
+
+      flex: 0 0 auto;
+
+      accent-color: var(--naranja);
+
+      cursor: pointer;
+    }
+
+    .custom-lead-form .lead-consent span {
+      display: block;
+    }
+
+    .custom-lead-form .btn-primary {
+      border: none;
+
+      cursor: pointer;
+    }
+
+    .custom-lead-form .btn-primary:disabled {
+      opacity: 0.6;
+
+      cursor: not-allowed;
+    }
+
+    #leadStatus {
+      min-height: 24px;
+
+      margin-top: 15px;
+
+      color: #aaa;
+
+      font-family: 'Open Sans', sans-serif;
+
+      font-size: 0.85rem;
+
+      line-height: 1.5;
+    }
+
+    @media (max-width: 600px) {
+
+      .custom-lead-form .form-field input,
+      .custom-lead-form .form-field textarea {
+        font-size: 16px;
+      }
+
+      .custom-lead-form .btn-primary {
+        width: 100%;
+      }
+
+    }
+  </style>
+
 </head>
 
 <body>
@@ -233,7 +390,7 @@
 
 
 <!-- =========================
-     FORMULARIO HUBSPOT
+     FORMULARIO DE CONTACTO
 ========================= -->
 
 <section
@@ -311,7 +468,7 @@
     </div>
 
 
-    <!-- HUBSPOT -->
+    <!-- FORMULARIO -->
 
     <div class="hubspot-form-container">
 
@@ -331,17 +488,170 @@
 
         <div class="hubspot-form">
 
-          <script
-            src="https://js.hsforms.net/forms/embed/51906917.js"
-            defer>
-          </script>
+          <form
+            id="leadForm"
+            class="custom-lead-form">
 
-          <div
-            class="hs-form-frame"
-            data-region="na1"
-            data-form-id="6414f23d-81b1-4337-9018-80596db4fc2d"
-            data-portal-id="51906917">
-          </div>
+            <!-- NOMBRE -->
+
+            <div class="form-field">
+
+              <label for="leadNombre">
+                Nombre *
+              </label>
+
+              <input
+                type="text"
+                id="leadNombre"
+                name="nombre"
+                placeholder="Tu nombre"
+                autocomplete="given-name"
+                required>
+
+            </div>
+
+
+            <!-- APELLIDOS -->
+
+            <div class="form-field">
+
+              <label for="leadApellidos">
+                Apellidos
+              </label>
+
+              <input
+                type="text"
+                id="leadApellidos"
+                name="apellidos"
+                placeholder="Tus apellidos"
+                autocomplete="family-name">
+
+            </div>
+
+
+            <!-- CORREO -->
+
+            <div class="form-field">
+
+              <label for="leadCorreo">
+                Correo *
+              </label>
+
+              <input
+                type="email"
+                id="leadCorreo"
+                name="correo"
+                placeholder="correo@ejemplo.com"
+                autocomplete="email"
+                required>
+
+            </div>
+
+
+            <!-- TELÉFONO -->
+
+            <div class="form-field">
+
+              <label for="leadTelefono">
+                Número de teléfono *
+              </label>
+
+              <input
+                type="tel"
+                id="leadTelefono"
+                name="telefono"
+                placeholder="300 000 0000"
+                autocomplete="tel"
+                required>
+
+            </div>
+
+
+            <!-- PRODUCTO -->
+
+            <div class="form-field">
+
+              <label for="leadProducto">
+                Producto o servicio de interés
+              </label>
+
+              <input
+                type="text"
+                id="leadProducto"
+                name="producto"
+                placeholder="¿Qué estás buscando?">
+
+            </div>
+
+
+            <!-- MENSAJE -->
+
+            <div class="form-field">
+
+              <label for="leadMensaje">
+                Mensaje
+              </label>
+
+              <textarea
+                id="leadMensaje"
+                name="mensaje"
+                rows="5"
+                placeholder="Cuéntanos qué necesitas..."></textarea>
+
+            </div>
+
+
+            <!-- CAMPO ANTI-SPAM OCULTO -->
+
+            <input
+              type="text"
+              name="website"
+              tabindex="-1"
+              autocomplete="off"
+              style="
+                position:absolute;
+                left:-9999px;
+                opacity:0;
+                pointer-events:none;
+              ">
+
+
+            <!-- CONSENTIMIENTO -->
+
+            <label class="lead-consent">
+
+              <input
+                type="checkbox"
+                id="leadConsent"
+                required>
+
+              <span>
+                Acepto recibir comunicaciones de VR Turbolub.
+              </span>
+
+            </label>
+
+
+            <!-- BOTÓN -->
+
+            <button
+              type="submit"
+              class="btn-primary"
+              id="leadSubmit">
+
+              Enviar solicitud
+
+            </button>
+
+
+            <!-- ESTADO -->
+
+            <p
+              id="leadStatus"
+              aria-live="polite">
+            </p>
+
+          </form>
 
         </div>
 
@@ -472,8 +782,224 @@
 </a>
 
 
+<!-- =========================
+     ENVÍO DEL FORMULARIO
+========================= -->
+
+<script>
+
+document.addEventListener("DOMContentLoaded", () => {
+
+  const form =
+    document.getElementById("leadForm");
+
+  const submitButton =
+    document.getElementById("leadSubmit");
+
+  const status =
+    document.getElementById("leadStatus");
+
+
+  if (!form) {
+    return;
+  }
+
+
+  form.addEventListener(
+    "submit",
+    async (event) => {
+
+      event.preventDefault();
+
+
+      const formData =
+        new FormData(form);
+
+
+      // ==========================================
+      // ANTI-SPAM
+      // ==========================================
+
+      if (formData.get("website")) {
+        return;
+      }
+
+
+      // ==========================================
+      // DATOS DEL LEAD
+      // ==========================================
+
+      const lead = {
+
+        nombre:
+          String(
+            formData.get("nombre") || ""
+          ).trim(),
+
+        apellidos:
+          String(
+            formData.get("apellidos") || ""
+          ).trim(),
+
+        telefono:
+          String(
+            formData.get("telefono") || ""
+          ).trim(),
+
+        correo:
+          String(
+            formData.get("correo") || ""
+          ).trim(),
+
+        producto:
+          String(
+            formData.get("producto") || ""
+          ).trim(),
+
+        mensaje:
+          String(
+            formData.get("mensaje") || ""
+          ).trim()
+
+      };
+
+
+      // ==========================================
+      // DESHABILITAR BOTÓN
+      // ==========================================
+
+      submitButton.disabled = true;
+
+      submitButton.textContent =
+        "Enviando...";
+
+      status.textContent =
+        "Enviando solicitud...";
+
+
+      try {
+
+        // ========================================
+        // ENVIAR AL CLOUDFLARE WORKER
+        // ========================================
+
+        const response =
+          await fetch(
+            "/registrar-lead",
+            {
+              method: "POST",
+
+              headers: {
+                "Content-Type":
+                  "application/json"
+              },
+
+              body:
+                JSON.stringify(lead)
+            }
+          );
+
+
+        // ========================================
+        // LEER RESPUESTA
+        // ========================================
+
+        const result =
+          await response.json();
+
+
+        console.log(
+          "Respuesta registrar-lead:",
+          result
+        );
+
+
+        // ========================================
+        // COMPROBAR RESULTADO
+        // ========================================
+
+        if (
+          !response.ok ||
+          !result.ok
+        ) {
+
+          throw new Error(
+            result.error ||
+            "No se pudo enviar la solicitud"
+          );
+
+        }
+
+
+        // ========================================
+        // ÉXITO
+        // ========================================
+
+        status.textContent =
+          "¡Solicitud enviada correctamente! Nos pondremos en contacto contigo.";
+
+
+        form.reset();
+
+
+        console.log(
+          "Lead registrado correctamente.",
+          {
+            contactId:
+              result.contactId,
+
+            hubspot:
+              result.hubspot,
+
+            googleSheets:
+              result.googleSheets,
+
+            email:
+              result.email
+          }
+        );
+
+
+      } catch (error) {
+
+        // ========================================
+        // ERROR
+        // ========================================
+
+        console.error(
+          "Error enviando lead:",
+          error
+        );
+
+
+        status.textContent =
+          "No pudimos enviar la solicitud. Intenta nuevamente.";
+
+
+      } finally {
+
+        // ========================================
+        // RESTAURAR BOTÓN
+        // ========================================
+
+        submitButton.disabled = false;
+
+        submitButton.textContent =
+          "Enviar solicitud";
+
+      }
+
+    }
+  );
+
+});
+
+</script>
+
+
 <script src="js/script.js"></script>
 
 </body>
 
 </html>
+

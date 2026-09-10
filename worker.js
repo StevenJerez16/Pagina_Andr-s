@@ -795,7 +795,8 @@ async function crearPedido(request, env, corsHeaders) {
 
 
 // ======================================================
-// REGISTRAR LEAD EN GOOGLE SHEETS
+// REGISTRAR LEAD
+// HUBSPOT + GOOGLE SHEETS + RESEND
 // ======================================================
 
 async function registrarLead(
@@ -805,15 +806,25 @@ async function registrarLead(
 ) {
   try {
     // --------------------------------------------------
-    // URL GOOGLE SHEETS
+    // VALIDAR CONFIGURACIÓN
     // --------------------------------------------------
+
+    if (!env.HUBSPOT_TOKEN) {
+      return jsonResponse(
+        {
+          ok: false,
+          error: "Falta configurar HUBSPOT_TOKEN"
+        },
+        500,
+        corsHeaders
+      );
+    }
 
     if (!env.GOOGLE_SHEETS_URL) {
       return jsonResponse(
         {
           ok: false,
-          error:
-            "Falta configurar GOOGLE_SHEETS_URL"
+          error: "Falta configurar GOOGLE_SHEETS_URL"
         },
         500,
         corsHeaders
@@ -842,33 +853,13 @@ async function registrarLead(
     // --------------------------------------------------
 
     const lead = {
-      nombre: String(
-        data.nombre || ""
-      ).trim(),
-
-      apellidos: String(
-        data.apellidos || ""
-      ).trim(),
-
-      telefono: String(
-        data.telefono || ""
-      ).trim(),
-
-      correo: String(
-        data.correo || ""
-      ).trim(),
-
-      producto: String(
-        data.producto || ""
-      ).trim(),
-
-      mensaje: String(
-        data.mensaje || ""
-      ).trim(),
-
-      estado: String(
-        data.estado || "Nuevo"
-      ).trim()
+      nombre: String(data.nombre || "").trim(),
+      apellidos: String(data.apellidos || "").trim(),
+      telefono: String(data.telefono || "").trim(),
+      correo: String(data.correo || "").trim().toLowerCase(),
+      producto: String(data.producto || "").trim(),
+      mensaje: String(data.mensaje || "").trim(),
+      estado: String(data.estado || "Nuevo").trim()
     };
 
     // --------------------------------------------------
@@ -876,43 +867,210 @@ async function registrarLead(
     // --------------------------------------------------
 
     if (
-      !lead.nombre &&
-      !lead.apellidos &&
-      !lead.correo &&
+      !lead.nombre ||
+      !lead.correo ||
       !lead.telefono
     ) {
       return jsonResponse(
         {
           ok: false,
           error:
-            "No se recibieron datos suficientes del lead"
+            "Nombre, correo y teléfono son obligatorios"
         },
         400,
         corsHeaders
       );
     }
 
+    // ==================================================
+    // 1. HUBSPOT
+    // ==================================================
+
+    const hubspotHeaders = {
+      Authorization: `Bearer ${env.HUBSPOT_TOKEN}`,
+      "Content-Type": "application/json"
+    };
+
+    let contactId = null;
+    let hubspotAction = null;
+
     // --------------------------------------------------
-    // ENVIAR A GOOGLE APPS SCRIPT
+    // BUSCAR CONTACTO POR CORREO
     // --------------------------------------------------
+
+    const contactSearchResponse = await fetch(
+      `${HUBSPOT_API}/crm/v3/objects/contacts/search`,
+      {
+        method: "POST",
+        headers: hubspotHeaders,
+        body: JSON.stringify({
+          filterGroups: [
+            {
+              filters: [
+                {
+                  propertyName: "email",
+                  operator: "EQ",
+                  value: lead.correo
+                }
+              ]
+            }
+          ],
+          properties: [
+            "firstname",
+            "lastname",
+            "email",
+            "phone",
+            "producto_o_servicio_de_interes"
+          ],
+          limit: 1
+        })
+      }
+    );
+
+    const contactSearchText =
+      await contactSearchResponse.text();
+
+    let contactSearchData = null;
+
+    try {
+      contactSearchData =
+        JSON.parse(contactSearchText);
+    } catch {
+      contactSearchData = {
+        raw: contactSearchText
+      };
+    }
+
+    // --------------------------------------------------
+    // PROPIEDADES DEL CONTACTO
+    // --------------------------------------------------
+
+    const contactProperties = {
+      firstname: lead.nombre,
+      lastname: lead.apellidos,
+      email: lead.correo,
+      phone: lead.telefono,
+      producto_o_servicio_de_interes:
+        lead.producto
+    };
+
+    // --------------------------------------------------
+    // ACTUALIZAR CONTACTO EXISTENTE
+    // --------------------------------------------------
+
+    if (
+      contactSearchResponse.ok &&
+      contactSearchData.results?.length
+    ) {
+      contactId =
+        contactSearchData.results[0].id;
+
+      hubspotAction = "actualizado";
+
+      const updateContactResponse = await fetch(
+        `${HUBSPOT_API}/crm/v3/objects/contacts/${contactId}`,
+        {
+          method: "PATCH",
+          headers: hubspotHeaders,
+          body: JSON.stringify({
+            properties: contactProperties
+          })
+        }
+      );
+
+      if (!updateContactResponse.ok) {
+        const updateError =
+          await updateContactResponse.text();
+
+        console.error(
+          "Error actualizando contacto HubSpot:",
+          updateError
+        );
+
+        return jsonResponse(
+          {
+            ok: false,
+            error:
+              "No se pudo actualizar el contacto en HubSpot",
+            details: updateError
+          },
+          502,
+          corsHeaders
+        );
+      }
+    }
+
+    // --------------------------------------------------
+    // CREAR CONTACTO NUEVO
+    // --------------------------------------------------
+
+    else {
+      const createContactResponse = await fetch(
+        `${HUBSPOT_API}/crm/v3/objects/contacts`,
+        {
+          method: "POST",
+          headers: hubspotHeaders,
+          body: JSON.stringify({
+            properties: contactProperties
+          })
+        }
+      );
+
+      const createContactText =
+        await createContactResponse.text();
+
+      let createContactData = null;
+
+      try {
+        createContactData =
+          JSON.parse(createContactText);
+      } catch {
+        createContactData = {
+          raw: createContactText
+        };
+      }
+
+      if (!createContactResponse.ok) {
+        console.error(
+          "Error creando contacto HubSpot:",
+          createContactData
+        );
+
+        return jsonResponse(
+          {
+            ok: false,
+            error:
+              "No se pudo crear el contacto en HubSpot",
+            details: createContactData
+          },
+          502,
+          corsHeaders
+        );
+      }
+
+      contactId = createContactData.id;
+      hubspotAction = "creado";
+    }
+
+    // ==================================================
+    // 2. GOOGLE SHEETS
+    // ==================================================
+
+    let googleData = null;
 
     const googleResponse = await fetch(
       env.GOOGLE_SHEETS_URL,
       {
         method: "POST",
-
         headers: {
           "Content-Type": "application/json"
         },
-
         body: JSON.stringify(lead)
       }
     );
 
     const googleText =
       await googleResponse.text();
-
-    let googleData = null;
 
     try {
       googleData =
@@ -922,10 +1080,6 @@ async function registrarLead(
         raw: googleText
       };
     }
-
-    // --------------------------------------------------
-    // ERROR GOOGLE SHEETS
-    // --------------------------------------------------
 
     if (!googleResponse.ok) {
       console.error(
@@ -937,29 +1091,208 @@ async function registrarLead(
         {
           ok: false,
           error:
-            "Google Sheets no aceptó el lead",
-          details: googleData
+            "El contacto se guardó en HubSpot, pero Google Sheets no aceptó el lead",
+          contactId,
+          hubspot: {
+            ok: true,
+            action: hubspotAction
+          },
+          googleSheets: {
+            ok: false,
+            details: googleData
+          }
         },
         502,
         corsHeaders
       );
     }
 
-    // --------------------------------------------------
-    // RESPUESTA EXITOSA
-    // --------------------------------------------------
+    // ==================================================
+    // 3. NOTIFICACIÓN POR RESEND
+    // ==================================================
+
+    let emailResult = {
+      ok: false,
+      skipped: true
+    };
+
+    if (
+      env.RESEND_API_KEY &&
+      env.ORDER_NOTIFICATION_EMAILS
+    ) {
+      try {
+        const recipients =
+          String(env.ORDER_NOTIFICATION_EMAILS)
+            .split(",")
+            .map(email => email.trim())
+            .filter(Boolean);
+
+        if (recipients.length) {
+          const resendResponse = await fetch(
+            "https://api.resend.com/emails",
+            {
+              method: "POST",
+
+              headers: {
+                Authorization:
+                  `Bearer ${env.RESEND_API_KEY}`,
+
+                "Content-Type":
+                  "application/json"
+              },
+
+              body: JSON.stringify({
+                from:
+                  "VR Turbolub <onboarding@resend.dev>",
+
+                to: recipients,
+
+                subject:
+                  `Nuevo lead - VR Turbolub - ${lead.nombre}`,
+
+                html: `
+                  <div style="font-family:Arial,sans-serif;line-height:1.6;">
+                    <h2>Nuevo lead recibido - VR Turbolub</h2>
+
+                    <p>
+                      Se recibió una nueva solicitud desde la página web.
+                    </p>
+
+                    <hr>
+
+                    <h3>Datos del cliente</h3>
+
+                    <p>
+                      <strong>Nombre:</strong>
+                      ${escapeHtml(lead.nombre)}
+                      ${escapeHtml(lead.apellidos)}
+                    </p>
+
+                    <p>
+                      <strong>Correo:</strong>
+                      ${escapeHtml(lead.correo)}
+                    </p>
+
+                    <p>
+                      <strong>Teléfono:</strong>
+                      ${escapeHtml(lead.telefono)}
+                    </p>
+
+                    <p>
+                      <strong>Producto o servicio:</strong>
+                      ${escapeHtml(
+                        lead.producto || "No especificado"
+                      )}
+                    </p>
+
+                    <p>
+                      <strong>Mensaje:</strong><br>
+                      ${escapeHtml(
+                        lead.mensaje || "Sin mensaje"
+                      )}
+                    </p>
+
+                    <hr>
+
+                    <p>
+                      <strong>Estado:</strong>
+                      ${escapeHtml(lead.estado)}
+                    </p>
+
+                    <p>
+                      <strong>HubSpot Contact ID:</strong>
+                      ${escapeHtml(contactId)}
+                    </p>
+                  </div>
+                `
+              })
+            }
+          );
+
+          const resendText =
+            await resendResponse.text();
+
+          let resendData = null;
+
+          try {
+            resendData =
+              JSON.parse(resendText);
+          } catch {
+            resendData = {
+              raw: resendText
+            };
+          }
+
+          if (resendResponse.ok) {
+            emailResult = {
+              ok: true,
+              data: resendData
+            };
+          } else {
+            emailResult = {
+              ok: false,
+              error: resendData
+            };
+
+            console.error(
+              "Resend respondió con error:",
+              resendData
+            );
+          }
+        }
+      } catch (error) {
+        emailResult = {
+          ok: false,
+          error:
+            error?.message ||
+            "Error enviando notificación"
+        };
+
+        console.error(
+          "Error Resend:",
+          error
+        );
+      }
+    } else {
+      console.warn(
+        "No se enviará correo porque falta RESEND_API_KEY u ORDER_NOTIFICATION_EMAILS"
+      );
+    }
+
+    // ==================================================
+    // RESPUESTA FINAL
+    // ==================================================
 
     console.log(
-      "Lead registrado correctamente:",
-      lead
+      "Lead procesado correctamente:",
+      {
+        contactId,
+        hubspotAction,
+        googleSheets: googleData,
+        email: emailResult
+      }
     );
 
     return jsonResponse(
       {
         ok: true,
+
         message:
           "Lead registrado correctamente",
-        google: googleData
+
+        contactId,
+
+        hubspot: {
+          ok: true,
+          action: hubspotAction
+        },
+
+        googleSheets: {
+          ok: true,
+          data: googleData
+        },
+
+        email: emailResult
       },
       200,
       corsHeaders
@@ -982,6 +1315,20 @@ async function registrarLead(
       corsHeaders
     );
   }
+}
+
+
+// ======================================================
+// ESCAPAR HTML
+// ======================================================
+
+function escapeHtml(value) {
+  return String(value || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 }
 
 
