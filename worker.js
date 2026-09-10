@@ -3,7 +3,7 @@ const HUBSPOT_API = "https://api.hubapi.com";
 const PIPELINE = "default";
 const DEAL_STAGE = "1423653802";
 
-const MAX_RECEIPT_BYTES = 4 * 1024 * 1024;
+const RECEIPT_MAX_BYTES = 4 * 1024 * 1024;
 
 const ALLOWED_RECEIPT_TYPES = [
   "image/jpeg",
@@ -14,18 +14,15 @@ const ALLOWED_RECEIPT_TYPES = [
 
 export default {
   async fetch(request, env) {
-    const url = new URL(request.url);
-
-    // =========================
-    // CORS
-    // =========================
-
     const corsHeaders = {
       "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
       "Access-Control-Allow-Headers": "Content-Type, Authorization"
     };
 
+    // ================================
+    // CORS
+    // ================================
     if (request.method === "OPTIONS") {
       return new Response(null, {
         status: 204,
@@ -33,62 +30,82 @@ export default {
       });
     }
 
-    // =========================
-    // SITIO WEB
-    // =========================
+    const url = new URL(request.url);
 
-    if (request.method === "GET" && url.pathname !== "/crear-pedido") {
-      return env.ASSETS.fetch(request);
-    }
-
-    // =========================
-    // HEALTH CHECK
-    // =========================
-
-    if (request.method === "GET" && url.pathname === "/crear-pedido") {
+    // ================================
+    // HEALTH CHECK - PEDIDOS
+    // ================================
+    if (
+      request.method === "GET" &&
+      url.pathname === "/crear-pedido"
+    ) {
       return jsonResponse(
         {
           ok: true,
           message: "Endpoint crear-pedido activo",
-          service: "VR Turbolub + HubSpot + Resend"
+          service: "VR Turbolub + HubSpot"
         },
         200,
         corsHeaders
       );
     }
 
-    // =========================
-    // CREAR PEDIDO
-    // =========================
+    // ================================
+    // HEALTH CHECK - LEADS
+    // ================================
+    if (
+      request.method === "GET" &&
+      url.pathname === "/registrar-lead"
+    ) {
+      return jsonResponse(
+        {
+          ok: true,
+          message: "Endpoint registrar-lead activo",
+          service: "VR Turbolub + Google Sheets"
+        },
+        200,
+        corsHeaders
+      );
+    }
 
+    // ================================
+    // CREAR PEDIDO
+    // ================================
     if (
       request.method === "POST" &&
       url.pathname === "/crear-pedido"
     ) {
-      try {
-        return await crearPedido(request, env, corsHeaders);
-      } catch (error) {
-        console.error("Error general crear-pedido:", error);
-
-        return jsonResponse(
-          {
-            ok: false,
-            error: "Error interno al procesar el pedido.",
-            detail: error?.message || "Error desconocido"
-          },
-          500,
-          corsHeaders
-        );
-      }
+      return crearPedido(request, env, corsHeaders);
     }
 
-    return new Response("Método no permitido", {
-      status: 405,
-      headers: {
-        ...corsHeaders,
-        "Content-Type": "text/plain; charset=utf-8"
-      }
-    });
+    // ================================
+    // REGISTRAR LEAD
+    // ================================
+    if (
+      request.method === "POST" &&
+      url.pathname === "/registrar-lead"
+    ) {
+      return registrarLead(request, env, corsHeaders);
+    }
+
+    // ================================
+    // ARCHIVOS ESTÁTICOS
+    // ================================
+    if (request.method === "GET") {
+      return env.ASSETS.fetch(request);
+    }
+
+    // ================================
+    // MÉTODO NO PERMITIDO
+    // ================================
+    return jsonResponse(
+      {
+        ok: false,
+        error: "Método no permitido"
+      },
+      405,
+      corsHeaders
+    );
   }
 };
 
@@ -98,608 +115,571 @@ export default {
 // ======================================================
 
 async function crearPedido(request, env, corsHeaders) {
-  if (!env.HUBSPOT_TOKEN) {
-    return jsonResponse(
-      {
-        ok: false,
-        error: "Falta configurar el secreto HUBSPOT_TOKEN."
-      },
-      500,
-      corsHeaders
-    );
-  }
-
-  let payload;
-
   try {
-    payload = await request.json();
-  } catch {
-    return jsonResponse(
-      {
-        ok: false,
-        error: "El cuerpo de la petición no contiene JSON válido."
-      },
-      400,
-      corsHeaders
-    );
-  }
-
-  const order = payload?.order || payload;
-  const receipt = payload?.receipt || null;
-
-  // ==================================================
-  // VALIDACIONES
-  // ==================================================
-
-  if (!order?.id) {
-    return jsonResponse(
-      {
-        ok: false,
-        error: "Falta el ID del pedido."
-      },
-      400,
-      corsHeaders
-    );
-  }
-
-  const customer = order.customer || {};
-
-  if (!customer.name) {
-    return jsonResponse(
-      {
-        ok: false,
-        error: "Falta el nombre del cliente."
-      },
-      400,
-      corsHeaders
-    );
-  }
-
-  if (!customer.lastName) {
-    return jsonResponse(
-      {
-        ok: false,
-        error: "Falta el apellido del cliente."
-      },
-      400,
-      corsHeaders
-    );
-  }
-
-  if (!customer.email) {
-    return jsonResponse(
-      {
-        ok: false,
-        error: "Falta el correo electrónico."
-      },
-      400,
-      corsHeaders
-    );
-  }
-
-  if (!customer.phone) {
-    return jsonResponse(
-      {
-        ok: false,
-        error: "Falta el teléfono."
-      },
-      400,
-      corsHeaders
-    );
-  }
-
-  if (
-    !Array.isArray(order.products) ||
-    order.products.length === 0
-  ) {
-    return jsonResponse(
-      {
-        ok: false,
-        error: "El pedido no contiene productos."
-      },
-      400,
-      corsHeaders
-    );
-  }
-
-  // ==================================================
-  // MÉTODO DE PAGO
-  // ==================================================
-
-  const paymentMethod = order.paymentMethod || "";
-
-  const paymentLabels = {
-    nequi: "Nequi",
-    transferencia: "PSE / Transferencia bancaria",
-    tarjeta: "Tarjeta",
-    contra_entrega: "Contra entrega"
-  };
-
-  const paymentLabel =
-    paymentLabels[paymentMethod] || paymentMethod || "No especificado";
-
-  // ==================================================
-  // COMPROBANTE
-  // ==================================================
-
-  const requiresReceipt =
-    paymentMethod === "nequi" ||
-    paymentMethod === "transferencia";
-
-  if (requiresReceipt && !receipt) {
-    return jsonResponse(
-      {
-        ok: false,
-        error:
-          "Debes adjuntar el comprobante de pago para este método."
-      },
-      400,
-      corsHeaders
-    );
-  }
-
-  if (receipt) {
-    if (!receipt.data) {
+    // --------------------------------------------------
+    // TOKEN HUBSPOT
+    // --------------------------------------------------
+    if (!env.HUBSPOT_TOKEN) {
       return jsonResponse(
         {
           ok: false,
-          error: "El comprobante no contiene datos."
-        },
-        400,
-        corsHeaders
-      );
-    }
-
-    if (
-      receipt.type &&
-      !ALLOWED_RECEIPT_TYPES.includes(receipt.type)
-    ) {
-      return jsonResponse(
-        {
-          ok: false,
-          error: "Tipo de comprobante no permitido."
-        },
-        400,
-        corsHeaders
-      );
-    }
-
-    if (
-      typeof receipt.size === "number" &&
-      receipt.size > MAX_RECEIPT_BYTES
-    ) {
-      return jsonResponse(
-        {
-          ok: false,
-          error: "El comprobante supera el límite de 4 MB."
-        },
-        400,
-        corsHeaders
-      );
-    }
-  }
-
-  // ==================================================
-  // HEADERS HUBSPOT
-  // ==================================================
-
-  const hubspotHeaders = {
-    Authorization: `Bearer ${env.HUBSPOT_TOKEN}`,
-    "Content-Type": "application/json"
-  };
-
-  // ==================================================
-  // PRODUCTOS
-  // ==================================================
-
-  const productsText = order.products
-    .map((product) => {
-      const name = product.name || "Producto";
-      const quantity = Number(product.quantity || 1);
-      const price = Number(product.price || 0);
-
-      return `${name} x${quantity} — ${formatPrice(price)}`;
-    })
-    .join("\n");
-
-  const subtotal = Number(order.subtotal || 0);
-  const shipping = Number(order.shipping || 0);
-
-  const total = Number(
-    order.total ?? subtotal + shipping
-  );
-
-  const customerFullName =
-    `${customer.name} ${customer.lastName}`.trim();
-
-  // ==================================================
-  // BUSCAR CONTACTO POR EMAIL
-  // ==================================================
-
-  let contactId = null;
-
-  const contactSearchResponse = await fetch(
-    `${HUBSPOT_API}/crm/v3/objects/contacts/search`,
-    {
-      method: "POST",
-      headers: hubspotHeaders,
-      body: JSON.stringify({
-        filterGroups: [
-          {
-            filters: [
-              {
-                propertyName: "email",
-                operator: "EQ",
-                value: customer.email
-              }
-            ]
-          }
-        ],
-        properties: [
-          "firstname",
-          "lastname",
-          "email",
-          "phone",
-          "address",
-          "city"
-        ],
-        limit: 1
-      })
-    }
-  );
-
-  const contactSearchData =
-    await safeJson(contactSearchResponse);
-
-  if (!contactSearchResponse.ok) {
-    console.error(
-      "Error buscando contacto:",
-      contactSearchData
-    );
-
-    return jsonResponse(
-      {
-        ok: false,
-        error: "No fue posible buscar el contacto en HubSpot.",
-        detail: contactSearchData
-      },
-      500,
-      corsHeaders
-    );
-  }
-
-  if (
-    contactSearchData?.results &&
-    contactSearchData.results.length > 0
-  ) {
-    contactId = contactSearchData.results[0].id;
-  }
-
-  // ==================================================
-  // CREAR / ACTUALIZAR CONTACTO
-  // ==================================================
-
-  const contactProperties = {
-    firstname: customer.name,
-    lastname: customer.lastName,
-    email: customer.email,
-    phone: customer.phone,
-    address: customer.address || "",
-    city: customer.city || ""
-  };
-
-  if (contactId) {
-    const updateContactResponse = await fetch(
-      `${HUBSPOT_API}/crm/v3/objects/contacts/${contactId}`,
-      {
-        method: "PATCH",
-        headers: hubspotHeaders,
-        body: JSON.stringify({
-          properties: contactProperties
-        })
-      }
-    );
-
-    const updateContactData =
-      await safeJson(updateContactResponse);
-
-    if (!updateContactResponse.ok) {
-      console.error(
-        "Error actualizando contacto:",
-        updateContactData
-      );
-
-      return jsonResponse(
-        {
-          ok: false,
-          error: "No fue posible actualizar el contacto.",
-          detail: updateContactData
+          error: "Falta configurar HUBSPOT_TOKEN"
         },
         500,
         corsHeaders
       );
     }
-  } else {
-    const createContactResponse = await fetch(
-      `${HUBSPOT_API}/crm/v3/objects/contacts`,
+
+    // --------------------------------------------------
+    // LEER BODY
+    // --------------------------------------------------
+    const payload = await safeJson(request);
+
+    if (!payload) {
+      return jsonResponse(
+        {
+          ok: false,
+          error: "JSON inválido"
+        },
+        400,
+        corsHeaders
+      );
+    }
+
+    const order = payload?.order || payload;
+    const receipt = payload?.receipt || null;
+
+    // --------------------------------------------------
+    // VALIDACIONES BÁSICAS
+    // --------------------------------------------------
+
+    if (!order?.id) {
+      return jsonResponse(
+        {
+          ok: false,
+          error: "Falta el ID del pedido"
+        },
+        400,
+        corsHeaders
+      );
+    }
+
+    if (!order?.customer) {
+      return jsonResponse(
+        {
+          ok: false,
+          error: "Faltan los datos del cliente"
+        },
+        400,
+        corsHeaders
+      );
+    }
+
+    const customer = order.customer;
+
+    if (
+      !customer.name ||
+      !customer.lastName ||
+      !customer.email ||
+      !customer.phone
+    ) {
+      return jsonResponse(
+        {
+          ok: false,
+          error:
+            "El cliente debe tener nombre, apellidos, correo y teléfono"
+        },
+        400,
+        corsHeaders
+      );
+    }
+
+    if (
+      !Array.isArray(order.products) ||
+      order.products.length === 0
+    ) {
+      return jsonResponse(
+        {
+          ok: false,
+          error: "El pedido no contiene productos"
+        },
+        400,
+        corsHeaders
+      );
+    }
+
+    // --------------------------------------------------
+    // MÉTODO DE PAGO
+    // --------------------------------------------------
+
+    const paymentMethod = String(
+      order.paymentMethod || ""
+    ).toLowerCase();
+
+    const paymentNames = {
+      nequi: "Nequi",
+      transferencia: "PSE / Transferencia bancaria",
+      tarjeta: "Tarjeta",
+      contra_entrega: "Contra entrega"
+    };
+
+    if (!paymentNames[paymentMethod]) {
+      return jsonResponse(
+        {
+          ok: false,
+          error: "Método de pago no válido"
+        },
+        400,
+        corsHeaders
+      );
+    }
+
+    const paymentName = paymentNames[paymentMethod];
+
+    // --------------------------------------------------
+    // COMPROBANTE
+    // --------------------------------------------------
+
+    if (
+      paymentMethod === "nequi" ||
+      paymentMethod === "transferencia"
+    ) {
+      if (!receipt) {
+        return jsonResponse(
+          {
+            ok: false,
+            error:
+              "Se requiere comprobante para este método de pago"
+          },
+          400,
+          corsHeaders
+        );
+      }
+    }
+
+    if (receipt) {
+      if (!receipt.data) {
+        return jsonResponse(
+          {
+            ok: false,
+            error: "El comprobante no contiene datos"
+          },
+          400,
+          corsHeaders
+        );
+      }
+
+      if (
+        receipt.type &&
+        !ALLOWED_RECEIPT_TYPES.includes(receipt.type)
+      ) {
+        return jsonResponse(
+          {
+            ok: false,
+            error:
+              "Tipo de archivo de comprobante no permitido"
+          },
+          400,
+          corsHeaders
+        );
+      }
+
+      const receiptBytes = base64ToUint8Array(
+        receipt.data
+      );
+
+      if (!receiptBytes) {
+        return jsonResponse(
+          {
+            ok: false,
+            error: "Comprobante inválido"
+          },
+          400,
+          corsHeaders
+        );
+      }
+
+      if (receiptBytes.byteLength > RECEIPT_MAX_BYTES) {
+        return jsonResponse(
+          {
+            ok: false,
+            error:
+              "El comprobante supera el límite de 4 MB"
+          },
+          400,
+          corsHeaders
+        );
+      }
+    }
+
+    // --------------------------------------------------
+    // PRODUCTOS
+    // --------------------------------------------------
+
+    const productsText = order.products
+      .map((product) => {
+        const name = product.name || "Producto";
+        const quantity = Number(product.quantity || 1);
+        const price = Number(product.price || 0);
+
+        return `${name} x${quantity} - ${formatPrice(price)}`;
+      })
+      .join("\n");
+
+    // --------------------------------------------------
+    // CALCULAR PRECIOS EN EL SERVIDOR
+    // --------------------------------------------------
+
+    const subtotal = order.products.reduce(
+      (sum, product) => {
+        const price = Number(product.price || 0);
+        const quantity = Number(product.quantity || 1);
+
+        return sum + price * quantity;
+      },
+      0
+    );
+
+    /*
+      Envío:
+      - Gratis si es contra entrega
+      - Gratis si subtotal > $100.000
+      - $10.000 en los demás casos
+    */
+
+    const shipping =
+      paymentMethod === "contra_entrega" ||
+      subtotal > 100000
+        ? 0
+        : 10000;
+
+    const total = subtotal + shipping;
+
+    // --------------------------------------------------
+    // HEADERS HUBSPOT
+    // --------------------------------------------------
+
+    const hubspotHeaders = {
+      Authorization: `Bearer ${env.HUBSPOT_TOKEN}`,
+      "Content-Type": "application/json"
+    };
+
+    // ==================================================
+    // BUSCAR CONTACTO POR EMAIL
+    // ==================================================
+
+    const contactSearchResponse = await fetch(
+      `${HUBSPOT_API}/crm/v3/objects/contacts/search`,
       {
         method: "POST",
         headers: hubspotHeaders,
         body: JSON.stringify({
-          properties: contactProperties
+          filterGroups: [
+            {
+              filters: [
+                {
+                  propertyName: "email",
+                  operator: "EQ",
+                  value: customer.email
+                }
+              ]
+            }
+          ],
+          properties: [
+            "firstname",
+            "lastname",
+            "email",
+            "phone",
+            "address",
+            "city"
+          ],
+          limit: 1
         })
       }
     );
 
-    const createContactData =
-      await safeJson(createContactResponse);
+    const contactSearchData =
+      await contactSearchResponse.json();
 
-    if (!createContactResponse.ok) {
-      console.error(
-        "Error creando contacto:",
-        createContactData
+    let contactId = null;
+
+    // ==================================================
+    // CREAR O ACTUALIZAR CONTACTO
+    // ==================================================
+
+    const contactProperties = {
+      firstname: customer.name,
+      lastname: customer.lastName,
+      email: customer.email,
+      phone: customer.phone,
+      address: customer.address || "",
+      city: customer.city || ""
+    };
+
+    if (
+      contactSearchResponse.ok &&
+      contactSearchData.results?.length
+    ) {
+      contactId =
+        contactSearchData.results[0].id;
+
+      const updateContactResponse = await fetch(
+        `${HUBSPOT_API}/crm/v3/objects/contacts/${contactId}`,
+        {
+          method: "PATCH",
+          headers: hubspotHeaders,
+          body: JSON.stringify({
+            properties: contactProperties
+          })
+        }
       );
 
+      if (!updateContactResponse.ok) {
+        console.warn(
+          "No se pudo actualizar el contacto:",
+          await updateContactResponse.text()
+        );
+      }
+    } else {
+      const createContactResponse = await fetch(
+        `${HUBSPOT_API}/crm/v3/objects/contacts`,
+        {
+          method: "POST",
+          headers: hubspotHeaders,
+          body: JSON.stringify({
+            properties: contactProperties
+          })
+        }
+      );
+
+      const createContactData =
+        await createContactResponse.json();
+
+      if (!createContactResponse.ok) {
+        return jsonResponse(
+          {
+            ok: false,
+            error:
+              "No se pudo crear el contacto en HubSpot",
+            details: createContactData
+          },
+          500,
+          corsHeaders
+        );
+      }
+
+      contactId = createContactData.id;
+    }
+
+    // ==================================================
+    // CREAR DEAL
+    // ==================================================
+
+    const description = [
+      `Pedido: ${order.id}`,
+      `Cliente: ${customer.name} ${customer.lastName}`,
+      `Correo: ${customer.email}`,
+      `Teléfono: ${customer.phone}`,
+      `Dirección: ${customer.address || ""}`,
+      `Ciudad: ${customer.city || ""}`,
+      `Departamento: ${customer.department || ""}`,
+      `Método de pago: ${paymentName}`,
+      ``,
+      `Productos:`,
+      productsText,
+      ``,
+      `Subtotal: ${formatPrice(subtotal)}`,
+      `Envío: ${formatPrice(shipping)}`,
+      `Total: ${formatPrice(total)}`,
+      ``,
+      `Notas: ${customer.notes || "Sin notas"}`
+    ].join("\n");
+
+    const dealResponse = await fetch(
+      `${HUBSPOT_API}/crm/v3/objects/deals`,
+      {
+        method: "POST",
+        headers: hubspotHeaders,
+        body: JSON.stringify({
+          properties: {
+            dealname:
+              `Pedido VR Turbolub #${order.id}`,
+
+            pipeline: PIPELINE,
+
+            dealstage: DEAL_STAGE,
+
+            amount: String(total),
+
+            closedate:
+              new Date().toISOString(),
+
+            description
+          }
+        })
+      }
+    );
+
+    const dealData =
+      await dealResponse.json();
+
+    if (!dealResponse.ok) {
       return jsonResponse(
         {
           ok: false,
-          error: "No fue posible crear el contacto.",
-          detail: createContactData
+          error:
+            "No se pudo crear el negocio en HubSpot",
+          details: dealData
         },
         500,
         corsHeaders
       );
     }
 
-    contactId = createContactData.id;
-  }
+    const dealId = dealData.id;
 
-  // ==================================================
-  // CREAR DEAL
-  // ==================================================
+    // ==================================================
+    // ASOCIAR DEAL ↔ CONTACTO
+    // ==================================================
 
-  const description = [
-    `Pedido VR Turbolub: ${order.id}`,
-    ``,
-    `Cliente: ${customerFullName}`,
-    `Teléfono: ${customer.phone}`,
-    `Correo: ${customer.email}`,
-    `Dirección: ${customer.address || "No especificada"}`,
-    `Ciudad: ${customer.city || "No especificada"}`,
-    `Departamento: ${
-      customer.department || "No especificado"
-    }`,
-    ``,
-    `Método de pago: ${paymentLabel}`,
-    ``,
-    `PRODUCTOS`,
-    productsText,
-    ``,
-    `Subtotal: ${formatPrice(subtotal)}`,
-    `Envío: ${formatPrice(shipping)}`,
-    `TOTAL: ${formatPrice(total)}`,
-    ``,
-    `Observaciones: ${customer.notes || "Ninguna"}`
-  ].join("\n");
+    let associationWarning = null;
 
-  const dealResponse = await fetch(
-    `${HUBSPOT_API}/crm/v3/objects/deals`,
-    {
-      method: "POST",
-      headers: hubspotHeaders,
-      body: JSON.stringify({
-        properties: {
-          dealname: `Pedido VR Turbolub #${order.id}`,
-          pipeline: PIPELINE,
-          dealstage: DEAL_STAGE,
-          amount: String(total),
-          closedate: new Date().toISOString(),
-          description
-        }
-      })
-    }
-  );
+    if (contactId && dealId) {
+      const associationResponse =
+        await fetch(
+          `${HUBSPOT_API}/crm/v3/objects/deals/${dealId}/associations/contacts/${contactId}/3`,
+          {
+            method: "PUT",
+            headers: hubspotHeaders
+          }
+        );
 
-  const dealData = await safeJson(dealResponse);
+      if (!associationResponse.ok) {
+        associationWarning =
+          await associationResponse.text();
 
-  if (!dealResponse.ok) {
-    console.error(
-      "Error creando deal:",
-      dealData
-    );
-
-    return jsonResponse(
-      {
-        ok: false,
-        error: "No fue posible crear el negocio en HubSpot.",
-        detail: dealData
-      },
-      500,
-      corsHeaders
-    );
-  }
-
-  const dealId = dealData.id;
-
-  // ==================================================
-  // ASOCIAR DEAL → CONTACTO
-  // ==================================================
-
-  const associationResponse = await fetch(
-    `${HUBSPOT_API}/crm/v3/objects/deals/${dealId}/associations/contacts/${contactId}/3`,
-    {
-      method: "PUT",
-      headers: {
-        Authorization: `Bearer ${env.HUBSPOT_TOKEN}`
+        console.warn(
+          "No se pudo asociar Deal ↔ Contacto:",
+          associationWarning
+        );
       }
     }
-  );
 
-  const associationData =
-    await safeJson(associationResponse);
+    // ==================================================
+    // SUBIR COMPROBANTE A HUBSPOT
+    // ==================================================
 
-  if (!associationResponse.ok) {
-    console.error(
-      "Error asociando deal con contacto:",
-      associationData
-    );
+    let fileId = null;
+    let fileWarning = null;
 
-    return jsonResponse(
-      {
-        ok: false,
-        error:
-          "El negocio se creó, pero no fue posible asociarlo al contacto.",
-        dealId,
-        contactId,
-        detail: associationData
-      },
-      500,
-      corsHeaders
-    );
-  }
+    if (receipt) {
+      try {
+        const receiptBytes =
+          base64ToUint8Array(receipt.data);
 
-  // ==================================================
-  // SUBIR COMPROBANTE
-  // ==================================================
+        const extension =
+          extensionFromMime(receipt.type);
 
-  let fileId = null;
-  let fileWarning = null;
+        const fileName =
+          `comprobante-${order.id}.${extension}`;
 
-  if (receipt) {
-    try {
-      const receiptBytes =
-        base64ToUint8Array(receipt.data);
+        const formData = new FormData();
 
-      const formData = new FormData();
+        const blob = new Blob(
+          [receiptBytes],
+          {
+            type:
+              receipt.type ||
+              "application/octet-stream"
+          }
+        );
 
-      const fileName =
-        receipt.name ||
-        `comprobante-${order.id}.${extensionFromMime(receipt.type)}`;
+        formData.append(
+          "file",
+          blob,
+          fileName
+        );
 
-      const blob = new Blob(
-        [receiptBytes],
-        {
-          type:
-            receipt.type ||
-            "application/octet-stream"
+        formData.append(
+          "options",
+          JSON.stringify({
+            access: "PRIVATE",
+            overwrite: false
+          })
+        );
+
+        formData.append(
+          "folderPath",
+          "/VR Turbolub/Comprobantes"
+        );
+
+        const fileResponse = await fetch(
+          `${HUBSPOT_API}/files/v3/files`,
+          {
+            method: "POST",
+            headers: {
+              Authorization:
+                `Bearer ${env.HUBSPOT_TOKEN}`
+            },
+            body: formData
+          }
+        );
+
+        const fileData =
+          await fileResponse.json();
+
+        if (!fileResponse.ok) {
+          fileWarning =
+            fileData?.message ||
+            "No se pudo subir el comprobante";
+
+          console.warn(
+            "Error subiendo comprobante:",
+            fileData
+          );
+        } else {
+          fileId = fileData.id;
         }
-      );
-
-      formData.append(
-        "file",
-        blob,
-        fileName
-      );
-
-      formData.append(
-        "folderPath",
-        "/VR Turbolub/Comprobantes"
-      );
-
-      formData.append(
-        "options",
-        JSON.stringify({
-          access: "PRIVATE",
-          overwrite: false
-        })
-      );
-
-      const fileResponse = await fetch(
-        `${HUBSPOT_API}/files/v3/files`,
-        {
-          method: "POST",
-          headers: {
-            Authorization:
-              `Bearer ${env.HUBSPOT_TOKEN}`
-          },
-          body: formData
-        }
-      );
-
-      const fileData =
-        await safeJson(fileResponse);
-
-      console.log(
-        "Respuesta HubSpot Files:",
-        {
-          status: fileResponse.status,
-          ok: fileResponse.ok,
-          data: fileData
-        }
-      );
-
-      if (!fileResponse.ok) {
+      } catch (error) {
         fileWarning =
-          "El pedido se creó correctamente, pero el comprobante no pudo subirse a HubSpot.";
+          error?.message ||
+          "Error al subir comprobante";
 
-        console.error(
-          "ERROR REAL DE HUBSPOT FILES:",
-          JSON.stringify(fileData)
-        );
-      } else {
-        fileId = fileData.id;
-
-        console.log(
-          "Comprobante subido correctamente:",
-          fileId
+        console.warn(
+          "Error de comprobante:",
+          error
         );
       }
-
-    } catch (error) {
-      console.error(
-        "Error procesando comprobante:",
-        error
-      );
-
-      fileWarning =
-        "El pedido se creó correctamente, pero hubo un problema procesando el comprobante.";
     }
-  }
 
-  // ==================================================
-  // CREAR NOTA
-  // ==================================================
+    // ==================================================
+    // CREAR NOTA EN HUBSPOT
+    // ==================================================
 
-  let noteId = null;
+    let noteId = null;
 
-  try {
     const noteBody = [
-      `PEDIDO VR TURBOLUB`,
+      `Pedido VR Turbolub #${order.id}`,
       ``,
-      `Pedido: ${order.id}`,
-      `Cliente: ${customerFullName}`,
-      `Método de pago: ${paymentLabel}`,
+      `Cliente: ${customer.name} ${customer.lastName}`,
+      `Correo: ${customer.email}`,
+      `Teléfono: ${customer.phone}`,
+      `Método de pago: ${paymentName}`,
+      ``,
+      `Subtotal: ${formatPrice(subtotal)}`,
+      `Envío: ${formatPrice(shipping)}`,
       `Total: ${formatPrice(total)}`,
       ``,
-      `PRODUCTOS`,
+      `Productos:`,
       productsText,
       ``,
-      `Dirección: ${customer.address || "No especificada"}`,
-      `Ciudad: ${customer.city || "No especificada"}`,
-      `Departamento: ${
-        customer.department || "No especificado"
-      }`,
+      `Notas del cliente:`,
+      customer.notes || "Sin notas",
       ``,
-      `Observaciones: ${
-        customer.notes || "Ninguna"
-      }`,
-      ``,
-      fileWarning
-        ? `ADVERTENCIA: ${fileWarning}`
-        : ""
-    ]
-      .filter(Boolean)
-      .join("\n");
-
-    const noteProperties = {
-      hs_timestamp: new Date().toISOString(),
-      hs_note_body: noteBody
-    };
-
-    if (fileId) {
-      noteProperties.hs_attachment_ids =
-        String(fileId);
-    }
+      fileId
+        ? `Comprobante adjunto: archivo ${fileId}`
+        : "No se adjuntó comprobante."
+    ].join("\n");
 
     const noteResponse = await fetch(
       `${HUBSPOT_API}/crm/v3/objects/notes`,
@@ -707,29 +687,25 @@ async function crearPedido(request, env, corsHeaders) {
         method: "POST",
         headers: hubspotHeaders,
         body: JSON.stringify({
-          properties: noteProperties,
+          properties: {
+            hs_timestamp:
+              new Date().toISOString(),
+
+            hs_note_body: noteBody
+          },
+
           associations: [
             {
               to: {
                 id: dealId
               },
+
               types: [
                 {
                   associationCategory:
                     "HUBSPOT_DEFINED",
+
                   associationTypeId: 214
-                }
-              ]
-            },
-            {
-              to: {
-                id: contactId
-              },
-              types: [
-                {
-                  associationCategory:
-                    "HUBSPOT_DEFINED",
-                  associationTypeId: 202
                 }
               ]
             }
@@ -739,186 +715,317 @@ async function crearPedido(request, env, corsHeaders) {
     );
 
     const noteData =
-      await safeJson(noteResponse);
+      await noteResponse.json();
 
-    if (!noteResponse.ok) {
-      console.error(
-        "Error creando nota:",
+    if (noteResponse.ok) {
+      noteId = noteData.id;
+    } else {
+      console.warn(
+        "No se pudo crear la nota:",
         noteData
       );
-    } else {
-      noteId = noteData.id;
-    }
-  } catch (error) {
-    console.error(
-      "Error creando nota:",
-      error
-    );
-  }
-
-  // ==================================================
-  // NOTIFICACIÓN POR CORREO - RESEND
-  // ==================================================
-
-  let emailId = null;
-  let emailWarning = null;
-
-  try {
-    if (!env.RESEND_API_KEY) {
-      throw new Error(
-        "Falta configurar el secreto RESEND_API_KEY."
-      );
     }
 
-    const notificationEmails =
-      String(env.ORDER_NOTIFICATION_EMAILS || "")
-        .split(",")
-        .map(email => email.trim())
-        .filter(Boolean);
+    // ==================================================
+    // RESPUESTA FINAL
+    // ==================================================
 
-    if (notificationEmails.length === 0) {
-      throw new Error(
-        "No hay correos configurados en ORDER_NOTIFICATION_EMAILS."
-      );
-    }
-
-    const emailHtml =
-      buildOrderEmailHtml({
-        order,
-        customer,
-        customerFullName,
-        paymentLabel,
+    console.log(
+      "Pedido creado correctamente:",
+      {
+        orderId: order.id,
+        contactId,
+        dealId,
+        fileId,
+        noteId,
         subtotal,
         shipping,
-        total,
-        dealId,
-        contactId,
-        fileId
-      });
-
-    const emailResponse = await fetch(
-      "https://api.resend.com/emails",
-      {
-        method: "POST",
-        headers: {
-          Authorization:
-            `Bearer ${env.RESEND_API_KEY}`,
-          "Content-Type":
-            "application/json"
-        },
-        body: JSON.stringify({
-          from:
-            "VR Turbolub <onboarding@resend.dev>",
-          to: notificationEmails,
-          subject:
-            `🛒 Nuevo pedido VR Turbolub #${order.id}`,
-          html: emailHtml
-        })
+        total
       }
     );
 
-    const emailData =
-      await safeJson(emailResponse);
+    return jsonResponse(
+      {
+        ok: true,
+        message:
+          "Pedido creado correctamente.",
 
-    if (!emailResponse.ok) {
-      emailWarning =
-        "El pedido se creó correctamente, pero no se pudo enviar la notificación por correo.";
+        orderId: order.id,
 
-      console.error(
-        "Error enviando correo con Resend:",
-        emailData
-      );
-    } else {
-      emailId =
-        emailData?.id || null;
+        contactId,
 
-      console.log(
-        "Notificación enviada correctamente:",
-        emailId
-      );
-    }
+        dealId,
+
+        fileId,
+
+        noteId,
+
+        subtotal,
+
+        shipping,
+
+        total,
+
+        associationWarning,
+
+        fileWarning
+      },
+      200,
+      corsHeaders
+    );
 
   } catch (error) {
-    emailWarning =
-      "El pedido se creó correctamente, pero hubo un problema enviando la notificación por correo.";
-
     console.error(
-      "Error procesando notificación:",
+      "Error crearPedido:",
       error
     );
+
+    return jsonResponse(
+      {
+        ok: false,
+        error:
+          error?.message ||
+          "Error interno al crear el pedido"
+      },
+      500,
+      corsHeaders
+    );
   }
-
-  // ==================================================
-  // RESPUESTA FINAL
-  // ==================================================
-
-  console.log(
-    "Pedido creado correctamente:",
-    {
-      orderId: order.id,
-      contactId,
-      dealId,
-      fileId,
-      noteId,
-      fileWarning,
-      emailId,
-      emailWarning
-    }
-  );
-
-  return jsonResponse(
-    {
-      ok: true,
-      message: "Pedido creado correctamente.",
-      orderId: order.id,
-      contactId,
-      dealId,
-      fileId,
-      noteId,
-      fileWarning,
-      emailId,
-      emailWarning
-    },
-    200,
-    corsHeaders
-  );
 }
 
 
 // ======================================================
-// HELPERS
+// REGISTRAR LEAD EN GOOGLE SHEETS
+// ======================================================
+
+async function registrarLead(
+  request,
+  env,
+  corsHeaders
+) {
+  try {
+    // --------------------------------------------------
+    // URL GOOGLE SHEETS
+    // --------------------------------------------------
+
+    if (!env.GOOGLE_SHEETS_URL) {
+      return jsonResponse(
+        {
+          ok: false,
+          error:
+            "Falta configurar GOOGLE_SHEETS_URL"
+        },
+        500,
+        corsHeaders
+      );
+    }
+
+    // --------------------------------------------------
+    // LEER BODY
+    // --------------------------------------------------
+
+    const data = await safeJson(request);
+
+    if (!data) {
+      return jsonResponse(
+        {
+          ok: false,
+          error: "JSON inválido"
+        },
+        400,
+        corsHeaders
+      );
+    }
+
+    // --------------------------------------------------
+    // NORMALIZAR DATOS
+    // --------------------------------------------------
+
+    const lead = {
+      nombre: String(
+        data.nombre || ""
+      ).trim(),
+
+      apellidos: String(
+        data.apellidos || ""
+      ).trim(),
+
+      telefono: String(
+        data.telefono || ""
+      ).trim(),
+
+      correo: String(
+        data.correo || ""
+      ).trim(),
+
+      producto: String(
+        data.producto || ""
+      ).trim(),
+
+      mensaje: String(
+        data.mensaje || ""
+      ).trim(),
+
+      estado: String(
+        data.estado || "Nuevo"
+      ).trim()
+    };
+
+    // --------------------------------------------------
+    // VALIDACIONES
+    // --------------------------------------------------
+
+    if (
+      !lead.nombre &&
+      !lead.apellidos &&
+      !lead.correo &&
+      !lead.telefono
+    ) {
+      return jsonResponse(
+        {
+          ok: false,
+          error:
+            "No se recibieron datos suficientes del lead"
+        },
+        400,
+        corsHeaders
+      );
+    }
+
+    // --------------------------------------------------
+    // ENVIAR A GOOGLE APPS SCRIPT
+    // --------------------------------------------------
+
+    const googleResponse = await fetch(
+      env.GOOGLE_SHEETS_URL,
+      {
+        method: "POST",
+
+        headers: {
+          "Content-Type": "application/json"
+        },
+
+        body: JSON.stringify(lead)
+      }
+    );
+
+    const googleText =
+      await googleResponse.text();
+
+    let googleData = null;
+
+    try {
+      googleData =
+        JSON.parse(googleText);
+    } catch {
+      googleData = {
+        raw: googleText
+      };
+    }
+
+    // --------------------------------------------------
+    // ERROR GOOGLE SHEETS
+    // --------------------------------------------------
+
+    if (!googleResponse.ok) {
+      console.error(
+        "Google Sheets respondió con error:",
+        googleData
+      );
+
+      return jsonResponse(
+        {
+          ok: false,
+          error:
+            "Google Sheets no aceptó el lead",
+          details: googleData
+        },
+        502,
+        corsHeaders
+      );
+    }
+
+    // --------------------------------------------------
+    // RESPUESTA EXITOSA
+    // --------------------------------------------------
+
+    console.log(
+      "Lead registrado correctamente:",
+      lead
+    );
+
+    return jsonResponse(
+      {
+        ok: true,
+        message:
+          "Lead registrado correctamente",
+        google: googleData
+      },
+      200,
+      corsHeaders
+    );
+
+  } catch (error) {
+    console.error(
+      "Error registrarLead:",
+      error
+    );
+
+    return jsonResponse(
+      {
+        ok: false,
+        error:
+          error?.message ||
+          "Error interno al registrar el lead"
+      },
+      500,
+      corsHeaders
+    );
+  }
+}
+
+
+// ======================================================
+// RESPUESTA JSON
 // ======================================================
 
 function jsonResponse(
   data,
   status = 200,
-  extraHeaders = {}
+  corsHeaders = {}
 ) {
   return new Response(
     JSON.stringify(data),
     {
       status,
+
       headers: {
         "Content-Type":
-          "application/json; charset=utf-8",
-        ...extraHeaders
+          "application/json; charset=UTF-8",
+
+        ...corsHeaders
       }
     }
   );
 }
 
 
-async function safeJson(response) {
+// ======================================================
+// JSON SEGURO
+// ======================================================
+
+async function safeJson(request) {
   try {
-    return await response.json();
+    return await request.json();
   } catch {
-    return {
-      status: response.status,
-      statusText: response.statusText
-    };
+    return null;
   }
 }
 
+
+// ======================================================
+// FORMATEAR PRECIO
+// ======================================================
 
 function formatPrice(value) {
   return new Intl.NumberFormat(
@@ -928,30 +1035,62 @@ function formatPrice(value) {
       currency: "COP",
       maximumFractionDigits: 0
     }
-  ).format(Number(value) || 0);
+  ).format(Number(value || 0));
 }
 
+
+// ======================================================
+// BASE64 → UINT8ARRAY
+// ======================================================
 
 function base64ToUint8Array(base64) {
-  const binary = atob(base64);
+  try {
+    let cleanBase64 = base64;
 
-  const bytes =
-    new Uint8Array(binary.length);
+    // Si viene como:
+    // data:image/png;base64,XXXX
+    if (
+      cleanBase64.includes(",")
+    ) {
+      cleanBase64 =
+        cleanBase64.split(",")[1];
+    }
 
-  for (
-    let i = 0;
-    i < binary.length;
-    i++
-  ) {
-    bytes[i] =
-      binary.charCodeAt(i);
+    const binaryString =
+      atob(cleanBase64);
+
+    const bytes =
+      new Uint8Array(
+        binaryString.length
+      );
+
+    for (
+      let i = 0;
+      i < binaryString.length;
+      i++
+    ) {
+      bytes[i] =
+        binaryString.charCodeAt(i);
+    }
+
+    return bytes;
+
+  } catch (error) {
+    console.error(
+      "Error convirtiendo base64:",
+      error
+    );
+
+    return null;
   }
-
-  return bytes;
 }
 
 
-function extensionFromMime(type) {
+// ======================================================
+// EXTENSIÓN SEGÚN MIME
+// ======================================================
+
+function extensionFromMime(mime) {
   const extensions = {
     "image/jpeg": "jpg",
     "image/png": "png",
@@ -959,219 +1098,8 @@ function extensionFromMime(type) {
     "application/pdf": "pdf"
   };
 
-  return extensions[type] || "bin";
-}
-
-
-// ======================================================
-// EMAIL HTML
-// ======================================================
-
-function buildOrderEmailHtml({
-  order,
-  customer,
-  customerFullName,
-  paymentLabel,
-  subtotal,
-  shipping,
-  total,
-  dealId,
-  contactId,
-  fileId
-}) {
-  const productsHtml = order.products
-    .map(product => {
-      const name = escapeHtml(
-        product.name || "Producto"
-      );
-
-      const quantity = Number(
-        product.quantity || 1
-      );
-
-      const price = formatPrice(
-        Number(product.price || 0)
-      );
-
-      return `
-        <tr>
-          <td style="padding:10px;border-bottom:1px solid #ddd;">
-            ${name}
-          </td>
-
-          <td style="padding:10px;border-bottom:1px solid #ddd;text-align:center;">
-            ${quantity}
-          </td>
-
-          <td style="padding:10px;border-bottom:1px solid #ddd;text-align:right;">
-            ${price}
-          </td>
-        </tr>
-      `;
-    })
-    .join("");
-
-  return `
-    <div style="font-family:Arial,sans-serif;max-width:700px;margin:auto;color:#222;">
-
-      <div style="background:#0D253F;padding:22px;color:white;">
-        <h1 style="margin:0;">
-          🛒 Nuevo pedido VR Turbolub
-        </h1>
-
-        <p style="margin:8px 0 0;">
-          Pedido #${escapeHtml(String(order.id))}
-        </p>
-      </div>
-
-      <div style="padding:25px;">
-
-        <h2>Cliente</h2>
-
-        <p>
-          <strong>Nombre:</strong>
-          ${escapeHtml(customerFullName)}
-        </p>
-
-        <p>
-          <strong>Correo:</strong>
-          ${escapeHtml(customer.email)}
-        </p>
-
-        <p>
-          <strong>Teléfono:</strong>
-          ${escapeHtml(customer.phone)}
-        </p>
-
-        <p>
-          <strong>Dirección:</strong>
-          ${escapeHtml(
-            customer.address ||
-            "No especificada"
-          )}
-        </p>
-
-        <p>
-          <strong>Ciudad:</strong>
-          ${escapeHtml(
-            customer.city ||
-            "No especificada"
-          )}
-        </p>
-
-        <p>
-          <strong>Departamento:</strong>
-          ${escapeHtml(
-            customer.department ||
-            "No especificado"
-          )}
-        </p>
-
-        <h2>Pago</h2>
-
-        <p>
-          <strong>Método:</strong>
-          ${escapeHtml(paymentLabel)}
-        </p>
-
-        <h2>Productos</h2>
-
-        <table style="width:100%;border-collapse:collapse;">
-
-          <thead>
-            <tr style="background:#f2f2f2;">
-
-              <th style="padding:10px;text-align:left;">
-                Producto
-              </th>
-
-              <th style="padding:10px;text-align:center;">
-                Cant.
-              </th>
-
-              <th style="padding:10px;text-align:right;">
-                Precio
-              </th>
-
-            </tr>
-          </thead>
-
-          <tbody>
-            ${productsHtml}
-          </tbody>
-
-        </table>
-
-        <div style="margin-top:20px;text-align:right;">
-
-          <p>
-            <strong>Subtotal:</strong>
-            ${formatPrice(subtotal)}
-          </p>
-
-          <p>
-            <strong>Envío:</strong>
-            ${formatPrice(shipping)}
-          </p>
-
-          <h2>
-            TOTAL:
-            ${formatPrice(total)}
-          </h2>
-
-        </div>
-
-        <h2>Observaciones</h2>
-
-        <p>
-          ${escapeHtml(
-            customer.notes ||
-            "Ninguna"
-          )}
-        </p>
-
-        <hr>
-
-        <p>
-          <strong>HubSpot Contact ID:</strong>
-          ${escapeHtml(
-            String(contactId || "No disponible")
-          )}
-        </p>
-
-        <p>
-          <strong>HubSpot Deal ID:</strong>
-          ${escapeHtml(
-            String(dealId || "No disponible")
-          )}
-        </p>
-
-        <p>
-          <strong>Comprobante:</strong>
-          ${
-            fileId
-              ? "Guardado en HubSpot"
-              : "No adjuntado"
-          }
-        </p>
-
-      </div>
-
-      <div style="background:#f5f5f5;padding:18px;text-align:center;">
-        <strong>VR Turbolub</strong><br>
-        Lubricantes y soluciones automotrices
-      </div>
-
-    </div>
-  `;
-}
-
-
-function escapeHtml(value) {
-  return String(value ?? "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
+  return (
+    extensions[mime] ||
+    "bin"
+  );
 }
