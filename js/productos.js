@@ -373,7 +373,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
   /* =====================================================
-     TOTAL
+     TOTAL PRODUCTOS
   ===================================================== */
 
   function getCartTotal() {
@@ -391,6 +391,68 @@ document.addEventListener("DOMContentLoaded", () => {
 
       },
       0
+    );
+
+  }
+
+
+  /* =====================================================
+     CALCULAR ENVÍO
+     
+     REGLAS:
+     - Contra entrega = GRATIS
+     - $100.000 o más = GRATIS
+     - Menos de $100.000 = $10.000
+  ===================================================== */
+
+  function getShippingCost() {
+
+    const subtotal =
+      getCartTotal();
+
+    const paymentMethod =
+      checkoutData.paymentMethod;
+
+
+    if (
+      paymentMethod === "contra_entrega"
+    ) {
+
+      return 0;
+
+    }
+
+
+    if (
+      subtotal >= 100000
+    ) {
+
+      return 0;
+
+    }
+
+
+    return 10000;
+
+  }
+
+
+  /* =====================================================
+     TOTAL FINAL
+  ===================================================== */
+
+  function getFinalTotal() {
+
+    const subtotal =
+      getCartTotal();
+
+    const shipping =
+      getShippingCost();
+
+
+    return (
+      subtotal +
+      shipping
     );
 
   }
@@ -1314,6 +1376,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return (
       icons[method] ||
       "💰"
+
     );
 
   }
@@ -1839,6 +1902,19 @@ document.addEventListener("DOMContentLoaded", () => {
       checkoutData.customer;
 
 
+    const subtotal =
+      getCartTotal();
+
+
+    const shipping =
+      getShippingCost();
+
+
+    const total =
+      subtotal +
+      shipping;
+
+
     if (customerSummary) {
 
       customerSummary.innerHTML = `
@@ -1966,15 +2042,87 @@ document.addEventListener("DOMContentLoaded", () => {
 
       });
 
+
+      /* ================================================
+         SUBTOTAL
+      ================================================ */
+
+      const subtotalRow =
+        document.createElement(
+          "div"
+        );
+
+
+      subtotalRow.className =
+        "checkout-product-row";
+
+
+      subtotalRow.innerHTML = `
+
+        <div>
+          <strong>
+            Subtotal
+          </strong>
+        </div>
+
+        <strong>
+          ${formatPrice(subtotal)}
+        </strong>
+
+      `;
+
+
+      orderSummaryItems.appendChild(
+        subtotalRow
+      );
+
+
+      /* ================================================
+         ENVÍO
+      ================================================ */
+
+      const shippingRow =
+        document.createElement(
+          "div"
+        );
+
+
+      shippingRow.className =
+        "checkout-product-row";
+
+
+      const shippingText =
+        shipping === 0
+          ? "GRATIS"
+          : formatPrice(shipping);
+
+
+      shippingRow.innerHTML = `
+
+        <div>
+          <strong>
+            Envío
+          </strong>
+        </div>
+
+        <strong>
+          ${shippingText}
+        </strong>
+
+      `;
+
+
+      orderSummaryItems.appendChild(
+        shippingRow
+      );
+
     }
 
 
     if (checkoutTotal) {
 
       checkoutTotal.textContent =
-        formatPrice(
-          getCartTotal()
-        );
+        formatPrice(total);
 
     }
 
@@ -2152,6 +2300,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
           /* =============================================
+             CALCULAR VALORES
+          ============================================= */
+
+          const subtotal =
+            getCartTotal();
+
+
+          const shipping =
+            getShippingCost();
+
+
+          const total =
+            subtotal +
+            shipping;
+
+
+          /* =============================================
              OBJETO PEDIDO
           ============================================= */
 
@@ -2192,8 +2357,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
               })),
 
+            subtotal:
+              subtotal,
+
+            shipping:
+              shipping,
+
             total:
-              getCartTotal(),
+              total,
 
             status:
               "pendiente"
@@ -2316,6 +2487,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             let message =
               "Tu pedido fue registrado correctamente.";
+
 
             if (
               result.fileWarning
