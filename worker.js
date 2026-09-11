@@ -1582,8 +1582,6 @@ async function registrarLead(
     );
   }
 }
-
-
 // ======================================================
 // INTELIGENCIA ARTIFICIAL - GEMINI
 // ======================================================
@@ -1837,10 +1835,11 @@ Aceite Moto 4T Terpel Celerity 20W-50 Titanio
 Precio:
 $68.000 COP.
 
-Respuesta recomendada:
+Puedes responder:
 
-"Para tu moto 4T tenemos el Aceite Moto 4T Terpel
-Celerity 20W-50 Titanio por $68.000 COP.
+"Para tu Pulsar NS 200 modelo 2024, 4T, tenemos
+el Aceite Moto 4T Terpel Celerity 20W-50 Titanio
+por $68.000 COP.
 
 Para confirmar que la viscosidad sea la indicada
 específicamente para tu moto, te recomiendo verificar
@@ -1856,15 +1855,7 @@ La única viscosidad disponible en el catálogo es:
 
 20W-50
 
-No menciones:
-
-10W-40
-10W-50
-15W-40
-15W-50
-20W-40
-
-ni ninguna otra.
+No menciones otras viscosidades.
 
 ==================================================
 MOTOR 2T
@@ -1987,7 +1978,7 @@ Puedes decir:
 para continuar con tu compra."
 
 ==================================================
-ESTILO DE RESPUESTA
+ESTILO
 ==================================================
 
 Responde siempre en español.
@@ -2179,9 +2170,7 @@ Si corresponde, termina con una pregunta sencilla.
                   contents,
 
                   generationConfig: {
-                    temperature: 0.2,
-                    maxOutputTokens: 700,
-                    responseMimeType: "text/plain"
+                    maxOutputTokens: 700
                   }
 
                 }),
