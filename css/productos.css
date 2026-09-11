@@ -1195,10 +1195,10 @@ footer {
     grid-template-columns: 1fr;
   }
 
-  .product-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
+.product-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
   .advisor-container {
     flex-direction: column;
 
@@ -1224,7 +1224,6 @@ footer {
 
   .hero-buttons {
     flex-direction: column;
-
     align-items: stretch;
   }
 
@@ -1247,15 +1246,16 @@ footer {
 
   .process-step {
     border-right: none;
-
     border-bottom: 1px solid var(--borde);
   }
+
   .process-step:last-child {
     border-bottom: none;
   }
 
   .product-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
   }
 
   .product-image {
@@ -1264,7 +1264,6 @@ footer {
 
   .footer-container {
     grid-template-columns: 1fr;
-
     gap: 35px;
   }
 
@@ -2865,23 +2864,61 @@ footer {
 
 @media (max-width: 480px) {
 
+  .top-bar {
+    height: 34px;
+    font-size: 9px;
+  }
+
   .top-bar-left {
     display: none;
   }
 
   .top-bar-middle {
-    width: 75%;
+    width: 82%;
+    min-width: 0;
   }
 
   .top-bar-right {
-    width: 25%;
+    width: 18%;
+    padding-right: 8px;
+    justify-content: center;
+  }
+
+  .top-bar-right a {
+    font-size: 9px;
+    white-space: nowrap;
+  }
+
+  .marquee {
+    width: 100%;
   }
 
   .marquee-item {
-    padding: 0 25px;
+    min-width: 100%;
+    padding: 0 18px;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
+  .marque {
+    padding: 0 2px;
+  }
+
+  .marque button {
+    width: 18px;
+    height: 18px;
+    font-size: 9px;
+  }
+
+  .main-header {
+    top: 34px;
+  }
 }
+
+
+
 /* Barra social */
 /* Estilos para la barra social */
 .social-bar {

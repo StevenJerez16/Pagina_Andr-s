@@ -1224,7 +1224,6 @@ footer {
 
   .hero-buttons {
     flex-direction: column;
-
     align-items: stretch;
   }
 
@@ -1247,7 +1246,6 @@ footer {
 
   .process-step {
     border-right: none;
-
     border-bottom: 1px solid var(--borde);
   }
 
@@ -1256,7 +1254,8 @@ footer {
   }
 
   .product-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
   }
 
   .product-image {
@@ -1265,7 +1264,6 @@ footer {
 
   .footer-container {
     grid-template-columns: 1fr;
-
     gap: 35px;
   }
 
