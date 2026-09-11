@@ -776,22 +776,31 @@ async function crearPedido(request, env, corsHeaders) {
         : "No se adjuntó comprobante."
     ].join("\n");
 
-    const noteResponse =
-      await fetch(
-        `${HUBSPOT_API}/crm/v3/objects/notes`,
-        {
-          method: "POST",
-          headers: hubspotHeaders,
-          body: JSON.stringify({
-            properties: {
-              hs_timestamp:
-                new Date().toISOString(),
+const noteResponse =
+  await fetch(
+    `${HUBSPOT_API}/crm/v3/objects/notes`,
+    {
+      method: "POST",
+      headers: hubspotHeaders,
+      body: JSON.stringify({
+      properties: {
+  hs_timestamp:
+    new Date().toISOString(),
 
-              hs_note_body:
-                noteBody
-            },
+  hs_note_body:
+    noteBody,
 
-            associations: [
+  ...(fileId
+    ? {
+        hs_attachment_ids:
+          String(fileId)
+      }
+    : {})
+},
+
+
+        associations: [
+
               {
                 to: {
                   id: dealId
