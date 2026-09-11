@@ -1329,199 +1329,344 @@ async function registrarLead(
       );
     }
 
-    // ==================================================
-    // 3. NOTIFICACIÓN POR RESEND
-    // ==================================================
+// ============================================================
+// NOTIFICACIONES POR CORREO - PEDIDO
+// ============================================================
 
-    let emailResult = {
-      ok: false,
-      skipped: true
-    };
+let emailResult = {
+  ok: false,
+  skipped: true,
+  internal: null,
+  customer: null
+};
 
-    if (
-      env.RESEND_API_KEY &&
-      env.ORDER_NOTIFICATION_EMAILS
-    ) {
+if (env.RESEND_API_KEY) {
+  try {
+    // --------------------------------------------------------
+    // DESTINATARIOS INTERNOS
+    // --------------------------------------------------------
 
-      try {
+    const internalRecipients = String(
+      env.ORDER_NOTIFICATION_EMAILS || ""
+    )
+      .split(",")
+      .map(email => email.trim())
+      .filter(Boolean);
 
-        const recipients =
-          String(
-            env.ORDER_NOTIFICATION_EMAILS
-          )
-            .split(",")
-            .map(
-              email =>
-                email.trim()
-            )
-            .filter(Boolean);
+    // --------------------------------------------------------
+    // CORREO DEL CLIENTE
+    // --------------------------------------------------------
 
-        if (recipients.length) {
+    const customerEmail = String(
+      customer.email || ""
+    ).trim();
 
-          const resendResponse =
-            await fetch(
-              "https://api.resend.com/emails",
-              {
-                method: "POST",
+    // --------------------------------------------------------
+    // PRODUCTOS
+    // --------------------------------------------------------
 
-                headers: {
-                  Authorization:
-                    `Bearer ${env.RESEND_API_KEY}`,
+    const productsHtml = order.products
+      .map(product => {
+        const name = escapeHtml(
+          product.name || "Producto"
+        );
 
-                  "Content-Type":
-                    "application/json"
-                },
+        const quantity = Number(
+          product.quantity || 1
+        );
 
-                body:
-                  JSON.stringify({
-                    from:
-                      "VR Turbolub <onboarding@resend.dev>",
+        const price = Number(
+          product.price || 0
+        );
 
-                    to:
-                      recipients,
+        const subtotalProduct =
+          price * quantity;
 
-                    subject:
-                      `Nuevo lead - VR Turbolub - ${lead.nombre}`,
+        return `
+          <tr>
+            <td style="padding:8px;border-bottom:1px solid #ddd;">
+              ${name}
+            </td>
+            <td style="padding:8px;border-bottom:1px solid #ddd;text-align:center;">
+              ${quantity}
+            </td>
+            <td style="padding:8px;border-bottom:1px solid #ddd;text-align:right;">
+              ${formatPrice(price)}
+            </td>
+            <td style="padding:8px;border-bottom:1px solid #ddd;text-align:right;">
+              ${formatPrice(subtotalProduct)}
+            </td>
+          </tr>
+        `;
+      })
+      .join("");
 
-                    html: `
-                      <div style="font-family:Arial,sans-serif;line-height:1.6;">
+    // --------------------------------------------------------
+    // CONTENIDO DEL PEDIDO
+    // --------------------------------------------------------
 
-                        <h2>
-                          Nuevo lead recibido - VR Turbolub
-                        </h2>
+    const orderHtml = `
+      <div style="font-family:Arial,sans-serif;max-width:700px;margin:auto;">
 
-                        <p>
-                          Se recibió una nueva solicitud desde la página web.
-                        </p>
+        <h2 style="color:#0D253F;">
+          Pedido VR Turbolub #${escapeHtml(order.id)}
+        </h2>
 
-                        <hr>
+        <h3>Datos del cliente</h3>
 
-                        <h3>
-                          Datos del cliente
-                        </h3>
+        <p>
+          <strong>Nombre:</strong>
+          ${escapeHtml(customer.firstname || "")}
+          ${escapeHtml(customer.lastname || "")}
+        </p>
 
-                        <p>
-                          <strong>Nombre:</strong>
-                          ${escapeHtml(lead.nombre)}
-                          ${escapeHtml(lead.apellidos)}
-                        </p>
+        <p>
+          <strong>Correo:</strong>
+          ${escapeHtml(customer.email || "")}
+        </p>
 
-                        <p>
-                          <strong>Correo:</strong>
-                          ${escapeHtml(lead.correo)}
-                        </p>
+        <p>
+          <strong>Teléfono:</strong>
+          ${escapeHtml(customer.phone || "")}
+        </p>
 
-                        <p>
-                          <strong>Teléfono:</strong>
-                          ${escapeHtml(lead.telefono)}
-                        </p>
+        <p>
+          <strong>Dirección:</strong>
+          ${escapeHtml(customer.address || "")}
+        </p>
 
-                        <p>
-                          <strong>Producto o servicio:</strong>
-                          ${escapeHtml(
-                            lead.producto ||
-                            "No especificado"
-                          )}
-                        </p>
+        <p>
+          <strong>Ciudad:</strong>
+          ${escapeHtml(customer.city || "")}
+        </p>
 
-                        <p>
-                          <strong>Mensaje:</strong><br>
-                          ${escapeHtml(
-                            lead.mensaje ||
-                            "Sin mensaje"
-                          )}
-                        </p>
+        <h3>Pedido</h3>
 
-                        <hr>
+        <table
+          style="
+            width:100%;
+            border-collapse:collapse;
+            border:1px solid #ddd;
+          "
+        >
+          <thead>
+            <tr>
+              <th style="padding:8px;text-align:left;">
+                Producto
+              </th>
 
-                        <p>
-                          <strong>Estado:</strong>
-                          ${escapeHtml(
-                            lead.estado
-                          )}
-                        </p>
+              <th style="padding:8px;text-align:center;">
+                Cantidad
+              </th>
 
-                        <p>
-                          <strong>HubSpot Contact ID:</strong>
-                          ${escapeHtml(
-                            contactId
-                          )}
-                        </p>
+              <th style="padding:8px;text-align:right;">
+                Precio
+              </th>
 
-                      </div>
-                    `
-                  })
-              }
-            );
+              <th style="padding:8px;text-align:right;">
+                Subtotal
+              </th>
+            </tr>
+          </thead>
 
-          const resendText =
-            await resendResponse.text();
+          <tbody>
+            ${productsHtml}
+          </tbody>
+        </table>
 
-          let resendData = null;
+        <h3>Resumen</h3>
 
-          try {
+        <p>
+          <strong>Método de pago:</strong>
+          ${escapeHtml(paymentName)}
+        </p>
 
-            resendData =
-              JSON.parse(
-                resendText
-              );
+        <p>
+          <strong>Subtotal:</strong>
+          ${formatPrice(subtotal)}
+        </p>
 
-          } catch {
+        <p>
+          <strong>Envío:</strong>
+          ${formatPrice(shipping)}
+        </p>
 
-            resendData = {
-              raw:
-                resendText
-            };
-          }
+        <p style="font-size:20px;">
+          <strong>Total:</strong>
+          ${formatPrice(total)}
+        </p>
 
-          if (resendResponse.ok) {
-
-            emailResult = {
-              ok: true,
-
-              data:
-                resendData
-            };
-
-          } else {
-
-            emailResult = {
-              ok: false,
-
-              error:
-                resendData
-            };
-
-            console.error(
-              "Resend respondió con error:",
-              resendData
-            );
-          }
+        ${
+          order.notes
+            ? `
+              <p>
+                <strong>Observaciones:</strong>
+                ${escapeHtml(order.notes)}
+              </p>
+            `
+            : ""
         }
 
-      } catch (error) {
+      </div>
+    `;
 
-        emailResult = {
-          ok: false,
+    // ========================================================
+    // 1. NOTIFICACIÓN INTERNA
+    // ========================================================
 
-          error:
-            error?.message ||
-            "Error enviando notificación"
-        };
+    if (internalRecipients.length > 0) {
 
-        console.error(
-          "Error Resend:",
-          error
-        );
-      }
+      const internalResponse = await fetch(
+        "https://api.resend.com/emails",
+        {
+          method: "POST",
 
-    } else {
+          headers: {
+            "Authorization":
+              `Bearer ${env.RESEND_API_KEY}`,
 
-      console.warn(
-        "No se enviará correo porque falta RESEND_API_KEY u ORDER_NOTIFICATION_EMAILS"
+            "Content-Type":
+              "application/json"
+          },
+
+          body: JSON.stringify({
+            from:
+              "VR Turbolub <onboarding@resend.dev>",
+
+            to:
+              internalRecipients,
+
+            subject:
+              `Nuevo pedido - VR Turbolub #${order.id}`,
+
+            html:
+              orderHtml
+          })
+        }
+      );
+
+      const internalData =
+        await safeJson(internalResponse);
+
+      emailResult.internal = {
+        ok: internalResponse.ok,
+        data: internalData
+      };
+
+      console.log(
+        "Correo interno:",
+        emailResult.internal
       );
     }
 
+    // ========================================================
+    // 2. CONFIRMACIÓN AL CLIENTE
+    // ========================================================
+
+    if (customerEmail) {
+
+      const customerResponse = await fetch(
+        "https://api.resend.com/emails",
+        {
+          method: "POST",
+
+          headers: {
+            "Authorization":
+              `Bearer ${env.RESEND_API_KEY}`,
+
+            "Content-Type":
+              "application/json"
+          },
+
+          body: JSON.stringify({
+            from:
+              "VR Turbolub <onboarding@resend.dev>",
+
+            to: [
+              customerEmail
+            ],
+
+            subject:
+              `Confirmación de pedido VR Turbolub #${order.id}`,
+
+            html: `
+              <div
+                style="
+                  font-family:Arial,sans-serif;
+                  max-width:700px;
+                  margin:auto;
+                "
+              >
+
+                <h2 style="color:#0D253F;">
+                  ¡Gracias por tu pedido!
+                </h2>
+
+                <p>
+                  Hola
+                  ${escapeHtml(customer.firstname || "")},
+                </p>
+
+                <p>
+                  Hemos recibido correctamente tu pedido
+                  <strong>#${escapeHtml(order.id)}</strong>.
+                </p>
+
+                ${orderHtml}
+
+                <p>
+                  Nuestro equipo de VR Turbolub
+                  revisará tu pedido y continuará con el proceso.
+                </p>
+
+                <p>
+                  Gracias por confiar en VR Turbolub.
+                </p>
+
+              </div>
+            `
+          })
+        }
+      );
+
+      const customerData =
+        await safeJson(customerResponse);
+
+      emailResult.customer = {
+        ok: customerResponse.ok,
+        data: customerData
+      };
+
+      console.log(
+        "Correo al cliente:",
+        emailResult.customer
+      );
+    }
+
+    emailResult.ok =
+      Boolean(
+        emailResult.internal?.ok ||
+        emailResult.customer?.ok
+      );
+
+    emailResult.skipped = false;
+
+  } catch (error) {
+
+    console.error(
+      "Error enviando correos del pedido:",
+      error
+    );
+
+    emailResult = {
+      ok: false,
+      skipped: false,
+      internal: null,
+      customer: null,
+      error: error.message
+    };
+  }
+}
     // ==================================================
     // RESPUESTA FINAL
     // ==================================================
