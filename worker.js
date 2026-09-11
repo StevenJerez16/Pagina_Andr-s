@@ -153,12 +153,14 @@ export default {
   }
 };
 
+
 // ======================================================
 // CREAR PEDIDO
 // ======================================================
 
 async function crearPedido(request, env, corsHeaders) {
   try {
+
     // --------------------------------------------------
     // TOKEN HUBSPOT
     // --------------------------------------------------
@@ -303,6 +305,7 @@ async function crearPedido(request, env, corsHeaders) {
     }
 
     if (receipt) {
+
       if (!receipt.data) {
         return jsonResponse(
           {
@@ -329,9 +332,8 @@ async function crearPedido(request, env, corsHeaders) {
         );
       }
 
-      const receiptBytes = base64ToUint8Array(
-        receipt.data
-      );
+      const receiptBytes =
+        base64ToUint8Array(receipt.data);
 
       if (!receiptBytes) {
         return jsonResponse(
@@ -366,13 +368,15 @@ async function crearPedido(request, env, corsHeaders) {
 
     const productsText = order.products
       .map((product) => {
-        const name = product.name || "Producto";
-        const quantity = Number(
-          product.quantity || 1
-        );
-        const price = Number(
-          product.price || 0
-        );
+
+        const name =
+          product.name || "Producto";
+
+        const quantity =
+          Number(product.quantity || 1);
+
+        const price =
+          Number(product.price || 0);
 
         return `${name} x${quantity} - ${formatPrice(price)}`;
       })
@@ -384,15 +388,15 @@ async function crearPedido(request, env, corsHeaders) {
 
     const subtotal = order.products.reduce(
       (sum, product) => {
-        const price = Number(
-          product.price || 0
-        );
 
-        const quantity = Number(
-          product.quantity || 1
-        );
+        const price =
+          Number(product.price || 0);
+
+        const quantity =
+          Number(product.quantity || 1);
 
         return sum + price * quantity;
+
       },
       0
     );
@@ -410,7 +414,8 @@ async function crearPedido(request, env, corsHeaders) {
         ? 0
         : 10000;
 
-    const total = subtotal + shipping;
+    const total =
+      subtotal + shipping;
 
     // --------------------------------------------------
     // HEADERS HUBSPOT
@@ -426,35 +431,36 @@ async function crearPedido(request, env, corsHeaders) {
     // BUSCAR CONTACTO POR EMAIL
     // ==================================================
 
-    const contactSearchResponse = await fetch(
-      `${HUBSPOT_API}/crm/v3/objects/contacts/search`,
-      {
-        method: "POST",
-        headers: hubspotHeaders,
-        body: JSON.stringify({
-          filterGroups: [
-            {
-              filters: [
-                {
-                  propertyName: "email",
-                  operator: "EQ",
-                  value: customer.email
-                }
-              ]
-            }
-          ],
-          properties: [
-            "firstname",
-            "lastname",
-            "email",
-            "phone",
-            "address",
-            "city"
-          ],
-          limit: 1
-        })
-      }
-    );
+    const contactSearchResponse =
+      await fetch(
+        `${HUBSPOT_API}/crm/v3/objects/contacts/search`,
+        {
+          method: "POST",
+          headers: hubspotHeaders,
+          body: JSON.stringify({
+            filterGroups: [
+              {
+                filters: [
+                  {
+                    propertyName: "email",
+                    operator: "EQ",
+                    value: customer.email
+                  }
+                ]
+              }
+            ],
+            properties: [
+              "firstname",
+              "lastname",
+              "email",
+              "phone",
+              "address",
+              "city"
+            ],
+            limit: 1
+          })
+        }
+      );
 
     const contactSearchData =
       await contactSearchResponse.json();
@@ -478,6 +484,7 @@ async function crearPedido(request, env, corsHeaders) {
       contactSearchResponse.ok &&
       contactSearchData.results?.length
     ) {
+
       contactId =
         contactSearchData.results[0].id;
 
@@ -494,12 +501,15 @@ async function crearPedido(request, env, corsHeaders) {
         );
 
       if (!updateContactResponse.ok) {
+
         console.warn(
           "No se pudo actualizar el contacto:",
           await updateContactResponse.text()
         );
       }
+
     } else {
+
       const createContactResponse =
         await fetch(
           `${HUBSPOT_API}/crm/v3/objects/contacts`,
@@ -516,6 +526,7 @@ async function crearPedido(request, env, corsHeaders) {
         await createContactResponse.json();
 
       if (!createContactResponse.ok) {
+
         return jsonResponse(
           {
             ok: false,
@@ -528,7 +539,8 @@ async function crearPedido(request, env, corsHeaders) {
         );
       }
 
-      contactId = createContactData.id;
+      contactId =
+        createContactData.id;
     }
 
     // ==================================================
@@ -555,30 +567,40 @@ async function crearPedido(request, env, corsHeaders) {
       `Notas: ${customer.notes || "Sin notas"}`
     ].join("\n");
 
-    const dealResponse = await fetch(
-      `${HUBSPOT_API}/crm/v3/objects/deals`,
-      {
-        method: "POST",
-        headers: hubspotHeaders,
-        body: JSON.stringify({
-          properties: {
-            dealname:
-              `Pedido VR Turbolub #${order.id}`,
-            pipeline: PIPELINE,
-            dealstage: DEAL_STAGE,
-            amount: String(total),
-            closedate:
-              new Date().toISOString(),
-            description
-          }
-        })
-      }
-    );
+    const dealResponse =
+      await fetch(
+        `${HUBSPOT_API}/crm/v3/objects/deals`,
+        {
+          method: "POST",
+          headers: hubspotHeaders,
+          body: JSON.stringify({
+            properties: {
+              dealname:
+                `Pedido VR Turbolub #${order.id}`,
+
+              pipeline:
+                PIPELINE,
+
+              dealstage:
+                DEAL_STAGE,
+
+              amount:
+                String(total),
+
+              closedate:
+                new Date().toISOString(),
+
+              description
+            }
+          })
+        }
+      );
 
     const dealData =
       await dealResponse.json();
 
     if (!dealResponse.ok) {
+
       return jsonResponse(
         {
           ok: false,
@@ -591,7 +613,8 @@ async function crearPedido(request, env, corsHeaders) {
       );
     }
 
-    const dealId = dealData.id;
+    const dealId =
+      dealData.id;
 
     // ==================================================
     // ASOCIAR DEAL ↔ CONTACTO
@@ -600,6 +623,7 @@ async function crearPedido(request, env, corsHeaders) {
     let associationWarning = null;
 
     if (contactId && dealId) {
+
       const associationResponse =
         await fetch(
           `${HUBSPOT_API}/crm/v3/objects/deals/${dealId}/associations/contacts/${contactId}/3`,
@@ -610,6 +634,7 @@ async function crearPedido(request, env, corsHeaders) {
         );
 
       if (!associationResponse.ok) {
+
         associationWarning =
           await associationResponse.text();
 
@@ -628,7 +653,9 @@ async function crearPedido(request, env, corsHeaders) {
     let fileWarning = null;
 
     if (receipt) {
+
       try {
+
         const receiptBytes =
           base64ToUint8Array(
             receipt.data
@@ -642,16 +669,18 @@ async function crearPedido(request, env, corsHeaders) {
         const fileName =
           `comprobante-${order.id}.${extension}`;
 
-        const formData = new FormData();
+        const formData =
+          new FormData();
 
-        const blob = new Blob(
-          [receiptBytes],
-          {
-            type:
-              receipt.type ||
-              "application/octet-stream"
-          }
-        );
+        const blob =
+          new Blob(
+            [receiptBytes],
+            {
+              type:
+                receipt.type ||
+                "application/octet-stream"
+            }
+          );
 
         formData.append(
           "file",
@@ -689,6 +718,7 @@ async function crearPedido(request, env, corsHeaders) {
           await fileResponse.json();
 
         if (!fileResponse.ok) {
+
           fileWarning =
             fileData?.message ||
             "No se pudo subir el comprobante";
@@ -697,10 +727,15 @@ async function crearPedido(request, env, corsHeaders) {
             "Error subiendo comprobante:",
             fileData
           );
+
         } else {
-          fileId = fileData.id;
+
+          fileId =
+            fileData.id;
         }
+
       } catch (error) {
+
         fileWarning =
           error?.message ||
           "Error al subir comprobante";
@@ -741,41 +776,52 @@ async function crearPedido(request, env, corsHeaders) {
         : "No se adjuntó comprobante."
     ].join("\n");
 
-    const noteResponse = await fetch(
-      `${HUBSPOT_API}/crm/v3/objects/notes`,
-      {
-        method: "POST",
-        headers: hubspotHeaders,
-        body: JSON.stringify({
-          properties: {
-            hs_timestamp:
-              new Date().toISOString(),
-            hs_note_body: noteBody
-          },
-          associations: [
-            {
-              to: {
-                id: dealId
-              },
-              types: [
-                {
-                  associationCategory:
-                    "HUBSPOT_DEFINED",
-                  associationTypeId: 214
-                }
-              ]
-            }
-          ]
-        })
-      }
-    );
+    const noteResponse =
+      await fetch(
+        `${HUBSPOT_API}/crm/v3/objects/notes`,
+        {
+          method: "POST",
+          headers: hubspotHeaders,
+          body: JSON.stringify({
+            properties: {
+              hs_timestamp:
+                new Date().toISOString(),
+
+              hs_note_body:
+                noteBody
+            },
+
+            associations: [
+              {
+                to: {
+                  id: dealId
+                },
+
+                types: [
+                  {
+                    associationCategory:
+                      "HUBSPOT_DEFINED",
+
+                    associationTypeId:
+                      214
+                  }
+                ]
+              }
+            ]
+          })
+        }
+      );
 
     const noteData =
       await noteResponse.json();
 
     if (noteResponse.ok) {
-      noteId = noteData.id;
+
+      noteId =
+        noteData.id;
+
     } else {
+
       console.warn(
         "No se pudo crear la nota:",
         noteData
@@ -803,17 +849,29 @@ async function crearPedido(request, env, corsHeaders) {
     return jsonResponse(
       {
         ok: true,
+
         message:
           "Pedido creado correctamente.",
-        orderId: order.id,
+
+        orderId:
+          order.id,
+
         contactId,
+
         dealId,
+
         fileId,
+
         noteId,
+
         subtotal,
+
         shipping,
+
         total,
+
         associationWarning,
+
         fileWarning
       },
       200,
@@ -821,6 +879,7 @@ async function crearPedido(request, env, corsHeaders) {
     );
 
   } catch (error) {
+
     console.error(
       "Error crearPedido:",
       error
@@ -839,6 +898,7 @@ async function crearPedido(request, env, corsHeaders) {
   }
 }
 
+
 // ======================================================
 // REGISTRAR LEAD
 // HUBSPOT + GOOGLE SHEETS + RESEND
@@ -850,11 +910,13 @@ async function registrarLead(
   corsHeaders
 ) {
   try {
+
     // --------------------------------------------------
     // VALIDAR CONFIGURACIÓN
     // --------------------------------------------------
 
     if (!env.HUBSPOT_TOKEN) {
+
       return jsonResponse(
         {
           ok: false,
@@ -867,6 +929,7 @@ async function registrarLead(
     }
 
     if (!env.GOOGLE_SHEETS_URL) {
+
       return jsonResponse(
         {
           ok: false,
@@ -886,6 +949,7 @@ async function registrarLead(
       await safeJson(request);
 
     if (!data) {
+
       return jsonResponse(
         {
           ok: false,
@@ -901,6 +965,7 @@ async function registrarLead(
     // --------------------------------------------------
 
     const lead = {
+
       nombre:
         String(data.nombre || "").trim(),
 
@@ -922,7 +987,9 @@ async function registrarLead(
         String(data.mensaje || "").trim(),
 
       estado:
-        String(data.estado || "Nuevo").trim()
+        String(
+          data.estado || "Nuevo"
+        ).trim()
     };
 
     // --------------------------------------------------
@@ -934,6 +1001,7 @@ async function registrarLead(
       !lead.correo ||
       !lead.telefono
     ) {
+
       return jsonResponse(
         {
           ok: false,
@@ -950,9 +1018,12 @@ async function registrarLead(
     // ==================================================
 
     const hubspotHeaders = {
+
       Authorization:
         `Bearer ${env.HUBSPOT_TOKEN}`,
-      "Content-Type": "application/json"
+
+      "Content-Type":
+        "application/json"
     };
 
     let contactId = null;
@@ -967,28 +1038,39 @@ async function registrarLead(
         `${HUBSPOT_API}/crm/v3/objects/contacts/search`,
         {
           method: "POST",
-          headers: hubspotHeaders,
-          body: JSON.stringify({
-            filterGroups: [
-              {
-                filters: [
-                  {
-                    propertyName: "email",
-                    operator: "EQ",
-                    value: lead.correo
-                  }
-                ]
-              }
-            ],
-            properties: [
-              "firstname",
-              "lastname",
-              "email",
-              "phone",
-              "producto_o_servicio_de_interes"
-            ],
-            limit: 1
-          })
+
+          headers:
+            hubspotHeaders,
+
+          body:
+            JSON.stringify({
+              filterGroups: [
+                {
+                  filters: [
+                    {
+                      propertyName:
+                        "email",
+
+                      operator:
+                        "EQ",
+
+                      value:
+                        lead.correo
+                    }
+                  ]
+                }
+              ],
+
+              properties: [
+                "firstname",
+                "lastname",
+                "email",
+                "phone",
+                "producto_o_servicio_de_interes"
+              ],
+
+              limit: 1
+            })
         }
       );
 
@@ -998,13 +1080,17 @@ async function registrarLead(
     let contactSearchData = null;
 
     try {
+
       contactSearchData =
         JSON.parse(
           contactSearchText
         );
+
     } catch {
+
       contactSearchData = {
-        raw: contactSearchText
+        raw:
+          contactSearchText
       };
     }
 
@@ -1013,10 +1099,19 @@ async function registrarLead(
     // --------------------------------------------------
 
     const contactProperties = {
-      firstname: lead.nombre,
-      lastname: lead.apellidos,
-      email: lead.correo,
-      phone: lead.telefono,
+
+      firstname:
+        lead.nombre,
+
+      lastname:
+        lead.apellidos,
+
+      email:
+        lead.correo,
+
+      phone:
+        lead.telefono,
+
       producto_o_servicio_de_interes:
         lead.producto
     };
@@ -1029,6 +1124,7 @@ async function registrarLead(
       contactSearchResponse.ok &&
       contactSearchData.results?.length
     ) {
+
       contactId =
         contactSearchData.results[0].id;
 
@@ -1040,15 +1136,20 @@ async function registrarLead(
           `${HUBSPOT_API}/crm/v3/objects/contacts/${contactId}`,
           {
             method: "PATCH",
-            headers: hubspotHeaders,
-            body: JSON.stringify({
-              properties:
-                contactProperties
-            })
+
+            headers:
+              hubspotHeaders,
+
+            body:
+              JSON.stringify({
+                properties:
+                  contactProperties
+              })
           }
         );
 
       if (!updateContactResponse.ok) {
+
         const updateError =
           await updateContactResponse.text();
 
@@ -1060,9 +1161,12 @@ async function registrarLead(
         return jsonResponse(
           {
             ok: false,
+
             error:
               "No se pudo actualizar el contacto en HubSpot",
-            details: updateError
+
+            details:
+              updateError
           },
           502,
           corsHeaders
@@ -1080,11 +1184,15 @@ async function registrarLead(
           `${HUBSPOT_API}/crm/v3/objects/contacts`,
           {
             method: "POST",
-            headers: hubspotHeaders,
-            body: JSON.stringify({
-              properties:
-                contactProperties
-            })
+
+            headers:
+              hubspotHeaders,
+
+            body:
+              JSON.stringify({
+                properties:
+                  contactProperties
+              })
           }
         );
 
@@ -1094,17 +1202,22 @@ async function registrarLead(
       let createContactData = null;
 
       try {
+
         createContactData =
           JSON.parse(
             createContactText
           );
+
       } catch {
+
         createContactData = {
-          raw: createContactText
+          raw:
+            createContactText
         };
       }
 
       if (!createContactResponse.ok) {
+
         console.error(
           "Error creando contacto HubSpot:",
           createContactData
@@ -1113,8 +1226,10 @@ async function registrarLead(
         return jsonResponse(
           {
             ok: false,
+
             error:
               "No se pudo crear el contacto en HubSpot",
+
             details:
               createContactData
           },
@@ -1126,7 +1241,8 @@ async function registrarLead(
       contactId =
         createContactData.id;
 
-      hubspotAction = "creado";
+      hubspotAction =
+        "creado";
     }
 
     // ==================================================
@@ -1140,10 +1256,12 @@ async function registrarLead(
         env.GOOGLE_SHEETS_URL,
         {
           method: "POST",
+
           headers: {
             "Content-Type":
               "application/json"
           },
+
           body:
             JSON.stringify(lead)
         }
@@ -1153,17 +1271,22 @@ async function registrarLead(
       await googleResponse.text();
 
     try {
+
       googleData =
         JSON.parse(
           googleText
         );
+
     } catch {
+
       googleData = {
-        raw: googleText
+        raw:
+          googleText
       };
     }
 
     if (!googleResponse.ok) {
+
       console.error(
         "Google Sheets respondió con error:",
         googleData
@@ -1172,16 +1295,22 @@ async function registrarLead(
       return jsonResponse(
         {
           ok: false,
+
           error:
             "El contacto se guardó en HubSpot, pero Google Sheets no aceptó el lead",
+
           contactId,
+
           hubspot: {
             ok: true,
+
             action:
               hubspotAction
           },
+
           googleSheets: {
             ok: false,
+
             details:
               googleData
           }
@@ -1204,7 +1333,9 @@ async function registrarLead(
       env.RESEND_API_KEY &&
       env.ORDER_NOTIFICATION_EMAILS
     ) {
+
       try {
+
         const recipients =
           String(
             env.ORDER_NOTIFICATION_EMAILS
@@ -1217,89 +1348,100 @@ async function registrarLead(
             .filter(Boolean);
 
         if (recipients.length) {
+
           const resendResponse =
             await fetch(
               "https://api.resend.com/emails",
               {
                 method: "POST",
+
                 headers: {
                   Authorization:
                     `Bearer ${env.RESEND_API_KEY}`,
+
                   "Content-Type":
                     "application/json"
                 },
-                body: JSON.stringify({
-                  from:
-                    "VR Turbolub <onboarding@resend.dev>",
 
-                  to:
-                    recipients,
+                body:
+                  JSON.stringify({
+                    from:
+                      "VR Turbolub <onboarding@resend.dev>",
 
-                  subject:
-                    `Nuevo lead - VR Turbolub - ${lead.nombre}`,
+                    to:
+                      recipients,
 
-                  html: `
-                    <div style="font-family:Arial,sans-serif;line-height:1.6;">
-                      <h2>Nuevo lead recibido - VR Turbolub</h2>
+                    subject:
+                      `Nuevo lead - VR Turbolub - ${lead.nombre}`,
 
-                      <p>
-                        Se recibió una nueva solicitud desde la página web.
-                      </p>
+                    html: `
+                      <div style="font-family:Arial,sans-serif;line-height:1.6;">
 
-                      <hr>
+                        <h2>
+                          Nuevo lead recibido - VR Turbolub
+                        </h2>
 
-                      <h3>Datos del cliente</h3>
+                        <p>
+                          Se recibió una nueva solicitud desde la página web.
+                        </p>
 
-                      <p>
-                        <strong>Nombre:</strong>
-                        ${escapeHtml(lead.nombre)}
-                        ${escapeHtml(lead.apellidos)}
-                      </p>
+                        <hr>
 
-                      <p>
-                        <strong>Correo:</strong>
-                        ${escapeHtml(lead.correo)}
-                      </p>
+                        <h3>
+                          Datos del cliente
+                        </h3>
 
-                      <p>
-                        <strong>Teléfono:</strong>
-                        ${escapeHtml(lead.telefono)}
-                      </p>
+                        <p>
+                          <strong>Nombre:</strong>
+                          ${escapeHtml(lead.nombre)}
+                          ${escapeHtml(lead.apellidos)}
+                        </p>
 
-                      <p>
-                        <strong>Producto o servicio:</strong>
-                        ${escapeHtml(
-                          lead.producto ||
-                          "No especificado"
-                        )}
-                      </p>
+                        <p>
+                          <strong>Correo:</strong>
+                          ${escapeHtml(lead.correo)}
+                        </p>
 
-                      <p>
-                        <strong>Mensaje:</strong><br>
-                        ${escapeHtml(
-                          lead.mensaje ||
-                          "Sin mensaje"
-                        )}
-                      </p>
+                        <p>
+                          <strong>Teléfono:</strong>
+                          ${escapeHtml(lead.telefono)}
+                        </p>
 
-                      <hr>
+                        <p>
+                          <strong>Producto o servicio:</strong>
+                          ${escapeHtml(
+                            lead.producto ||
+                            "No especificado"
+                          )}
+                        </p>
 
-                      <p>
-                        <strong>Estado:</strong>
-                        ${escapeHtml(
-                          lead.estado
-                        )}
-                      </p>
+                        <p>
+                          <strong>Mensaje:</strong><br>
+                          ${escapeHtml(
+                            lead.mensaje ||
+                            "Sin mensaje"
+                          )}
+                        </p>
 
-                      <p>
-                        <strong>HubSpot Contact ID:</strong>
-                        ${escapeHtml(
-                          contactId
-                        )}
-                      </p>
-                    </div>
-                  `
-                })
+                        <hr>
+
+                        <p>
+                          <strong>Estado:</strong>
+                          ${escapeHtml(
+                            lead.estado
+                          )}
+                        </p>
+
+                        <p>
+                          <strong>HubSpot Contact ID:</strong>
+                          ${escapeHtml(
+                            contactId
+                          )}
+                        </p>
+
+                      </div>
+                    `
+                  })
               }
             );
 
@@ -1309,25 +1451,34 @@ async function registrarLead(
           let resendData = null;
 
           try {
+
             resendData =
               JSON.parse(
                 resendText
               );
+
           } catch {
+
             resendData = {
-              raw: resendText
+              raw:
+                resendText
             };
           }
 
           if (resendResponse.ok) {
+
             emailResult = {
               ok: true,
+
               data:
                 resendData
             };
+
           } else {
+
             emailResult = {
               ok: false,
+
               error:
                 resendData
             };
@@ -1340,8 +1491,10 @@ async function registrarLead(
         }
 
       } catch (error) {
+
         emailResult = {
           ok: false,
+
           error:
             error?.message ||
             "Error enviando notificación"
@@ -1354,6 +1507,7 @@ async function registrarLead(
       }
 
     } else {
+
       console.warn(
         "No se enviará correo porque falta RESEND_API_KEY u ORDER_NOTIFICATION_EMAILS"
       );
@@ -1367,9 +1521,12 @@ async function registrarLead(
       "Lead procesado correctamente:",
       {
         contactId,
+
         hubspotAction,
+
         googleSheets:
           googleData,
+
         email:
           emailResult
       }
@@ -1378,6 +1535,7 @@ async function registrarLead(
     return jsonResponse(
       {
         ok: true,
+
         message:
           "Lead registrado correctamente",
 
@@ -1385,12 +1543,14 @@ async function registrarLead(
 
         hubspot: {
           ok: true,
+
           action:
             hubspotAction
         },
 
         googleSheets: {
           ok: true,
+
           data:
             googleData
         },
@@ -1403,6 +1563,7 @@ async function registrarLead(
     );
 
   } catch (error) {
+
     console.error(
       "Error registrarLead:",
       error
@@ -1411,6 +1572,7 @@ async function registrarLead(
     return jsonResponse(
       {
         ok: false,
+
         error:
           error?.message ||
           "Error interno al registrar el lead"
@@ -1420,6 +1582,7 @@ async function registrarLead(
     );
   }
 }
+
 
 // ======================================================
 // INTELIGENCIA ARTIFICIAL - GEMINI
@@ -1431,14 +1594,17 @@ async function responderIA(
   corsHeaders
 ) {
   try {
+
     // --------------------------------------------------
     // VALIDAR GEMINI
     // --------------------------------------------------
 
     if (!env.GEMINI_API_KEY) {
+
       return jsonResponse(
         {
           ok: false,
+
           error:
             "Falta configurar GEMINI_API_KEY"
         },
@@ -1455,6 +1621,7 @@ async function responderIA(
       await safeJson(request);
 
     if (!data) {
+
       return jsonResponse(
         {
           ok: false,
@@ -1474,9 +1641,11 @@ async function responderIA(
       ).trim();
 
     if (!mensaje) {
+
       return jsonResponse(
         {
           ok: false,
+
           error:
             "Falta el mensaje"
         },
@@ -1558,11 +1727,28 @@ con VR Turbolub.
 
     const contents = [];
 
+    /*
+      Tomamos solamente los últimos 10 mensajes
+      para mantener las solicitudes ligeras.
+    */
+
     const limitedHistory =
       history.slice(-10);
 
     for (const item of limitedHistory) {
+
+      /*
+        Frontend:
+        user      → usuario
+        assistant → modelo
+
+        Gemini:
+        user      → usuario
+        model     → asistente
+      */
+
       const role =
+        item?.role === "assistant" ||
         item?.role === "model"
           ? "model"
           : "user";
@@ -1578,173 +1764,267 @@ con VR Turbolub.
         continue;
       }
 
+      /*
+        Evitamos enviar nuevamente el mensaje actual
+        si ya viene dentro del historial.
+      */
+
+      if (text === mensaje && role === "user") {
+        continue;
+      }
+
       contents.push({
         role,
+
         parts: [
           {
-            text: text.slice(0, 4000)
+            text:
+              text.slice(0, 4000)
           }
         ]
       });
     }
 
+    // --------------------------------------------------
+    // MENSAJE ACTUAL
+    // --------------------------------------------------
+
+    /*
+      Siempre agregamos el mensaje actual una sola vez.
+    */
+
     contents.push({
       role: "user",
+
       parts: [
         {
-          text: mensaje.slice(0, 4000)
+          text:
+            mensaje.slice(0, 4000)
         }
       ]
     });
 
     // --------------------------------------------------
-// LLAMAR A GEMINI CON REINTENTOS
-// --------------------------------------------------
+    // LLAMAR A GEMINI
+    // CON TIMEOUT Y REINTENTOS
+    // --------------------------------------------------
 
-let geminiResponse = null;
-let geminiText = "";
-let geminiData = null;
+    let geminiResponse = null;
+    let geminiText = "";
+    let geminiData = null;
 
-const MAX_RETRIES = 3;
+    const MAX_RETRIES = 2;
+    const GEMINI_TIMEOUT = 15000;
 
-for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    for (
+      let attempt = 1;
+      attempt <= MAX_RETRIES;
+      attempt++
+    ) {
 
-  try {
+      const controller =
+        new AbortController();
 
-    geminiResponse = await fetch(
-      GEMINI_API_URL,
-      {
-        method: "POST",
-
-        headers: {
-          "Content-Type": "application/json",
-
-          "x-goog-api-key":
-            env.GEMINI_API_KEY
-        },
-
-        body: JSON.stringify({
-          system_instruction: {
-            parts: [
-              {
-                text: systemPrompt
-              }
-            ]
+      const timeout =
+        setTimeout(
+          () => {
+            controller.abort();
           },
+          GEMINI_TIMEOUT
+        );
 
-          contents,
+      try {
 
-          generationConfig: {
-            temperature: 0.4,
-            maxOutputTokens: 500
-          }
-        })
+        geminiResponse =
+          await fetch(
+            GEMINI_API_URL,
+            {
+              method: "POST",
+
+              headers: {
+                "Content-Type":
+                  "application/json",
+
+                "x-goog-api-key":
+                  env.GEMINI_API_KEY
+              },
+
+              body:
+                JSON.stringify({
+                  system_instruction: {
+                    parts: [
+                      {
+                        text:
+                          systemPrompt
+                      }
+                    ]
+                  },
+
+                  contents,
+
+                  generationConfig: {
+                    temperature: 0.4,
+
+                    maxOutputTokens: 500
+                  }
+                }),
+
+              signal:
+                controller.signal
+            }
+          );
+
+        clearTimeout(timeout);
+
+        geminiText =
+          await geminiResponse.text();
+
+        try {
+
+          geminiData =
+            JSON.parse(
+              geminiText
+            );
+
+        } catch {
+
+          geminiData = {
+            raw:
+              geminiText
+          };
+        }
+
+        // --------------------------------------------------
+        // RESPUESTA CORRECTA
+        // --------------------------------------------------
+
+        if (geminiResponse.ok) {
+          break;
+        }
+
+        // --------------------------------------------------
+        // ERRORES REINTENTABLES
+        // --------------------------------------------------
+
+        const retryable =
+          geminiResponse.status === 429 ||
+          geminiResponse.status === 500 ||
+          geminiResponse.status === 502 ||
+          geminiResponse.status === 503 ||
+          geminiResponse.status === 504;
+
+        if (!retryable) {
+          break;
+        }
+
+        console.warn(
+          `Gemini intento ${attempt}/${MAX_RETRIES} falló con ${geminiResponse.status}`
+        );
+
+        if (attempt < MAX_RETRIES) {
+
+          await new Promise(
+            resolve =>
+              setTimeout(
+                resolve,
+                1000
+              )
+          );
+        }
+
+      } catch (error) {
+
+        clearTimeout(timeout);
+
+        if (
+          error?.name ===
+          "AbortError"
+        ) {
+
+          console.warn(
+            `Gemini superó los ${GEMINI_TIMEOUT / 1000} segundos en el intento ${attempt}/${MAX_RETRIES}`
+          );
+
+        } else {
+
+          console.error(
+            `Error conectando con Gemini en intento ${attempt}/${MAX_RETRIES}:`,
+            error
+          );
+        }
+
+        if (
+          attempt <
+          MAX_RETRIES
+        ) {
+
+          await new Promise(
+            resolve =>
+              setTimeout(
+                resolve,
+                1000
+              )
+          );
+        }
       }
-    );
-
-    geminiText =
-      await geminiResponse.text();
-
-    try {
-      geminiData =
-        JSON.parse(geminiText);
-    } catch {
-      geminiData = {
-        raw: geminiText
-      };
     }
 
-    // ----------------------------------------------
-    // SI FUNCIONÓ, SALIMOS DEL BUCLE
-    // ----------------------------------------------
+    // ==================================================
+    // ERROR GEMINI
+    // ==================================================
 
-    if (geminiResponse.ok) {
-      break;
-    }
-
-    // ----------------------------------------------
-    // SOLO REINTENTAR ERRORES TEMPORALES
-    // ----------------------------------------------
-
-    const retryable =
-      geminiResponse.status === 429 ||
-      geminiResponse.status === 500 ||
-      geminiResponse.status === 502 ||
-      geminiResponse.status === 503 ||
-      geminiResponse.status === 504;
-
-    if (!retryable) {
-      break;
-    }
-
-    console.warn(
-      `Gemini intento ${attempt}/${MAX_RETRIES} falló con ${geminiResponse.status}`
-    );
-
-    if (attempt < MAX_RETRIES) {
-
-      // Espera progresiva:
-      // 1.5 s → 3 s → 6 s
-
-      const delay =
-        1500 * Math.pow(2, attempt - 1);
-
-      await new Promise(
-        resolve =>
-          setTimeout(resolve, delay)
-      );
-    }
-
-  } catch (error) {
-
-    console.error(
-      `Error de conexión con Gemini en intento ${attempt}:`,
-      error
-    );
-
-    if (attempt < MAX_RETRIES) {
-
-      const delay =
-        1500 * Math.pow(2, attempt - 1);
-
-      await new Promise(
-        resolve =>
-          setTimeout(resolve, delay)
-      );
-
-    } else {
+    if (
+      !geminiResponse ||
+      !geminiResponse.ok
+    ) {
 
       return jsonResponse(
         {
           ok: false,
+
           error:
-            "No se pudo conectar con Gemini",
+            "Gemini no pudo generar una respuesta",
+
           details:
-            error?.message ||
-            "Error de conexión"
+            geminiData || {
+              raw:
+                geminiText
+            }
         },
         502,
         corsHeaders
       );
     }
-  }
-}
 
-    // --------------------------------------------------
-    // ERROR GEMINI
-    // --------------------------------------------------
+    // ==================================================
+    // EXTRAER TEXTO
+    // ==================================================
 
-    if (!geminiResponse.ok) {
+    const respuesta =
+      geminiData
+        ?.candidates?.[0]
+        ?.content?.parts
+        ?.map(
+          part =>
+            part?.text || ""
+        )
+        .join("")
+        .trim();
+
+    if (!respuesta) {
+
       console.error(
-        "Gemini respondió con error:",
+        "Gemini respondió sin texto:",
         geminiData
       );
 
       return jsonResponse(
         {
           ok: false,
+
           error:
-            "Gemini no pudo generar una respuesta",
+            "Gemini no devolvió una respuesta válida",
+
           details:
             geminiData
         },
@@ -1753,57 +2033,29 @@ for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
       );
     }
 
-    // --------------------------------------------------
-    // EXTRAER TEXTO
-    // --------------------------------------------------
-
-    const respuesta =
-      geminiData
-        ?.candidates?.[0]
-        ?.content?.parts
-        ?.map(
-          part =>
-            part.text || ""
-        )
-        .join("")
-        .trim();
-
-    if (!respuesta) {
-      console.error(
-        "Gemini no devolvió texto:",
-        geminiData
-      );
-
-      return jsonResponse(
-        {
-          ok: false,
-          error:
-            "Gemini no devolvió una respuesta válida"
-        },
-        502,
-        corsHeaders
-      );
-    }
-
-    // --------------------------------------------------
-    // RESPUESTA FINAL
-    // --------------------------------------------------
+    // ==================================================
+    // RESPUESTA FINAL IA
+    // ==================================================
 
     console.log(
-      "Respuesta Gemini generada correctamente."
+      "VR Turbolub IA respondió correctamente"
     );
 
     return jsonResponse(
       {
         ok: true,
+
         respuesta,
-        reply: respuesta
+
+        response:
+          respuesta
       },
       200,
       corsHeaders
     );
 
   } catch (error) {
+
     console.error(
       "Error responderIA:",
       error
@@ -1812,6 +2064,7 @@ for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
     return jsonResponse(
       {
         ok: false,
+
         error:
           error?.message ||
           "Error interno de inteligencia artificial"
@@ -1822,18 +2075,41 @@ for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
   }
 }
 
+
 // ======================================================
 // ESCAPAR HTML
 // ======================================================
 
 function escapeHtml(value) {
+
   return String(value || "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
+
+    .replace(
+      /&/g,
+      "&amp;"
+    )
+
+    .replace(
+      /</g,
+      "&lt;"
+    )
+
+    .replace(
+      />/g,
+      "&gt;"
+    )
+
+    .replace(
+      /"/g,
+      "&quot;"
+    )
+
+    .replace(
+      /'/g,
+      "&#039;"
+    );
 }
+
 
 // ======================================================
 // RESPUESTA JSON
@@ -1844,62 +2120,86 @@ function jsonResponse(
   status = 200,
   corsHeaders = {}
 ) {
+
   return new Response(
     JSON.stringify(data),
     {
       status,
+
       headers: {
         "Content-Type":
           "application/json; charset=UTF-8",
+
         ...corsHeaders
       }
     }
   );
 }
 
+
 // ======================================================
 // JSON SEGURO
 // ======================================================
 
 async function safeJson(request) {
+
   try {
+
     return await request.json();
+
   } catch {
+
     return null;
   }
 }
+
 
 // ======================================================
 // FORMATEAR PRECIO
 // ======================================================
 
 function formatPrice(value) {
+
   return new Intl.NumberFormat(
     "es-CO",
     {
-      style: "currency",
-      currency: "COP",
-      maximumFractionDigits: 0
+      style:
+        "currency",
+
+      currency:
+        "COP",
+
+      maximumFractionDigits:
+        0
     }
   ).format(
     Number(value || 0)
   );
 }
 
+
 // ======================================================
 // BASE64 → UINT8ARRAY
 // ======================================================
 
-function base64ToUint8Array(base64) {
-  try {
-    let cleanBase64 = base64;
+function base64ToUint8Array(
+  base64
+) {
 
-    // Si viene como:
-    // data:image/png;base64,XXXX
+  try {
+
+    let cleanBase64 =
+      base64;
+
+    /*
+      Si viene como:
+      data:image/png;base64,XXXX
+    */
 
     if (
       cleanBase64.includes(",")
     ) {
+
       cleanBase64 =
         cleanBase64.split(",")[1];
     }
@@ -1917,6 +2217,7 @@ function base64ToUint8Array(base64) {
       i < binaryString.length;
       i++
     ) {
+
       bytes[i] =
         binaryString.charCodeAt(i);
     }
@@ -1924,6 +2225,7 @@ function base64ToUint8Array(base64) {
     return bytes;
 
   } catch (error) {
+
     console.error(
       "Error convirtiendo base64:",
       error
@@ -1933,16 +2235,28 @@ function base64ToUint8Array(base64) {
   }
 }
 
+
 // ======================================================
 // EXTENSIÓN SEGÚN MIME
 // ======================================================
 
-function extensionFromMime(mime) {
+function extensionFromMime(
+  mime
+) {
+
   const extensions = {
-    "image/jpeg": "jpg",
-    "image/png": "png",
-    "image/webp": "webp",
-    "application/pdf": "pdf"
+
+    "image/jpeg":
+      "jpg",
+
+    "image/png":
+      "png",
+
+    "image/webp":
+      "webp",
+
+    "application/pdf":
+      "pdf"
   };
 
   return (
