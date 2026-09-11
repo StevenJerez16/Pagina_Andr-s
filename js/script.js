@@ -220,7 +220,7 @@ async function sendQuestion(question = null) {
     try {
 
 const response = await fetch(
-    "https://vrturbolub.jerezsteven85.workers.dev/ia",
+    "https://vrturbolub.vrturbolubmiappworkersdev.workers.dev/ia",
     {
         method: "POST",
         headers: {
