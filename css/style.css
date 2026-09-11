@@ -1613,3 +1613,865 @@ footer {
   }
 
 }
+
+
+/* =========================================
+   TOP BAR VR TURBOLUB
+========================================= */
+
+.top-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 40px;
+
+  background: #000;
+  color: #fff;
+
+  display: flex;
+  align-items: center;
+
+  z-index: 2000;
+
+  font-family: "Open Sans", sans-serif;
+  font-size: 12px;
+
+  transition: top 0.3s ease;
+}
+
+
+/* IZQUIERDA */
+
+.top-bar-left {
+  width: 20%;
+
+  display: flex;
+  align-items: center;
+
+  padding-left: 30px;
+
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+
+
+/* CENTRO */
+
+.top-bar-middle {
+  width: 60%;
+  height: 100%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  overflow: hidden;
+}
+
+
+.marquee {
+  width: 100%;
+  height: 100%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  position: relative;
+  overflow: hidden;
+}
+
+
+.marquee-content {
+  height: 100%;
+
+  display: flex;
+
+  transition: transform 0.45s ease-in-out;
+
+  will-change: transform;
+}
+
+
+.marquee-item {
+  min-width: 100%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  white-space: nowrap;
+
+  font-weight: 500;
+  letter-spacing: 0.2px;
+}
+
+
+/* BOTONES */
+
+.marque {
+  position: absolute;
+
+  inset: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 0 8px;
+
+  pointer-events: none;
+}
+
+
+.marque button {
+  width: 24px;
+  height: 24px;
+
+  border: none;
+  border-radius: 50%;
+
+  background: rgba(255,255,255,0.08);
+  color: #fff;
+
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  opacity: 0;
+
+  transition:
+    opacity 0.2s ease,
+    background 0.2s ease;
+}
+
+
+.marquee:hover .marque button {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+
+.marque button:hover {
+  background: #ff6600;
+}
+
+
+/* DERECHA */
+
+.top-bar-right {
+  width: 20%;
+
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+
+  padding-right: 30px;
+}
+
+
+.top-bar-right a {
+  color: #fff;
+
+  text-decoration: none;
+
+  margin-left: 20px;
+
+  transition: color 0.2s ease;
+}
+
+
+.top-bar-right a:hover {
+  color: #ff6600;
+}
+
+
+/* =========================================
+   HEADER CON TOP BAR
+========================================= */
+
+.main-header {
+  top: 40px;
+
+  transition: top 0.3s ease;
+}
+
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width: 768px) {
+
+  .top-bar {
+    height: 36px;
+    font-size: 10px;
+  }
+
+  .top-bar-left {
+    width: 20%;
+    padding-left: 12px;
+  }
+
+  .top-bar-middle {
+    width: 60%;
+  }
+
+  .top-bar-right {
+    width: 20%;
+    padding-right: 12px;
+  }
+
+  .top-bar-right a:first-child {
+    display: none;
+  }
+
+  .top-bar-right a {
+    margin-left: 0;
+    white-space: nowrap;
+  }
+
+  .main-header {
+    top: 36px;
+  }
+
+  .marque {
+    padding: 0 3px;
+  }
+
+  .marque button {
+    width: 20px;
+    height: 20px;
+    font-size: 10px;
+  }
+
+}
+
+
+@media (max-width: 480px) {
+
+  .top-bar-left {
+    display: none;
+  }
+
+  .top-bar-middle {
+    width: 75%;
+  }
+
+  .top-bar-right {
+    width: 25%;
+  }
+
+  .marquee-item {
+    padding: 0 25px;
+  }
+
+}
+
+
+
+/* =========================================================
+   VR TURBOLUB IA — CHAT FLOTANTE
+   ========================================================= */
+
+/* ---------- BOTÓN FLOTANTE ---------- */
+.vr-ia-floating {
+  position: fixed;
+  right: 24px;
+  bottom: 92px;
+
+  width: 58px;
+  height: 58px;
+
+  border: 1px solid rgba(255, 106, 0, 0.8);
+  border-radius: 50%;
+
+  background:
+    radial-gradient(circle at 35% 30%, #ff9b3d 0%, #ff6500 45%, #d94300 100%);
+
+  color: #fff;
+
+  font-size: 25px;
+  line-height: 1;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 8px 25px rgba(0, 0, 0, 0.45),
+    0 0 0 4px rgba(255, 106, 0, 0.08);
+
+  z-index: 9998;
+
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+
+.vr-ia-floating:hover {
+  transform: translateY(-4px) scale(1.05);
+
+  box-shadow:
+    0 12px 30px rgba(0, 0, 0, 0.55),
+    0 0 22px rgba(255, 106, 0, 0.25);
+}
+
+
+/* =========================================================
+   MINI CHAT
+   ========================================================= */
+
+.vr-ia-mini {
+  position: fixed;
+
+  right: 24px;
+  bottom: 160px;
+
+  width: 350px;
+  max-width: calc(100vw - 32px);
+
+  /* NUEVO */
+  max-height: calc(100dvh - 180px);
+
+  display: flex;
+  flex-direction: column;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(13, 18, 25, 0.98),
+      rgba(5, 9, 14, 0.98)
+    );
+
+  border: 1px solid rgba(255, 106, 0, 0.65);
+
+  border-radius: 18px;
+
+  overflow: hidden;
+
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.65),
+    0 0 35px rgba(255, 106, 0, 0.08);
+
+  z-index: 9999;
+
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(15px) scale(0.97);
+
+  transition:
+    opacity 0.25s ease,
+    transform 0.25s ease,
+    visibility 0.25s ease;
+}
+
+
+
+/* Cuando JS agregue .active */
+
+.vr-ia-mini.active {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0) scale(1);
+}
+
+
+/* =========================================================
+   HEADER DEL CHAT
+   ========================================================= */
+
+.vr-ia-mini-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 16px 16px 14px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #101923,
+      #080c11
+    );
+
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+
+.vr-ia-mini-title {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+
+  min-width: 0;
+}
+
+
+.vr-ia-mini-logo {
+  width: 38px;
+  height: 38px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background:
+    linear-gradient(135deg, #ff8a22, #e84e00);
+
+  color: #fff;
+
+  font-family: "Montserrat", sans-serif;
+  font-size: 12px;
+  font-weight: 800;
+
+  box-shadow:
+    0 0 18px rgba(255, 106, 0, 0.18);
+}
+
+
+.vr-ia-mini-title strong {
+  display: block;
+
+  color: #f5f7fa;
+
+  font-family: "Montserrat", sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+
+  line-height: 1.25;
+}
+
+
+.vr-ia-mini-title > div:last-child > span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  margin-top: 3px;
+
+  color: #8f9aa7;
+
+  font-family: "Open Sans", sans-serif;
+  font-size: 11px;
+}
+
+
+.vr-status {
+  display: inline-block;
+
+  width: 7px;
+  height: 7px;
+
+  border-radius: 50%;
+
+  background: #36d46d;
+
+  box-shadow:
+    0 0 8px rgba(54, 212, 109, 0.7);
+}
+
+
+.vr-ia-mini-close {
+  width: 30px;
+  height: 30px;
+
+  border: 0;
+  border-radius: 8px;
+
+  background: transparent;
+
+  color: #7f8a96;
+
+  font-size: 17px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+
+.vr-ia-mini-close:hover {
+  background: rgba(255, 255, 255, 0.07);
+  color: #fff;
+}
+
+
+/* =========================================================
+   MENSAJES
+   ========================================================= */
+
+.vr-ia-mini-messages {
+  flex: 1;
+  min-height: 0;
+
+  overflow-y: auto;
+
+  padding: 18px 16px 14px;
+
+  background:
+    radial-gradient(
+      circle at top right,
+      rgba(20, 56, 91, 0.22),
+      transparent 55%
+    );
+
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 106, 0, 0.45) transparent;
+}
+.vr-ia-mini-messages::-webkit-scrollbar {
+  width: 5px;
+}
+
+.vr-ia-mini-messages::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.vr-ia-mini-messages::-webkit-scrollbar-thumb {
+  background: rgba(255, 106, 0, 0.45);
+  border-radius: 10px;
+}
+
+.vr-ia-mini-messages::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 106, 0, 0.7);
+}
+
+
+.vr-ia-mini .vr-message {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+
+  margin: 0 0 12px;
+}
+
+.vr-ia-mini .vr-message:last-child {
+  margin-bottom: 0;
+}
+
+
+.vr-ia-mini .vr-message-icon {
+  width: 30px;
+  height: 30px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: #ff6500;
+
+  color: #fff;
+
+  font-family: "Montserrat", sans-serif;
+  font-size: 9px;
+  font-weight: 800;
+}
+
+
+.vr-ia-mini .vr-message-content {
+  max-width: 245px;
+
+  padding: 12px 14px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #172e49,
+      #10243a
+    );
+
+  border: 1px solid rgba(76, 142, 204, 0.15);
+
+  border-radius: 5px 14px 14px 14px;
+
+  box-shadow:
+    0 5px 18px rgba(0, 0, 0, 0.18);
+}
+
+
+.vr-ia-mini .vr-message-content p {
+  margin: 0;
+
+  color: #e7edf4;
+
+  font-family: "Open Sans", sans-serif;
+  font-size: 13px;
+
+  line-height: 1.55;
+}
+
+
+.vr-ia-mini .vr-message-content p + p {
+  margin-top: 6px;
+}
+
+
+/* =========================================================
+   OPCIONES RÁPIDAS
+   ========================================================= */
+
+.vr-ia-mini-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+
+  padding: 6px 16px 14px;
+}
+
+
+.vr-ia-mini-options button {
+  appearance: none;
+  -webkit-appearance: none;
+
+  border: 1px solid rgba(69, 126, 181, 0.35);
+  border-radius: 8px;
+
+  padding: 8px 10px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #142b42,
+      #0f2134
+    );
+
+  color: #dce8f3;
+
+  font-family: "Open Sans", sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+
+  line-height: 1.2;
+
+  cursor: pointer;
+
+  box-shadow: none;
+
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease,
+    color 0.2s ease;
+}
+
+
+.vr-ia-mini-options button:hover {
+  transform: translateY(-1px);
+
+  background:
+    linear-gradient(
+      135deg,
+      #1b3b5b,
+      #15314c
+    );
+
+  border-color: rgba(255, 106, 0, 0.55);
+
+  color: #fff;
+}
+
+
+/* =========================================================
+   INPUT
+   ========================================================= */
+
+.vr-ia-mini-input {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  margin: 0 16px 12px;
+  padding: 5px;
+
+  background: #080d13;
+
+  border: 1px solid rgba(255, 255, 255, 0.1);
+
+  border-radius: 10px;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+
+.vr-ia-mini-input:focus-within {
+  border-color: rgba(255, 106, 0, 0.55);
+
+  box-shadow:
+    0 0 0 3px rgba(255, 106, 0, 0.07);
+}
+
+
+.vr-ia-mini-input input {
+  min-width: 0;
+  flex: 1;
+
+  height: 34px;
+
+  padding: 0 9px;
+
+  border: 0;
+  outline: 0;
+
+  background: transparent;
+
+  color: #e9eef4;
+
+  font-family: "Open Sans", sans-serif;
+  font-size: 12px;
+}
+
+
+.vr-ia-mini-input input::placeholder {
+  color: #687482;
+}
+
+
+.vr-ia-mini-input input:focus {
+  outline: none;
+}
+
+
+.vr-ia-mini-input button {
+  width: 34px;
+  height: 34px;
+
+  flex-shrink: 0;
+
+  border: 0;
+  border-radius: 8px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #ff861f,
+      #e84f00
+    );
+
+  color: #fff;
+
+  font-size: 15px;
+  font-weight: 700;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.2s ease,
+    filter 0.2s ease;
+}
+
+
+.vr-ia-mini-input button:hover {
+  transform: scale(1.05);
+  filter: brightness(1.12);
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 600px) {
+
+  .vr-ia-floating {
+    right: 18px;
+    bottom: 82px;
+
+    width: 54px;
+    height: 54px;
+  }
+
+  .vr-ia-mini {
+    right: 12px;
+    bottom: 145px;
+
+    width: calc(100vw - 24px);
+
+    max-height: calc(100dvh - 160px);
+
+    border-radius: 16px;
+  }
+
+  .vr-ia-mini-options button {
+    font-size: 10px;
+  }
+}
+
+
+
+/* Barra social */
+/* Estilos para la barra social */
+.social-bar {
+    position: fixed; /* Fija la barra social en la ventana de visualización */
+    top: 50%; /* Posiciona la barra a la mitad de la altura de la ventana */
+    right: 20px; /* Posiciona la barra a 20px desde el borde derecho de la ventana */
+    transform: translateY(-50%); /* Ajusta la posición vertical de la barra para centrarla */
+    display: flex; /* Utiliza el modelo de diseño flexbox para la barra social */
+    flex-direction: column; /* Organiza los elementos de la barra social en una columna */
+    z-index: 1000; /* Asegura que la barra social esté por encima de otros elementos */
+    transition: right 0.3s; /* Añade una transición suave al mover la barra social */
+}
+
+/* Estilos para los enlaces en la barra social */
+.social-bar a {
+    margin: 10px 0; /* Añade un margen vertical de 10px a los enlaces */
+}
+
+/* Estilos para las imágenes en la barra social */
+.social-bar img {
+    width: 40px; /* Establece el ancho de las imágenes en 40px */
+    height: 40px; /* Establece la altura de las imágenes en 40px */
+    transition: transform 0.3s; /* Añade una transición suave al transformar las imágenes */
+}
+
+.social-bar img:hover {
+    transform: scale(1.2); /* Amplía las imágenes en un 20% al pasar el cursor sobre ellas */
+}
+
+/* Estilos para el botón de alternar en la barra social */
+.toggle-btn {
+    position: absolute; /* Posiciona el botón de alternar de manera absoluta */
+    top: 10px; /* Posiciona el botón a 10px desde la parte superior del contenedor */
+    right: -40px; /* Posiciona el botón a -40px desde el borde derecho del contenedor */
+    background: #333; /* Define el color de fondo del botón como gris oscuro */
+    color: #fff; /* Define el color del texto del botón como blanco */
+    border: none; /* Elimina el borde del botón */
+    padding: 10px; /* Añade un relleno de 10px alrededor del contenido del botón */
+    cursor: pointer; /* Cambia el cursor a una mano cuando pasa sobre el botón */
+    font-size: 20px; /* Establece el tamaño de la fuente del botón en 20px */
+    border-radius: 50%; /* Hace que el botón tenga bordes redondeados */
+    transition: right 0.3s; /* Añade una transición suave al mover el botón */
+}
+
+.social-bar.closed {
+    right: -60px; /* Posiciona la barra social fuera de la vista cuando está cerrada */
+}
+
+.social-bar.closed .toggle-btn {
+    right: 0; /* Posiciona el botón de alternar en el borde derecho cuando la barra está cerrada */
+}

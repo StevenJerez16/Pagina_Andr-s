@@ -2627,3 +2627,115 @@ document.addEventListener("DOMContentLoaded", () => {
   renderCart();
 
 });
+
+
+/* =========================================
+   TOP BAR - CARRUSEL DE MENSAJES
+========================================= */
+
+document.addEventListener("DOMContentLoaded", () => {
+
+  const marqueeContent = document.getElementById("marquee-content");
+  const prevButton = document.querySelector(".top-bar .prev");
+  const nextButton = document.querySelector(".top-bar .next");
+  const topBar = document.getElementById("top-bar");
+  const mainHeader = document.querySelector(".main-header");
+
+  if (!marqueeContent || !prevButton || !nextButton) {
+    return;
+  }
+
+  const items = marqueeContent.querySelectorAll(".marquee-item");
+
+  let currentIndex = 0;
+  let autoScrollInterval;
+
+
+  function changeMarquee(direction) {
+
+    currentIndex += direction;
+
+    if (currentIndex < 0) {
+      currentIndex = items.length - 1;
+    }
+
+    if (currentIndex >= items.length) {
+      currentIndex = 0;
+    }
+
+    marqueeContent.style.transform =
+      `translateX(-${currentIndex * 100}%)`;
+  }
+
+
+  function startAutoScroll() {
+
+    clearInterval(autoScrollInterval);
+
+    autoScrollInterval = setInterval(() => {
+      changeMarquee(1);
+    }, 5000);
+
+  }
+
+
+  prevButton.addEventListener("click", () => {
+
+    changeMarquee(-1);
+
+    startAutoScroll();
+
+  });
+
+
+  nextButton.addEventListener("click", () => {
+
+    changeMarquee(1);
+
+    startAutoScroll();
+
+  });
+
+
+  /* Iniciar carrusel */
+
+  startAutoScroll();
+
+
+  /* =========================================
+     OCULTAR TOP BAR AL HACER SCROLL
+  ========================================= */
+
+  let lastScrollTop = 0;
+
+  window.addEventListener("scroll", () => {
+
+    const scrollTop =
+      window.pageYOffset ||
+      document.documentElement.scrollTop;
+
+    if (scrollTop > lastScrollTop && scrollTop > 40) {
+
+      // Bajando
+      topBar.style.top = "-40px";
+
+      if (mainHeader) {
+        mainHeader.style.top = "0";
+      }
+
+    } else {
+
+      // Subiendo
+      topBar.style.top = "0";
+
+      if (mainHeader) {
+        mainHeader.style.top = "40px";
+      }
+
+    }
+
+    lastScrollTop = Math.max(scrollTop, 0);
+
+  });
+
+});

@@ -12,10 +12,6 @@ const ALLOWED_RECEIPT_TYPES = [
   "application/pdf"
 ];
 
-const GEMINI_MODEL = "gemini-3.5-flash";
-
-const GEMINI_API_URL =
-  `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
 
 
 // ============================================================
@@ -74,19 +70,18 @@ export default {
       );
     }
 
-
-    if (request.method === "GET" && url.pathname === "/ia") {
-      return jsonResponse(
-        {
-          ok: true,
-          message: "Servicio IA activo",
-          service: "VR Turbolub + Gemini",
-          model: GEMINI_MODEL
-        },
-        200,
-        corsHeaders
-      );
-    }
+if (request.method === "GET" && url.pathname === "/ia") {
+  return jsonResponse(
+    {
+      ok: true,
+      message: "Servicio IA activo",
+      service: "VR Turbolub + Cloudflare Workers AI",
+      model: "@cf/meta/llama-3.2-1b-instruct"
+    },
+    200,
+    corsHeaders
+  );
+}
 
 
     // --------------------------------------------------------
@@ -1718,7 +1713,10 @@ async function registrarLead(
 
 
 // ============================================================
-// IA - GEMINI
+// IA 
+// ============================================================
+// ============================================================
+// IA - CLOUDFLARE WORKERS AI
 // ============================================================
 
 async function responderIA(
@@ -1727,50 +1725,51 @@ async function responderIA(
   corsHeaders
 ) {
   try {
-    if (!env.GEMINI_API_KEY) {
+    // --------------------------------------------------------
+    // VERIFICAR WORKERS AI
+    // --------------------------------------------------------
+
+    if (!env.AI) {
       return jsonResponse(
         {
           ok: false,
-          error:
-            "GEMINI_API_KEY no está configurado"
+          error: "Cloudflare Workers AI no está configurado"
         },
         500,
         corsHeaders
       );
     }
 
+    // --------------------------------------------------------
+    // LEER BODY
+    // --------------------------------------------------------
 
     const payload =
       await request.json();
-
 
     const message =
       payload.message ||
       payload.mensaje ||
       "";
 
-
     const history =
       Array.isArray(payload.history)
         ? payload.history
         : [];
 
-
     if (!message.trim()) {
       return jsonResponse(
         {
           ok: false,
-          error:
-            "El mensaje está vacío"
+          error: "El mensaje está vacío"
         },
         400,
         corsHeaders
       );
     }
 
-
     // --------------------------------------------------------
-    // CATÁLOGO ACTUAL
+    // INSTRUCCIONES DE VR TURBOLUB
     // --------------------------------------------------------
 
     const systemPrompt = `
@@ -1778,9 +1777,13 @@ Eres el asistente virtual oficial de VR Turbolub.
 
 VR Turbolub vende aceites y lubricantes.
 
+RESPONDE SIEMPRE EN ESPAÑOL.
+
+Sé amable, claro y breve.
+
 IMPORTANTE:
-Solo puedes utilizar la información del catálogo proporcionado
-a continuación.
+Solo puedes utilizar la información del catálogo
+proporcionado a continuación.
 
 No inventes productos.
 No inventes precios.
@@ -1819,25 +1822,30 @@ ENVÍO:
 - Pedidos de $100.000 exactos: envío de $10.000.
 - Pedidos inferiores a $100.000: envío de $10.000.
 
-Si el usuario quiere comprar, indícale que puede utilizar
-el catálogo y el carrito de compras de la página.
+Si el usuario quiere comprar,
+indícale que puede utilizar el catálogo
+y el carrito de compras de la página.
 
-Si el usuario pregunta por un producto que no está en el catálogo,
-indica honestamente que actualmente no tienes información sobre
-ese producto.
+Si el usuario pregunta por un producto
+que no está en el catálogo,
+indica honestamente que actualmente
+no tienes información sobre ese producto.
 
-Responde siempre en español.
+No inventes información.
 
-Sé amable, claro y breve.
+Responde normalmente en pocas frases.
 `;
 
-
     // --------------------------------------------------------
-    // CONSTRUIR HISTORIAL
+    // CONSTRUIR MENSAJES
     // --------------------------------------------------------
 
-    const contents = [];
-
+    const messages = [
+      {
+        role: "system",
+        content: systemPrompt
+      }
+    ];
 
     for (const item of history) {
       if (
@@ -1847,12 +1855,11 @@ Sé amable, claro y breve.
         continue;
       }
 
-
       const role =
-        item.role === "model"
-          ? "model"
+        item.role === "model" ||
+        item.role === "assistant"
+          ? "assistant"
           : "user";
-
 
       const text =
         String(
@@ -1862,234 +1869,90 @@ Sé amable, claro y breve.
           ""
         );
 
-
       if (!text.trim()) {
         continue;
       }
 
-
-      contents.push({
+      messages.push({
         role,
-
-        parts: [
-          {
-            text
-          }
-        ]
+        content: text
       });
     }
-
 
     // --------------------------------------------------------
     // MENSAJE ACTUAL
     // --------------------------------------------------------
 
-    contents.push({
+    messages.push({
       role: "user",
-
-      parts: [
-        {
-          text:
-            message
-        }
-      ]
+      content: message.trim()
     });
 
-
     // --------------------------------------------------------
-    // PETICIÓN GEMINI
-    // --------------------------------------------------------
-
-    const geminiBody = {
-      systemInstruction: {
-        parts: [
-          {
-            text:
-              systemPrompt
-          }
-        ]
-      },
-
-      contents,
-
-      generationConfig: {
-        temperature: 0.3,
-        maxOutputTokens: 700
-      }
-    };
-
-
-    let geminiResponse = null;
-    let geminiData = null;
-
-    const maxAttempts = 3;
-
-
-    // --------------------------------------------------------
-    // RETRIES
+    // CLOUDFLARE WORKERS AI
     // --------------------------------------------------------
 
-    for (
-      let attempt = 1;
-      attempt <= maxAttempts;
-      attempt++
-    ) {
-      const controller =
-        new AbortController();
-
-
-      const timeout =
-        setTimeout(
-          () => controller.abort(),
-          15000
-        );
-
-
-      try {
-        geminiResponse =
-          await fetch(
-            `${GEMINI_API_URL}?key=${encodeURIComponent(env.GEMINI_API_KEY)}`,
-            {
-              method: "POST",
-
-              headers: {
-                "Content-Type":
-                  "application/json"
-              },
-
-              body:
-                JSON.stringify(geminiBody),
-
-              signal:
-                controller.signal
-            }
-          );
-
-
-        geminiData =
-          await safeJson(geminiResponse);
-      } catch (error) {
-        clearTimeout(timeout);
-
-
-        if (attempt === maxAttempts) {
-          throw error;
-        }
-
-
-        continue;
-      }
-
-
-      clearTimeout(timeout);
-
-
-      if (
-        geminiResponse.ok
-      ) {
-        break;
-      }
-
-
-      const status =
-        geminiResponse.status;
-
-
-      if (
-        status !== 429 &&
-        status < 500
-      ) {
-        break;
-      }
-
-
-      if (
-        attempt < maxAttempts
-      ) {
-        await sleep(
-          700 * attempt
-        );
-      }
-    }
-
-
-    if (
-      !geminiResponse ||
-      !geminiResponse.ok
-    ) {
-      console.error(
-        "Error Gemini:",
-        geminiData
-      );
-
-
-      return jsonResponse(
+    const aiResponse =
+      await env.AI.run(
+        "@cf/meta/llama-3.2-1b-instruct",
         {
-          ok: false,
-
-          error:
-            "No se pudo obtener respuesta de la IA",
-
-          details:
-            geminiData
-        },
-        502,
-        corsHeaders
+          messages,
+          max_tokens: 300,
+          temperature: 0.3
+        }
       );
-    }
-
 
     // --------------------------------------------------------
-    // EXTRAER TEXTO
+    // EXTRAER RESPUESTA
     // --------------------------------------------------------
 
     const respuesta =
-      extractGeminiText(
-        geminiData
+      aiResponse?.response ||
+      aiResponse?.choices?.[0]?.message?.content ||
+      "";
+
+    if (!respuesta.trim()) {
+      console.error(
+        "Workers AI devolvió una respuesta vacía:",
+        aiResponse
       );
 
-
-    if (!respuesta) {
       return jsonResponse(
         {
           ok: false,
-
           error:
-            "Gemini no devolvió una respuesta válida"
+            "La IA no devolvió una respuesta válida"
         },
         502,
         corsHeaders
       );
     }
 
+    // --------------------------------------------------------
+    // RESPUESTA FINAL
+    // --------------------------------------------------------
 
     return jsonResponse(
       {
         ok: true,
-
-        respuesta,
-
-        response:
-          respuesta
+        respuesta: respuesta.trim(),
+        response: respuesta.trim()
       },
       200,
       corsHeaders
     );
 
-
   } catch (error) {
     console.error(
-      "ERROR IA:",
+      "ERROR WORKERS AI:",
       error
     );
-
 
     return jsonResponse(
       {
         ok: false,
-
         error:
-          error.message ||
+          error?.message ||
           "Error interno del asistente IA"
       },
       500,
@@ -2097,6 +1960,7 @@ Sé amable, claro y breve.
     );
   }
 }
+
 
 
 // ============================================================
@@ -2442,58 +2306,3 @@ async function safeJson(response) {
   }
 }
 
-
-// ============================================================
-// EXTRAER RESPUESTA GEMINI
-// ============================================================
-
-function extractGeminiText(data) {
-  try {
-    const candidates =
-      data?.candidates;
-
-
-    if (
-      !Array.isArray(candidates) ||
-      candidates.length === 0
-    ) {
-      return "";
-    }
-
-
-    const parts =
-      candidates[0]?.content?.parts;
-
-
-    if (
-      !Array.isArray(parts)
-    ) {
-      return "";
-    }
-
-
-    return parts
-      .map(
-        (part) =>
-          part?.text || ""
-      )
-      .join("")
-      .trim();
-
-
-  } catch {
-    return "";
-  }
-}
-
-
-// ============================================================
-// SLEEP
-// ============================================================
-
-function sleep(ms) {
-  return new Promise(
-    (resolve) =>
-      setTimeout(resolve, ms)
-  );
-}

@@ -187,3 +187,313 @@ section {
     font-size: 2.2rem;
   }
 }
+
+
+/* =========================================
+   TOP BAR VR TURBOLUB
+========================================= */
+
+.top-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 40px;
+
+  background: #000;
+  color: #fff;
+
+  display: flex;
+  align-items: center;
+
+  z-index: 2000;
+
+  font-family: "Open Sans", sans-serif;
+  font-size: 12px;
+
+  transition: top 0.3s ease;
+}
+
+
+/* IZQUIERDA */
+
+.top-bar-left {
+  width: 20%;
+
+  display: flex;
+  align-items: center;
+
+  padding-left: 30px;
+
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+
+
+/* CENTRO */
+
+.top-bar-middle {
+  width: 60%;
+  height: 100%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  overflow: hidden;
+}
+
+
+.marquee {
+  width: 100%;
+  height: 100%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  position: relative;
+  overflow: hidden;
+}
+
+
+.marquee-content {
+  height: 100%;
+
+  display: flex;
+
+  transition: transform 0.45s ease-in-out;
+
+  will-change: transform;
+}
+
+
+.marquee-item {
+  min-width: 100%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  white-space: nowrap;
+
+  font-weight: 500;
+  letter-spacing: 0.2px;
+}
+
+
+/* BOTONES */
+
+.marque {
+  position: absolute;
+
+  inset: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 0 8px;
+
+  pointer-events: none;
+}
+
+
+.marque button {
+  width: 24px;
+  height: 24px;
+
+  border: none;
+  border-radius: 50%;
+
+  background: rgba(255,255,255,0.08);
+  color: #fff;
+
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  opacity: 0;
+
+  transition:
+    opacity 0.2s ease,
+    background 0.2s ease;
+}
+
+
+.marquee:hover .marque button {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+
+.marque button:hover {
+  background: #ff6600;
+}
+
+
+/* DERECHA */
+
+.top-bar-right {
+  width: 20%;
+
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+
+  padding-right: 30px;
+}
+
+
+.top-bar-right a {
+  color: #fff;
+
+  text-decoration: none;
+
+  margin-left: 20px;
+
+  transition: color 0.2s ease;
+}
+
+
+.top-bar-right a:hover {
+  color: #ff6600;
+}
+
+
+/* =========================================
+   HEADER CON TOP BAR
+========================================= */
+
+.main-header {
+  top: 40px;
+
+  transition: top 0.3s ease;
+}
+
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width: 768px) {
+
+  .top-bar {
+    height: 36px;
+    font-size: 10px;
+  }
+
+  .top-bar-left {
+    width: 20%;
+    padding-left: 12px;
+  }
+
+  .top-bar-middle {
+    width: 60%;
+  }
+
+  .top-bar-right {
+    width: 20%;
+    padding-right: 12px;
+  }
+
+  .top-bar-right a:first-child {
+    display: none;
+  }
+
+  .top-bar-right a {
+    margin-left: 0;
+    white-space: nowrap;
+  }
+
+  .main-header {
+    top: 36px;
+  }
+
+  .marque {
+    padding: 0 3px;
+  }
+
+  .marque button {
+    width: 20px;
+    height: 20px;
+    font-size: 10px;
+  }
+
+}
+
+
+@media (max-width: 480px) {
+
+  .top-bar-left {
+    display: none;
+  }
+
+  .top-bar-middle {
+    width: 75%;
+  }
+
+  .top-bar-right {
+    width: 25%;
+  }
+
+  .marquee-item {
+    padding: 0 25px;
+  }
+
+}
+
+
+/* Barra social */
+/* Estilos para la barra social */
+.social-bar {
+    position: fixed; /* Fija la barra social en la ventana de visualización */
+    top: 50%; /* Posiciona la barra a la mitad de la altura de la ventana */
+    right: 20px; /* Posiciona la barra a 20px desde el borde derecho de la ventana */
+    transform: translateY(-50%); /* Ajusta la posición vertical de la barra para centrarla */
+    display: flex; /* Utiliza el modelo de diseño flexbox para la barra social */
+    flex-direction: column; /* Organiza los elementos de la barra social en una columna */
+    z-index: 1000; /* Asegura que la barra social esté por encima de otros elementos */
+    transition: right 0.3s; /* Añade una transición suave al mover la barra social */
+}
+
+/* Estilos para los enlaces en la barra social */
+.social-bar a {
+    margin: 10px 0; /* Añade un margen vertical de 10px a los enlaces */
+}
+
+/* Estilos para las imágenes en la barra social */
+.social-bar img {
+    width: 40px; /* Establece el ancho de las imágenes en 40px */
+    height: 40px; /* Establece la altura de las imágenes en 40px */
+    transition: transform 0.3s; /* Añade una transición suave al transformar las imágenes */
+}
+
+.social-bar img:hover {
+    transform: scale(1.2); /* Amplía las imágenes en un 20% al pasar el cursor sobre ellas */
+}
+
+/* Estilos para el botón de alternar en la barra social */
+.toggle-btn {
+    position: absolute; /* Posiciona el botón de alternar de manera absoluta */
+    top: 10px; /* Posiciona el botón a 10px desde la parte superior del contenedor */
+    right: -40px; /* Posiciona el botón a -40px desde el borde derecho del contenedor */
+    background: #333; /* Define el color de fondo del botón como gris oscuro */
+    color: #fff; /* Define el color del texto del botón como blanco */
+    border: none; /* Elimina el borde del botón */
+    padding: 10px; /* Añade un relleno de 10px alrededor del contenido del botón */
+    cursor: pointer; /* Cambia el cursor a una mano cuando pasa sobre el botón */
+    font-size: 20px; /* Establece el tamaño de la fuente del botón en 20px */
+    border-radius: 50%; /* Hace que el botón tenga bordes redondeados */
+    transition: right 0.3s; /* Añade una transición suave al mover el botón */
+}
+
+.social-bar.closed {
+    right: -60px; /* Posiciona la barra social fuera de la vista cuando está cerrada */
+}
+
+.social-bar.closed .toggle-btn {
+    right: 0; /* Posiciona el botón de alternar en el borde derecho cuando la barra está cerrada */
+}
