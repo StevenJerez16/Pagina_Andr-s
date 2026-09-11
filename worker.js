@@ -1218,19 +1218,34 @@ Aceites y lubricantes
             await safeJson(customerResponse);
 
 
-          if (customerResponse.ok) {
-            emailResult.customer = true;
-          } else {
-            console.error(
-              "Error enviando confirmación al cliente:",
-              customerData
-            );
+if (customerResponse.ok) {
+  emailResult.customer = true;
 
-            if (!emailResult.warning) {
-              emailResult.warning =
-                "No se pudo enviar la confirmación al cliente.";
-            }
-          }
+  emailResult.customerResponse = {
+    status: customerResponse.status,
+    data: customerData
+  };
+
+  console.log(
+    "Confirmación enviada al cliente:",
+    customerData
+  );
+
+} else {
+  console.error(
+    "Error enviando confirmación al cliente:",
+    customerData
+  );
+
+  emailResult.customerResponse = {
+    status: customerResponse.status,
+    data: customerData
+  };
+
+  emailResult.warning =
+    `No se pudo enviar la confirmación al cliente. ` +
+    `Resend respondió HTTP ${customerResponse.status}.`;
+}
         }
       } catch (error) {
         console.error(
