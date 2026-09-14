@@ -1713,7 +1713,7 @@ async function registrarLead(
 
 // ============================================================
 // IA - CLOUDFLARE WORKERS AI
-// CATÁLOGO REAL + BÚSQUEDA DETERMINÍSTICA
+// ASISTENTE NATURAL + CATÁLOGO REAL
 // ============================================================
 
 async function responderIA(
@@ -1722,11 +1722,9 @@ async function responderIA(
   corsHeaders
 ) {
   try {
-
     // --------------------------------------------------------
     // VERIFICAR WORKERS AI
     // --------------------------------------------------------
-
     if (!env.AI) {
       return jsonResponse(
         {
@@ -1741,20 +1739,17 @@ async function responderIA(
     // --------------------------------------------------------
     // LEER BODY
     // --------------------------------------------------------
-
     const payload = await request.json();
 
-    const message =
-      String(
-        payload.message ||
-        payload.mensaje ||
-        ""
-      ).trim();
+    const message = String(
+      payload.message ||
+      payload.mensaje ||
+      ""
+    ).trim();
 
-    const history =
-      Array.isArray(payload.history)
-        ? payload.history
-        : [];
+    const history = Array.isArray(payload.history)
+      ? payload.history
+      : [];
 
     if (!message) {
       return jsonResponse(
@@ -1796,7 +1791,7 @@ async function responderIA(
 
     function getAttribute(tag, attribute) {
       const regex = new RegExp(
-        attribute + '\\s*=\\s*["\']([^"\']*)["\']',
+        attribute + "\\s*=\\s*[\"']([^\"']*)[\"']",
         "i"
       );
 
@@ -1808,16 +1803,13 @@ async function responderIA(
     }
 
     function extractVisiblePrice(card) {
-
       const strongMatches =
         card.match(
           /<strong\b[^>]*>[\s\S]*?<\/strong>/gi
         ) || [];
 
       for (const strong of strongMatches) {
-
-        const text =
-          cleanText(strong);
+        const text = cleanText(strong);
 
         if (
           text.includes("$") ||
@@ -1827,10 +1819,9 @@ async function responderIA(
         }
       }
 
-      const priceMatch =
-        card.match(
-          /\$\s*[\d.,]+(?:\s*-\s*\$\s*[\d.,]+)?/i
-        );
+      const priceMatch = card.match(
+        /\$\s*[\d.,]+(?:\s*-\s*\$\s*[\d.,]+)?/i
+      );
 
       if (priceMatch) {
         return priceMatch[0].trim();
@@ -1846,30 +1837,24 @@ async function responderIA(
     let products = [];
 
     try {
-
       if (!env.ASSETS) {
         throw new Error(
           "La vinculación ASSETS no está disponible"
         );
       }
 
-      const catalogUrl =
-        new URL(request.url);
-
-      catalogUrl.pathname =
-        "/productos2.html";
-
+      const catalogUrl = new URL(request.url);
+      catalogUrl.pathname = "/productos2.html";
       catalogUrl.search = "";
 
-      const catalogResponse =
-        await env.ASSETS.fetch(
-          new Request(
-            catalogUrl.toString(),
-            {
-              method: "GET"
-            }
-          )
-        );
+      const catalogResponse = await env.ASSETS.fetch(
+        new Request(
+          catalogUrl.toString(),
+          {
+            method: "GET"
+          }
+        )
+      );
 
       if (!catalogResponse.ok) {
         throw new Error(
@@ -1877,31 +1862,46 @@ async function responderIA(
         );
       }
 
-      const html =
-        await catalogResponse.text();
+      const html = await catalogResponse.text();
 
       // ------------------------------------------------------
-      // BUSCAR PRODUCT-CARD
+      // LOCALIZAR CADA PRODUCT-CARD
+      //
+      // En lugar de intentar cerrar el div con una expresión
+      // regular complicada, usamos las posiciones de cada
+      // tarjeta. Esto evita romperse por los div internos.
       // ------------------------------------------------------
 
-      const productMatches =
-        html.match(
-          /<(article|div)\b[^>]*class=["'][^"']*product-card[^"']*["'][^>]*>[\s\S]*?<\/\1>/gi
-        ) || [];
+      const cardStartRegex =
+        /<(article|div)\b[^>]*class=["'][^"']*\bproduct-card\b[^"']*["'][^>]*>/gi;
 
-      for (const card of productMatches) {
+      const cardStarts = [];
+      let cardMatch;
 
-        const openingTagMatch =
-          card.match(
-            /^<(article|div)\b[^>]*>/i
-          );
+      while ((cardMatch = cardStartRegex.exec(html)) !== null) {
+        cardStarts.push({
+          index: cardMatch.index,
+          end: cardStartRegex.lastIndex,
+          tag: cardMatch[1].toLowerCase(),
+          openingTag: cardMatch[0]
+        });
+      }
 
-        if (!openingTagMatch) {
-          continue;
-        }
+      for (let i = 0; i < cardStarts.length; i++) {
+        const current = cardStarts[i];
+
+        const nextIndex =
+          i + 1 < cardStarts.length
+            ? cardStarts[i + 1].index
+            : html.length;
+
+        const card = html.slice(
+          current.index,
+          nextIndex
+        );
 
         const openingTag =
-          openingTagMatch[0];
+          current.openingTag;
 
         const dataProduct =
           getAttribute(
@@ -1952,7 +1952,6 @@ async function responderIA(
         let price = "";
 
         if (dataPrice) {
-
           const numericPrice =
             Number(dataPrice);
 
@@ -2000,7 +1999,6 @@ async function responderIA(
       );
 
     } catch (catalogError) {
-
       console.error(
         "Error leyendo catálogo:",
         catalogError
@@ -2008,75 +2006,362 @@ async function responderIA(
     }
 
     // ========================================================
-    // DETECTAR SI ES PREGUNTA DE TIENDA
+    // TEXTO + HISTORIAL PARA ENTENDER CONTEXTO
     // ========================================================
 
     const normalizedMessage =
       normalizeText(message);
 
-    const storeKeywords = [
-      "producto",
-      "productos",
-      "aceite",
-      "aceites",
-      "lubricante",
-      "lubricantes",
-      "filtro",
-      "filtros",
-      "refrigerante",
-      "refrigerantes",
-      "aditivo",
-      "aditivos",
-      "grasa",
-      "grasas",
-      "precio",
-      "precios",
-      "cuanto cuesta",
-      "cuánto cuesta",
-      "catalogo",
-      "catalogo",
-      "catalog",
-      "tienen",
-      "tiene",
-      "disponible",
-      "disponibilidad",
-      "comprar",
-      "compra",
-      "carro",
-      "carros",
-      "moto",
-      "motos",
-      "motocicleta",
-      "camion",
-      "camiones",
-      "20w-50",
-      "15w-50",
-      "10w-40",
-      "25w-50",
-      "2t",
-      "4t"
-    ];
+    const previousUserMessages =
+      history
+        .filter(
+          item =>
+            item &&
+            typeof item === "object" &&
+            (
+              item.role === "user" ||
+              !item.role
+            )
+        )
+        .map(
+          item =>
+            String(
+              item.text ||
+              item.message ||
+              item.content ||
+              ""
+            )
+        )
+        .filter(Boolean)
+        .slice(-5);
 
-    const isStoreQuestion =
-      storeKeywords.some(
-        (keyword) =>
-          normalizedMessage.includes(
-            normalizeText(keyword)
-          )
+    const conversationText =
+      normalizeText(
+        [
+          ...previousUserMessages,
+          message
+        ].join(" ")
       );
 
     // ========================================================
-    // BUSCAR PRODUCTOS REALES
+    // DETECTAR TIPO DE VEHÍCULO
+    // ========================================================
+
+    const motorcycleBrands = [
+      "victory",
+      "suzuki",
+      "yamaha",
+      "honda",
+      "kawasaki",
+      "bajaj",
+      "akt",
+      "tvs",
+      "hero",
+      "ktm",
+      "bmw",
+      "ducati",
+      "harley",
+      "harley davidson",
+      "royal enfield",
+      "cfmoto",
+      "benelli",
+      "keeway",
+      "sym",
+      "kymco",
+      "vespa",
+      "aprilia"
+    ];
+
+    const motorcycleModels = [
+      "gixxer",
+      "gixxer sf",
+      "one st",
+      "one st 110",
+      "nkd",
+      "pulsar",
+      "boxer",
+      "discover",
+      "dominar",
+      "apache",
+      "fz",
+      "mt-",
+      "mt ",
+      "xtz",
+      "crypton",
+      "bws",
+      "nmax",
+      "aerox",
+      "pcx",
+      "cb ",
+      "xr ",
+      "cbr ",
+      "wave",
+      "dio",
+      "scooter",
+      "scooty",
+      "enduro"
+    ];
+
+    const carBrands = [
+      "mazda",
+      "toyota",
+      "chevrolet",
+      "renault",
+      "kia",
+      "hyundai",
+      "nissan",
+      "ford",
+      "volkswagen",
+      "volvo",
+      "mercedes",
+      "mercedes benz",
+      "bmw",
+      "audi",
+      "honda",
+      "suzuki",
+      "mitsubishi",
+      "subaru",
+      "peugeot",
+      "citroen",
+      "fiat",
+      "jeep",
+      "dodge",
+      "chrysler",
+      "seat",
+      "skoda",
+      "volkswagen",
+      "porsche",
+      "ferrari",
+      "lamborghini",
+      "tesla"
+    ];
+
+    const truckWords = [
+      "camion",
+      "camioneta",
+      "tractocamion",
+      "furgon",
+      "furgoneta",
+      "bus",
+      "volqueta",
+      "tractomula"
+    ];
+
+    const explicitMoto =
+      /\bmoto\b|\bmotocicleta\b|\bmotorcycle\b/i
+        .test(conversationText);
+
+    const explicitCar =
+      /\bcarro\b|\bcoche\b|\bauto\b|\bautomovil\b|\bvehiculo\b/i
+        .test(conversationText);
+
+    const explicitTruck =
+      truckWords.some(
+        word =>
+          conversationText.includes(
+            normalizeText(word)
+          )
+      );
+
+    const hasMotoBrand =
+      motorcycleBrands.some(
+        brand =>
+          conversationText.includes(
+            normalizeText(brand)
+          )
+      );
+
+    const hasMotoModel =
+      motorcycleModels.some(
+        model =>
+          conversationText.includes(
+            normalizeText(model)
+          )
+      );
+
+    const hasCarBrand =
+      carBrands.some(
+        brand =>
+          conversationText.includes(
+            normalizeText(brand)
+          )
+      );
+
+    let vehicleType = "";
+
+    if (
+      explicitTruck
+    ) {
+      vehicleType = "camion";
+
+    } else if (
+      explicitMoto ||
+      hasMotoBrand ||
+      hasMotoModel
+    ) {
+      vehicleType = "moto";
+
+    } else if (
+      explicitCar ||
+      hasCarBrand
+    ) {
+      vehicleType = "carro";
+    }
+
+    // ========================================================
+    // DETECTAR PRODUCTO / INTENCIÓN
+    // ========================================================
+
+    const asksProducts =
+      /\bproducto\b|\bproductos\b|\bcatalogo\b|\bque tienen\b|\bque venden\b|\bdisponible\b|\bdisponibles\b|\bmostrar\b|\bmuestreme\b/i
+        .test(normalizedMessage);
+
+    const asksOil =
+      /\baceite\b|\baceites\b|\blubricante\b|\blubricantes\b/i
+        .test(conversationText);
+
+    const asksFilter =
+      /\bfiltro\b|\bfiltros\b/i
+        .test(conversationText);
+
+    const asksCoolant =
+      /\brefrigerante\b|\brefrigerantes\b|\bcoolant\b/i
+        .test(conversationText);
+
+    const asksAdditive =
+      /\baditivo\b|\baditivos\b/i
+        .test(conversationText);
+
+    const asksPrice =
+      /\bprecio\b|\bprecios\b|\bcuanto cuesta\b|\bcuanto vale\b|\bvale\b|\bcosto\b/i
+        .test(normalizedMessage);
+
+    const asksRecommendation =
+      /\brecomienda\b|\brecomendar\b|\brecomendacion\b|\brecomendación\b|\bque me recomiendas\b|\bcual me recomiendas\b|\bque aceite le pongo\b|\bque aceite puedo usar\b|\bque aceite necesita\b/i
+        .test(normalizedMessage);
+
+    const asksCompatibility =
+      /\bsirve para\b|\bfunciona para\b|\bes compatible\b|\bcompatible con\b|\ble sirve\b|\bpara mi\b/i
+        .test(normalizedMessage);
+
+    const asksStock =
+      /\bstock\b|\binventario\b|\bexistencia\b|\bdisponibilidad\b|\bqueda\b/i
+        .test(normalizedMessage);
+
+    const mentionsViscosity =
+      /\b\d{1,2}w-\d{2}\b/i
+        .test(conversationText);
+
+    const mentions2T =
+      /\b2t\b|\bdos tiempos\b/i
+        .test(conversationText);
+
+    const mentions4T =
+      /\b4t\b|\bcuatro tiempos\b/i
+        .test(conversationText);
+
+    const isStoreQuestion =
+      asksProducts ||
+      asksOil ||
+      asksFilter ||
+      asksCoolant ||
+      asksAdditive ||
+      asksPrice ||
+      asksRecommendation ||
+      asksCompatibility ||
+      asksStock ||
+      mentionsViscosity ||
+      mentions2T ||
+      mentions4T ||
+      vehicleType !== "";
+
+    // ========================================================
+    // INTENCIÓN DE RECOMENDACIÓN
+    //
+    // Si dice:
+    // "Necesito un aceite para mi carro"
+    // todavía no debemos adivinar.
+    // ========================================================
+
+    if (
+      asksRecommendation &&
+      (
+        vehicleType === "carro" ||
+        vehicleType === "moto" ||
+        vehicleType === "camion"
+      )
+    ) {
+      const hasYear =
+        /\b(19|20)\d{2}\b/.test(
+          conversationText
+        );
+
+      const hasBrand =
+        motorcycleBrands.some(
+          brand =>
+            conversationText.includes(
+              normalizeText(brand)
+            )
+        ) ||
+        carBrands.some(
+          brand =>
+            conversationText.includes(
+              normalizeText(brand)
+            )
+        );
+
+      const hasModel =
+        hasMotoModel ||
+        /\b(cx-?\d+|corolla|hilux|rav4|spark|onix|aveo|duster|logan|sandero|captur|tucson|sportage|sentra|versa|civic|cr-v|gixxer|pulsar|nkd|boxer)\b/i
+          .test(conversationText);
+
+      // Si solo dijo "aceite para mi carro/moto",
+      // pedimos datos mínimos.
+      if (
+        !hasBrand ||
+        !hasModel ||
+        !hasYear
+      ) {
+        const vehicleLabel =
+          vehicleType === "moto"
+            ? "moto"
+            : vehicleType === "camion"
+              ? "camión"
+              : "carro";
+
+        const answer =
+          `Claro 👍 Para recomendarte una opción adecuada para tu ${vehicleLabel}, dime la marca, el modelo y el año. Así reviso las opciones disponibles en el catálogo de VR Turbolub.`;
+
+        return jsonResponse(
+          {
+            ok: true,
+            respuesta: answer,
+            response: answer
+          },
+          200,
+          corsHeaders
+        );
+      }
+    }
+
+    // ========================================================
+    // BUSCAR PRODUCTOS
     // ========================================================
 
     let matchingProducts = [];
 
-    if (isStoreQuestion && products.length > 0) {
+    if (
+      isStoreQuestion &&
+      products.length > 0
+    ) {
+
+      // ------------------------------------------------------
+      // PALABRAS IMPORTANTES
+      // ------------------------------------------------------
 
       const stopWords = new Set([
         "para",
         "que",
-        "qué",
         "tienen",
         "tiene",
         "con",
@@ -2101,70 +2386,232 @@ async function responderIA(
         "la",
         "de",
         "en",
-        "mi"
+        "mi",
+        "mis",
+        "me",
+        "puedo",
+        "puede",
+        "tengo",
+        "tiene",
+        "seria",
+        "sería",
+        "cual",
+        "cuál",
+        "recomiendas",
+        "recomendar",
+        "recomienda"
       ]);
 
       const queryTokens =
         normalizedMessage
           .split(/\s+/)
           .filter(
-            (token) =>
+            token =>
               token.length >= 2 &&
               !stopWords.has(token)
           );
 
+      // ------------------------------------------------------
+      // SCORE
+      // ------------------------------------------------------
+
       const scoredProducts =
         products.map(
-          (product) => {
+          product => {
+
+            const productName =
+              normalizeText(
+                product.name
+              );
+
+            const productVehicle =
+              normalizeText(
+                product.vehicle
+              );
+
+            const productCategory =
+              normalizeText(
+                product.category
+              );
+
+            const productDescription =
+              normalizeText(
+                product.description
+              );
 
             const searchable =
-              normalizeText(
-                `${product.name} ${product.vehicle} ${product.category} ${product.description}`
-              );
+              `${productName} ${productVehicle} ${productCategory} ${productDescription}`;
 
             let score = 0;
 
-            for (const token of queryTokens) {
-
+            // Coincidencias de palabras
+            for (
+              const token of queryTokens
+            ) {
               if (
+                productName.includes(token)
+              ) {
+                score += 5;
+              } else if (
                 searchable.includes(token)
               ) {
-                score += 1;
+                score += 2;
               }
             }
 
-            // Coincidencias especialmente importantes
+            // ------------------------------------------------
+            // VEHÍCULO
+            // ------------------------------------------------
 
             if (
-              normalizedMessage.includes("carro") &&
-              normalizeText(product.vehicle)
-                .includes("carro")
+              vehicleType === "moto"
             ) {
-              score += 4;
+              if (
+                productVehicle.includes("moto")
+              ) {
+                score += 12;
+              } else if (
+                productVehicle === "all"
+              ) {
+                score += 2;
+              } else if (
+                productVehicle &&
+                !productVehicle.includes("moto")
+              ) {
+                score -= 5;
+              }
             }
 
             if (
-              normalizedMessage.includes("moto") &&
-              normalizeText(product.vehicle)
-                .includes("moto")
+              vehicleType === "carro"
             ) {
-              score += 4;
+              if (
+                productVehicle.includes("carro")
+              ) {
+                score += 12;
+              } else if (
+                productVehicle === "all"
+              ) {
+                score += 2;
+              } else if (
+                productVehicle &&
+                !productVehicle.includes("carro")
+              ) {
+                score -= 5;
+              }
             }
 
             if (
-              normalizedMessage.includes("camion") &&
-              normalizeText(product.vehicle)
-                .includes("camion")
+              vehicleType === "camion"
             ) {
-              score += 4;
+              if (
+                productVehicle.includes("camion")
+              ) {
+                score += 12;
+              } else if (
+                productVehicle === "all"
+              ) {
+                score += 2;
+              } else if (
+                productVehicle &&
+                !productVehicle.includes("camion")
+              ) {
+                score -= 5;
+              }
             }
 
+            // ------------------------------------------------
+            // CATEGORÍA ACEITE
+            // ------------------------------------------------
+
             if (
-              normalizedMessage.includes("aceite") &&
-              normalizeText(product.category)
-                .includes("aceite")
+              asksOil &&
+              productCategory.includes("aceite")
             ) {
-              score += 3;
+              score += 10;
+            }
+
+            // ------------------------------------------------
+            // FILTROS
+            // ------------------------------------------------
+
+            if (
+              asksFilter &&
+              productCategory.includes("filtro")
+            ) {
+              score += 10;
+            }
+
+            // ------------------------------------------------
+            // REFRIGERANTES
+            // ------------------------------------------------
+
+            if (
+              asksCoolant &&
+              productCategory.includes("refrigerante")
+            ) {
+              score += 10;
+            }
+
+            // ------------------------------------------------
+            // ADITIVOS
+            // ------------------------------------------------
+
+            if (
+              asksAdditive &&
+              productCategory.includes("aditivo")
+            ) {
+              score += 10;
+            }
+
+            // ------------------------------------------------
+            // 2T / 4T
+            // ------------------------------------------------
+
+            if (mentions2T) {
+              if (
+                productName.includes("2t") ||
+                productDescription.includes("2t")
+              ) {
+                score += 15;
+              } else {
+                score -= 3;
+              }
+            }
+
+            if (mentions4T) {
+              if (
+                productName.includes("4t") ||
+                productDescription.includes("4t")
+              ) {
+                score += 15;
+              } else if (
+                productVehicle.includes("moto") &&
+                productCategory.includes("aceite")
+              ) {
+                score += 5;
+              }
+            }
+
+            // ------------------------------------------------
+            // VISCOSIDAD
+            // ------------------------------------------------
+
+            const viscosities =
+              normalizedMessage.match(
+                /\b\d{1,2}w-\d{2}\b/gi
+              ) || [];
+
+            for (
+              const viscosity of viscosities
+            ) {
+              if (
+                searchable.includes(
+                  normalizeText(viscosity)
+                )
+              ) {
+                score += 20;
+              }
             }
 
             return {
@@ -2172,84 +2619,57 @@ async function responderIA(
               score
             };
           }
-        )
-        .filter(
-          (item) => item.score > 0
-        )
-        .sort(
-          (a, b) =>
-            b.score - a.score
         );
 
       matchingProducts =
         scoredProducts
-          .slice(0, 12)
+          .filter(
+            item =>
+              item.score > 0
+          )
+          .sort(
+            (a, b) =>
+              b.score - a.score
+          )
+          .slice(0, 15)
           .map(
-            (item) =>
+            item =>
               item.product
           );
     }
 
     // ========================================================
-    // CASO ESPECIAL:
-    // PREGUNTA DE RECOMENDACIÓN SIN DATOS DEL VEHÍCULO
+    // PRODUCTOS GENERALES
     // ========================================================
 
-    const asksForRecommendation =
-      /recomendar|recomendacion|recomendación|que aceite|qué aceite|cual aceite|cuál aceite|aceite para mi/i
-        .test(message);
-
-    const mentionsVehicle =
-      /carro|coche|auto|moto|motocicleta|camion|camión/i
-        .test(message);
-
-    const hasVehicleDetails =
-      /\b(19|20)\d{2}\b/.test(message);
-
     if (
-      asksForRecommendation &&
-      mentionsVehicle &&
-      !hasVehicleDetails
+      asksProducts &&
+      !asksOil &&
+      !asksFilter &&
+      !asksCoolant &&
+      !asksAdditive &&
+      !vehicleType
     ) {
-
-      let vehicleType =
-        "vehículo";
-
-      if (/moto|motocicleta/i.test(message)) {
-        vehicleType = "moto";
-      }
-
-      if (/camion|camión/i.test(message)) {
-        vehicleType = "camión";
-      }
-
-      if (/carro|coche|auto/i.test(message)) {
-        vehicleType = "carro";
-      }
-
-      return jsonResponse(
-        {
-          ok: true,
-          respuesta:
-            `Claro. ¿Qué marca, modelo y año es tu ${vehicle}? Con esos datos reviso las opciones disponibles en el catálogo de VR Turbolub.`,
-          response:
-            `Claro. ¿Qué marca, modelo y año es tu ${vehicle}? Con esos datos reviso las opciones disponibles en el catálogo de VR Turbolub.`
-        },
-        200,
-        corsHeaders
-      );
+      matchingProducts =
+        products.slice(0, 30);
     }
 
     // ========================================================
-    // PREPARAR INFORMACIÓN DEL CATÁLOGO
+    // SI PREGUNTA POR VEHÍCULO PERO NO HAY COINCIDENCIA
+    //
+    // No significa que el producto no exista.
+    // Significa que no podemos confirmar compatibilidad.
     // ========================================================
 
     let catalogContext = "";
 
-    if (isStoreQuestion) {
+    if (
+      isStoreQuestion
+    ) {
 
-      if (matchingProducts.length > 0) {
-
+      if (
+        matchingProducts.length > 0
+      ) {
         catalogContext =
           matchingProducts
             .map(
@@ -2259,90 +2679,107 @@ async function responderIA(
             .join("\n");
 
       } else {
-
         catalogContext =
-          "NO SE ENCONTRARON PRODUCTOS QUE COINCIDAN CON LA CONSULTA EN EL CATÁLOGO ACTUAL.";
-
+          "NO SE ENCONTRARON COINCIDENCIAS SUFICIENTES EN EL CATÁLOGO PARA ESTA CONSULTA.";
       }
     }
 
     // ========================================================
-    // SISTEMA PARA LA IA
+    // SISTEMA
     // ========================================================
 
     let systemPrompt = `
-Eres el asistente virtual oficial de VR Turbolub.
+Eres el asistente virtual oficial de VR Turbolub, una tienda de aceites, lubricantes, filtros, refrigerantes, aditivos y productos automotrices.
 
 Responde siempre en español.
 
-Sé amable, natural, breve y directo.
+Tu objetivo es atender al cliente de forma natural, como un asesor de ventas.
 
-REGLAS IMPORTANTES:
+El cliente puede escribir de cualquier manera.
+
+NO debes exigir que use palabras exactas del catálogo.
+
+Por ejemplo:
+
+"tengo una Victory One ST 110, ¿qué aceite me recomiendas?"
+
+"aceite para gixxer 150 fi"
+
+"tengo un Mazda CX-30"
+
+"mi moto necesita cambio de aceite"
+
+"¿qué tienen para mi carro?"
+
+Todas son preguntas naturales y debes entender su intención.
+
+REGLAS ABSOLUTAS:
 
 1. Nunca inventes productos de VR Turbolub.
-2. Nunca inventes precios de VR Turbolub.
+2. Nunca inventes precios.
 3. Nunca inventes stock.
 4. Nunca inventes promociones.
-5. Nunca inventes especificaciones de productos.
-6. Nunca conviertas una suposición en un hecho.
-7. Si no tienes información suficiente, dilo claramente.
-8. No agregues productos que no aparezcan en la información proporcionada.
-
+5. Nunca inventes especificaciones técnicas.
+6. Nunca afirmes compatibilidad con un vehículo si no está confirmada.
+7. Si no puedes confirmar algo, dilo claramente.
+8. No conviertas una suposición en un hecho.
+9. Si el cliente menciona una moto o carro que no aparece literalmente en el catálogo, NO significa que no podamos ofrecer productos para ese tipo de vehículo.
+10. Puedes reconocer que un nombre corresponde a una moto o carro y consultar las opciones generales de esa categoría.
+11. Los datos comerciales deben salir únicamente del catálogo proporcionado.
+12. Si no puedes confirmar el producto solicitado, invita al cliente a contactar con un asesor de VR Turbolub.
+13. Nunca inventes información sobre VR Turbolub.
+14. No digas que VR Turbolub es una empresa de realidad virtual. VR Turbolub comercializa aceites, lubricantes y productos automotrices.
+15. Si el cliente pregunta por un producto específico que no aparece en el catálogo, dilo claramente.
+16. Si pregunta por stock, indica que el catálogo no muestra inventario físico en tiempo real.
+17. Si aparece "Cotizar", indica que debe consultar el precio con un asesor.
+18. Sé breve, natural y útil.
+19. No hagas listas interminables de preguntas. Pregunta únicamente lo necesario.
+20. Si el cliente ya proporcionó información anteriormente en la conversación, úsala y no vuelvas a pedirla.
 `;
 
     // ========================================================
-    // CONTEXTO DE TIENDA
+    // CONTEXTO CATÁLOGO
     // ========================================================
 
-    if (isStoreQuestion) {
+    if (
+      isStoreQuestion
+    ) {
 
       systemPrompt += `
-ESTA ES UNA CONSULTA SOBRE VR TURBOLUB.
 
-La siguiente información fue obtenida del catálogo real.
+ESTA ES UNA CONSULTA RELACIONADA CON VR TURBOLUB.
 
-SOLO puedes utilizar estos productos para responder.
+Los siguientes datos provienen del catálogo REAL.
+
+SOLO puedes utilizar estos productos y sus datos comerciales.
 
 CATÁLOGO RELEVANTE:
 
 ${catalogContext}
 
-REGLA ABSOLUTA:
+REGLAS DEL CATÁLOGO:
 
-Si el catálogo dice:
-
-"NO SE ENCONTRARON PRODUCTOS QUE COINCIDAN CON LA CONSULTA EN EL CATÁLOGO ACTUAL."
-
-debes informar al usuario que no encontraste ese producto en el catálogo.
-
-NO debes intentar completar la respuesta con productos inventados.
-
-Si preguntan por precio, utiliza exactamente el precio mostrado.
-
-Si aparece "Cotizar", indica que el precio debe consultarse con un asesor.
-
-Si preguntan por stock, explica que el catálogo no muestra inventario físico en tiempo real.
-
-Si preguntan por compatibilidad con un vehículo y el catálogo no la confirma, no afirmes compatibilidad.
-
-Si el usuario pregunta "¿qué tienen?", muestra únicamente los productos encontrados.
-
-No menciones productos que no aparezcan arriba.
+- Utiliza exactamente los nombres mostrados.
+- Utiliza exactamente los precios mostrados.
+- No inventes productos adicionales.
+- No inventes precios.
+- No inventes stock.
+- No inventes compatibilidad.
+- Si el catálogo no confirma la compatibilidad con el vehículo mencionado, dilo.
+- Si no hay coincidencias suficientes, explica que no encontraste una opción confirmable en el catálogo y ofrece contactar con un asesor.
 `;
 
     } else {
 
       systemPrompt += `
-Esta NO es necesariamente una consulta específica del catálogo.
 
-Puedes responder preguntas generales usando conocimiento general.
+Esta es una consulta general.
 
-Sin embargo:
+Puedes responder con conocimiento general.
 
-- Si no estás seguro de un dato factual, no lo presentes como seguro.
-- No inventes nombres, fechas, estadísticas o premios.
-- No atribuyas información inventada a VR Turbolub.
-- Mantén las respuestas generales breves y claras.
+No atribuyas información inventada a VR Turbolub.
+
+Si no estás seguro de un dato factual, no lo presentes como un hecho.
 `;
     }
 
@@ -2357,8 +2794,9 @@ Sin embargo:
       }
     ];
 
-    for (const item of history) {
-
+    for (
+      const item of history
+    ) {
       if (
         !item ||
         typeof item !== "object"
@@ -2380,13 +2818,16 @@ Sin embargo:
           ""
         );
 
-      if (!text.trim()) {
+      if (
+        !text.trim()
+      ) {
         continue;
       }
 
       messages.push({
         role,
-        content: text.trim()
+        content:
+          text.trim()
       });
     }
 
@@ -2400,7 +2841,7 @@ Sin embargo:
     });
 
     // ========================================================
-    // CLOUDFLARE WORKERS AI
+    // WORKERS AI
     // ========================================================
 
     const aiResponse =
@@ -2408,14 +2849,14 @@ Sin embargo:
         "@cf/meta/llama-3.2-3b-instruct",
         {
           messages,
-          max_tokens: 250,
+          max_tokens: 350,
           temperature: 0.1,
           top_p: 0.8
         }
       );
 
     // ========================================================
-    // EXTRAER RESPUESTA
+    // RESPUESTA
     // ========================================================
 
     const respuesta =
@@ -2423,8 +2864,9 @@ Sin embargo:
       aiResponse?.choices?.[0]?.message?.content ||
       "";
 
-    if (!respuesta.trim()) {
-
+    if (
+      !respuesta.trim()
+    ) {
       console.error(
         "Workers AI devolvió una respuesta vacía:",
         aiResponse
@@ -2440,10 +2882,6 @@ Sin embargo:
         corsHeaders
       );
     }
-
-    // ========================================================
-    // RESPUESTA FINAL
-    // ========================================================
 
     return jsonResponse(
       {
