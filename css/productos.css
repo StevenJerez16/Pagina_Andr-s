@@ -218,11 +218,12 @@ section {
       rgba(0,0,0,0.75) 50%,
       rgba(13,37,63,0.55) 100%
     ),
-    url('https://images.unsplash.com/photo-1605559424843-9c6d1b5c2d30');
+    url('../img/hero.jpg');
 
   background-size: cover;
   background-position: center;
 }
+
 
 .hero-container {
   width: min(1200px, 92%);
@@ -723,7 +724,7 @@ section {
       rgba(0,0,0,0.95),
       rgba(13,37,63,0.55)
     ),
-    url('https://images.unsplash.com/photo-1586864387789-628af9feed72');
+    url('../img/hero.jpg');
 
   background-size: cover;
 
@@ -2969,4 +2970,12 @@ footer {
 
 .social-bar.closed .toggle-btn {
     right: 0; /* Posiciona el botón de alternar en el borde derecho cuando la barra está cerrada */
+}
+
+a.add-cart-btn {
+  color: #fff !important;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }

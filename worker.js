@@ -1713,10 +1713,8 @@ async function registrarLead(
 
 
 // ============================================================
-// IA 
-// ============================================================
-// ============================================================
 // IA - CLOUDFLARE WORKERS AI
+// CATÁLOGO DINÁMICO DESDE productos2.html
 // ============================================================
 
 async function responderIA(
@@ -1768,77 +1766,425 @@ async function responderIA(
       );
     }
 
-    // --------------------------------------------------------
+    // ========================================================
+    // OBTENER CATÁLOGO REAL DESDE productos2.html
+    // ========================================================
+
+    let catalogText =
+      "No fue posible cargar el catálogo.";
+
+    try {
+      const catalogUrl =
+        new URL(request.url);
+
+      catalogUrl.pathname =
+        "/productos2.html";
+
+      catalogUrl.search = "";
+
+      const catalogResponse =
+        await env.ASSETS.fetch(
+          new Request(catalogUrl.toString(), {
+            method: "GET"
+          })
+        );
+
+      if (catalogResponse.ok) {
+        const html =
+          await catalogResponse.text();
+
+        // ----------------------------------------------------
+        // BUSCAR PRODUCT CARDS
+        // ----------------------------------------------------
+
+        const productMatches =
+          html.match(
+            /<article\b[^>]*class=["'][^"']*product-card[^"']*["'][^>]*>[\s\S]*?<\/article>/gi
+          ) || [];
+
+        const products =
+          [];
+
+        // ----------------------------------------------------
+        // FUNCIONES AUXILIARES
+        // ----------------------------------------------------
+
+        function getAttribute(
+          tag,
+          attribute
+        ) {
+          const regex =
+            new RegExp(
+              `${attribute}\\s*=\\s*["']([^"']*)["']`,
+              "i"
+            );
+
+          const match =
+            tag.match(regex);
+
+          return match
+            ? match[1].trim()
+            : "";
+        }
+
+        function cleanText(
+          value
+        ) {
+          return String(value || "")
+            .replace(
+              /<script[\s\S]*?<\/script>/gi,
+              ""
+            )
+            .replace(
+              /<style[\s\S]*?<\/style>/gi,
+              ""
+            )
+            .replace(
+              /<[^>]+>/g,
+              " "
+            )
+            .replace(
+              /&nbsp;/gi,
+              " "
+            )
+            .replace(
+              /&amp;/gi,
+              "&"
+            )
+            .replace(
+              /&quot;/gi,
+              '"'
+            )
+            .replace(
+              /&#039;/gi,
+              "'"
+            )
+            .replace(
+              /\s+/g,
+              " "
+            )
+            .trim();
+        }
+
+        // ----------------------------------------------------
+        // EXTRAER CADA PRODUCTO
+        // ----------------------------------------------------
+
+        productMatches.forEach(
+          (card) => {
+            const openingTagMatch =
+              card.match(
+                /<article\b[^>]*>/i
+              );
+
+            if (!openingTagMatch) {
+              return;
+            }
+
+            const openingTag =
+              openingTagMatch[0];
+
+            const name =
+              getAttribute(
+                openingTag,
+                "data-product"
+              );
+
+            const price =
+              getAttribute(
+                openingTag,
+                "data-price"
+              );
+
+            const vehicle =
+              getAttribute(
+                openingTag,
+                "data-vehicle"
+              );
+
+            const category =
+              getAttribute(
+                openingTag,
+                "data-category"
+              );
+
+            // ------------------------------------------------
+            // NOMBRE VISIBLE
+            // ------------------------------------------------
+
+            const headingMatch =
+              card.match(
+                /<h3\b[^>]*>([\s\S]*?)<\/h3>/i
+              );
+
+            const visibleName =
+              headingMatch
+                ? cleanText(
+                    headingMatch[1]
+                  )
+                : "";
+
+            const productName =
+              name ||
+              visibleName;
+
+            if (!productName) {
+              return;
+            }
+
+            // ------------------------------------------------
+            // PRECIO VISIBLE
+            // ------------------------------------------------
+
+            const strongMatches =
+              card.match(
+                /<strong\b[^>]*>([\s\S]*?)<\/strong>/gi
+              ) || [];
+
+            const strongTexts =
+              strongMatches
+                .map(
+                  (strong) =>
+                    cleanText(strong)
+                )
+                .filter(Boolean);
+
+            let displayedPrice =
+              "";
+
+            if (price) {
+              const numericPrice =
+                Number(price);
+
+              if (
+                Number.isFinite(
+                  numericPrice
+                ) &&
+                numericPrice > 0
+              ) {
+                displayedPrice =
+                  `$${numericPrice.toLocaleString("es-CO")}`;
+              }
+            }
+
+            // ------------------------------------------------
+            // SI NO HAY data-price,
+            // USAR EL TEXTO VISIBLE
+            // ------------------------------------------------
+
+            if (!displayedPrice) {
+              const priceText =
+                strongTexts.find(
+                  (text) =>
+                    text.includes("$") ||
+                    text
+                      .toLowerCase()
+                      .includes("cotizar")
+                );
+
+              if (priceText) {
+                displayedPrice =
+                  priceText;
+              }
+            }
+
+            if (!displayedPrice) {
+              displayedPrice =
+                "Precio no especificado; consultar";
+            }
+
+            // ------------------------------------------------
+            // DESCRIPCIÓN
+            // ------------------------------------------------
+
+            const paragraphMatch =
+              card.match(
+                /<p\b[^>]*>([\s\S]*?)<\/p>/i
+              );
+
+            const description =
+              paragraphMatch
+                ? cleanText(
+                    paragraphMatch[1]
+                  )
+                : "";
+
+            products.push({
+              name:
+                productName,
+              price:
+                displayedPrice,
+              vehicle:
+                vehicle || "no especificado",
+              category:
+                category || "no especificada",
+              description
+            });
+          }
+        );
+
+        // ----------------------------------------------------
+        // CREAR TEXTO COMPACTO DEL CATÁLOGO
+        // ----------------------------------------------------
+
+        if (products.length > 0) {
+          catalogText =
+            products
+              .map(
+                (product, index) => {
+                  let line =
+                    `${index + 1}. ${product.name}`;
+
+                  line +=
+                    ` | Precio: ${product.price}`;
+
+                  if (
+                    product.vehicle
+                  ) {
+                    line +=
+                      ` | Vehículo: ${product.vehicle}`;
+                  }
+
+                  if (
+                    product.category
+                  ) {
+                    line +=
+                      ` | Categoría: ${product.category}`;
+                  }
+
+                  if (
+                    product.description
+                  ) {
+                    line +=
+                      ` | ${product.description}`;
+                  }
+
+                  return line;
+                }
+              )
+              .join("\n");
+        }
+      }
+
+    } catch (catalogError) {
+      console.error(
+        "Error obteniendo catálogo para IA:",
+        catalogError
+      );
+    }
+
+    // ========================================================
     // INSTRUCCIONES DE VR TURBOLUB
-    // --------------------------------------------------------
+    // ========================================================
 
     const systemPrompt = `
 Eres el asistente virtual oficial de VR Turbolub.
 
-VR Turbolub vende aceites y lubricantes.
+VR Turbolub vende aceites, lubricantes,
+filtros, refrigerantes, aditivos y accesorios
+automotrices y para motocicletas.
 
 RESPONDE SIEMPRE EN ESPAÑOL.
 
-Sé amable, claro y breve.
+Sé amable, claro, útil y breve.
 
-IMPORTANTE:
-Solo puedes utilizar la información del catálogo
-proporcionado a continuación.
+============================================================
+REGLAS IMPORTANTES
+============================================================
 
-No inventes productos.
-No inventes precios.
-No inventes especificaciones técnicas.
-No inventes disponibilidad.
-No inventes promociones.
+El catálogo que aparece abajo fue obtenido
+directamente de la página actual de VR Turbolub.
 
-CATÁLOGO ACTUAL:
+UTILIZA ESE CATÁLOGO COMO FUENTE PRINCIPAL
+PARA TODAS LAS PREGUNTAS RELACIONADAS CON
+PRODUCTOS, PRECIOS, CATEGORÍAS Y VEHÍCULOS.
 
-1. Aceite Moto 2T Terpel Celerity
-Precio: $68.000
+NO inventes productos.
 
-2. Aceite Moto 4T Terpel Celerity 20W-50 Titanio
-Precio: $68.000
+NO inventes precios.
 
-3. Valvulina GoldMax Gear para Cajas
-Precio: $120.000
+NO inventes especificaciones técnicas.
 
-4. Lubricante Diésel
-Precio: $180.000
+NO inventes disponibilidad o stock.
 
-5. Aditivo Premium
-Precio: $45.000
+NO inventes promociones.
 
-MÉTODOS DE PAGO:
+NO inventes características que no aparezcan
+en la información proporcionada.
+
+Si un producto aparece con "Cotizar",
+"Precio no especificado" o un rango de precios,
+NO conviertas ese dato en un precio exacto.
+
+Si el usuario pregunta por stock o disponibilidad
+y el catálogo no proporciona esa información,
+indica honestamente que el catálogo no muestra
+el stock actual y recomienda consultar con un asesor.
+
+Si el usuario pregunta por un producto que NO
+aparece en el catálogo, indica que actualmente
+no tienes información de ese producto.
+
+Si el usuario pregunta qué productos tienen,
+puedes organizar la respuesta por categoría
+o tipo de vehículo.
+
+Si el usuario pregunta por productos para carro,
+moto o camión, utiliza el campo "Vehículo".
+
+Si el usuario pregunta por aceites, filtros,
+refrigerantes, aditivos, lubricantes o accesorios,
+utiliza el campo "Categoría".
+
+Para preguntas generales sobre lubricantes,
+mantenimiento automotriz o temas relacionados,
+puedes responder con conocimiento general,
+pero NO atribuyas características específicas
+a productos de VR Turbolub si no aparecen
+en el catálogo.
+
+============================================================
+CATÁLOGO ACTUAL DE VR TURBOLUB
+============================================================
+
+${catalogText}
+
+============================================================
+MÉTODOS DE PAGO
+============================================================
 
 - Nequi
 - PSE / Transferencia bancaria
 - Tarjeta
 - Contra entrega
 
-ENVÍO:
+============================================================
+ENVÍO
+============================================================
 
 - Contra entrega: envío gratis.
-- Pedidos con subtotal MAYOR a $100.000: envío gratis.
-- Pedidos de $100.000 exactos: envío de $10.000.
-- Pedidos inferiores a $100.000: envío de $10.000.
+- Subtotal mayor a $100.000: envío gratis.
+- Subtotal de $100.000 o menos: envío de $10.000.
 
-Si el usuario quiere comprar,
+============================================================
+COMPRAS
+============================================================
+
+Si el usuario quiere comprar un producto,
 indícale que puede utilizar el catálogo
 y el carrito de compras de la página.
 
-Si el usuario pregunta por un producto
-que no está en el catálogo,
-indica honestamente que actualmente
-no tienes información sobre ese producto.
-
-No inventes información.
+Si necesita asesoría personalizada,
+puede comunicarse con VR Turbolub.
 
 Responde normalmente en pocas frases.
+No repitas todo el catálogo salvo que el usuario
+lo solicite.
 `;
 
-    // --------------------------------------------------------
+    // ========================================================
     // CONSTRUIR MENSAJES
-    // --------------------------------------------------------
+    // ========================================================
 
     const messages = [
       {
@@ -1879,18 +2225,18 @@ Responde normalmente en pocas frases.
       });
     }
 
-    // --------------------------------------------------------
+    // ========================================================
     // MENSAJE ACTUAL
-    // --------------------------------------------------------
+    // ========================================================
 
     messages.push({
       role: "user",
       content: message.trim()
     });
 
-    // --------------------------------------------------------
+    // ========================================================
     // CLOUDFLARE WORKERS AI
-    // --------------------------------------------------------
+    // ========================================================
 
     const aiResponse =
       await env.AI.run(
@@ -1902,9 +2248,9 @@ Responde normalmente en pocas frases.
         }
       );
 
-    // --------------------------------------------------------
+    // ========================================================
     // EXTRAER RESPUESTA
-    // --------------------------------------------------------
+    // ========================================================
 
     const respuesta =
       aiResponse?.response ||
@@ -1928,15 +2274,17 @@ Responde normalmente en pocas frases.
       );
     }
 
-    // --------------------------------------------------------
+    // ========================================================
     // RESPUESTA FINAL
-    // --------------------------------------------------------
+    // ========================================================
 
     return jsonResponse(
       {
         ok: true,
-        respuesta: respuesta.trim(),
-        response: respuesta.trim()
+        respuesta:
+          respuesta.trim(),
+        response:
+          respuesta.trim()
       },
       200,
       corsHeaders
@@ -1961,91 +2309,114 @@ Responde normalmente en pocas frases.
   }
 }
 
+  // ============================================================
+  // SUBIR COMPROBANTE A HUBSPOT
+  // ============================================================
+
+  async function uploadReceiptToHubSpot(
+    receipt,
+    token,
+    orderId
+  ) {
+    try {
+      const bytes =
+        base64ToUint8Array(
+          receipt.data
+        );
 
 
-// ============================================================
-// SUBIR COMPROBANTE A HUBSPOT
-// ============================================================
+      const extension =
+        extensionFromMime(
+          receipt.type
+        );
 
-async function uploadReceiptToHubSpot(
-  receipt,
-  token,
-  orderId
-) {
-  try {
-    const bytes =
-      base64ToUint8Array(
-        receipt.data
+
+      const filename =
+        `comprobante-${orderId}${extension}`;
+
+
+      const formData =
+        new FormData();
+
+
+      formData.append(
+        "file",
+        new Blob(
+          [bytes],
+          {
+            type:
+              receipt.type
+          }
+        ),
+        filename
       );
 
 
-    const extension =
-      extensionFromMime(
-        receipt.type
+      formData.append(
+        "folderPath",
+        "/VR Turbolub/Comprobantes"
       );
 
 
-    const filename =
-      `comprobante-${orderId}${extension}`;
-
-
-    const formData =
-      new FormData();
-
-
-    formData.append(
-      "file",
-      new Blob(
-        [bytes],
-        {
-          type:
-            receipt.type
-        }
-      ),
-      filename
-    );
-
-
-    formData.append(
-      "folderPath",
-      "/VR Turbolub/Comprobantes"
-    );
-
-
-    formData.append(
-      "options",
-      JSON.stringify({
-        access:
-          "PRIVATE"
-      })
-    );
-
-
-    const response =
-      await fetch(
-        `${HUBSPOT_API}/files/v3/files`,
-        {
-          method: "POST",
-
-          headers: {
-            "Authorization":
-              `Bearer ${token}`
-          },
-
-          body:
-            formData
-        }
+      formData.append(
+        "options",
+        JSON.stringify({
+          access:
+            "PRIVATE"
+        })
       );
 
 
-    const data =
-      await safeJson(response);
+      const response =
+        await fetch(
+          `${HUBSPOT_API}/files/v3/files`,
+          {
+            method: "POST",
+
+            headers: {
+              "Authorization":
+                `Bearer ${token}`
+            },
+
+            body:
+              formData
+          }
+        );
 
 
-    if (!response.ok) {
+      const data =
+        await safeJson(response);
+
+
+      if (!response.ok) {
+        console.error(
+          "HubSpot Files error:",
+          data
+        );
+
+
+        return {
+          ok: false,
+
+          error:
+            data?.message ||
+            "HubSpot rechazó el comprobante"
+        };
+      }
+
+
+      return {
+        ok: true,
+
+        fileId:
+          data.id
+      };
+
+
+    } catch (error) {
       console.error(
-        "HubSpot Files error:",
-        data
+        "uploadReceiptToHubSpot:",
+        error
       );
 
 
@@ -2053,36 +2424,11 @@ async function uploadReceiptToHubSpot(
         ok: false,
 
         error:
-          data?.message ||
-          "HubSpot rechazó el comprobante"
+          error.message ||
+          "Error subiendo archivo"
       };
     }
-
-
-    return {
-      ok: true,
-
-      fileId:
-        data.id
-    };
-
-
-  } catch (error) {
-    console.error(
-      "uploadReceiptToHubSpot:",
-      error
-    );
-
-
-    return {
-      ok: false,
-
-      error:
-        error.message ||
-        "Error subiendo archivo"
-    };
   }
-}
 
 
 // ============================================================
