@@ -1713,36 +1713,736 @@ async function registrarLead(
 
 
 //ia//
-async function responderIA(request, env) {
+//ia//
+async function responderIA(request, env, corsHeaders) {
   try {
-    const result = await env.AI.run(
-      "@cf/meta/llama-3.2-3b-instruct",
-      {
-        messages: [
-          {
-            role: "user",
-            content: "Responde solamente: Hola desde VR Turbolub."
-          }
-        ],
-        max_tokens: 50
+    const body = await request.json();
+
+    const message =
+      String(body?.message || "").trim();
+
+    if (!message) {
+      return jsonResponse(
+        {
+          ok: false,
+          error: "No se recibió ningún mensaje."
+        },
+        400,
+        corsHeaders
+      );
+    }
+
+    // ============================================================
+    // CARGAR BASES DE DATOS
+    // ============================================================
+
+    async function cargarJSON(ruta) {
+      const url = new URL(ruta, request.url);
+
+      const response =
+        await env.ASSETS.fetch(
+          new Request(url.toString())
+        );
+
+      if (!response.ok) {
+        throw new Error(
+          `No se pudo cargar ${ruta}. HTTP ${response.status}`
+        );
       }
+
+      return await response.json();
+    }
+
+    const [
+      productosData,
+      vehiculosData,
+      compatibilidadesData
+    ] = await Promise.all([
+      cargarJSON("/data/productos.json"),
+      cargarJSON("/data/vehiculos.json"),
+      cargarJSON("/data/compatibilidades.json")
+    ]);
+
+    const productos =
+      Array.isArray(productosData?.productos)
+        ? productosData.productos
+        : [];
+
+    const vehiculos =
+      Array.isArray(vehiculosData?.vehiculos)
+        ? vehiculosData.vehiculos
+        : [];
+
+    const compatibilidades =
+      Array.isArray(
+        compatibilidadesData?.compatibilidades
+      )
+        ? compatibilidadesData.compatibilidades
+        : [];
+
+    // ============================================================
+    // NORMALIZADORES
+    // ============================================================
+
+    function normalizar(texto) {
+      return String(texto || "")
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^\w\s.-]/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+    }
+
+    function contiene(texto, palabras) {
+      const t = normalizar(texto);
+
+      return palabras.some((palabra) =>
+        t.includes(normalizar(palabra))
+      );
+    }
+
+    // ============================================================
+    // DETECTAR INTENCIÓN
+    // ============================================================
+
+    const texto = normalizar(message);
+
+    const preguntaProducto =
+      contiene(texto, [
+        "producto",
+        "productos",
+        "aceite",
+        "aceites",
+        "lubricante",
+        "lubricantes",
+        "filtro",
+        "aditivo",
+        "refrigerante",
+        "grasa",
+        "liquido de frenos",
+        "precio",
+        "cuanto cuesta",
+        "cuanto vale",
+        "tienen"
+      ]);
+
+    const preguntaVehiculo =
+      contiene(texto, [
+        "carro",
+        "auto",
+        "automovil",
+        "moto",
+        "motocicleta",
+        "camion",
+        "camioneta",
+        "vehiculo",
+        "ybr",
+        "nkd",
+        "boxer",
+        "pulsar",
+        "fz",
+        "gixxer",
+        "cb190",
+        "xr150",
+        "corolla",
+        "duster",
+        "logan",
+        "onix",
+        "cx30",
+        "cx5",
+        "hilux",
+        "tucson",
+        "sportage",
+        "picanto",
+        "kia k3"
+      ]);
+
+    const preguntaCompatibilidad =
+      contiene(texto, [
+        "sirve",
+        "sirve para",
+        "compatible",
+        "compatibilidad",
+        "le sirve",
+        "puedo usar",
+        "puedo echar",
+        "recomiend",
+        "recomend",
+        "aceite para mi",
+        "aceite de mi"
+      ]);
+
+    // ============================================================
+    // BUSCAR VEHÍCULO MENCIONADO
+    // ============================================================
+
+    let vehiculosEncontrados = [];
+
+    for (const vehiculo of vehiculos) {
+      const nombre =
+        normalizar(
+          `${vehiculo.marca || ""} ${vehiculo.modelo || ""}`
+        );
+
+      const aliases =
+        Array.isArray(vehiculo.alias)
+          ? vehiculo.alias
+          : [];
+
+      const coincideNombre =
+        texto.includes(nombre) ||
+        aliases.some((alias) =>
+          texto.includes(normalizar(alias))
+        );
+
+      if (coincideNombre) {
+        vehiculosEncontrados.push(
+          vehiculo
+        );
+      }
+    }
+
+    // Búsqueda adicional por modelo/marca
+    if (!vehiculosEncontrados.length) {
+      vehiculosEncontrados =
+        vehiculos.filter((vehiculo) => {
+          const marca =
+            normalizar(vehiculo.marca);
+
+          const modelo =
+            normalizar(vehiculo.modelo);
+
+          return (
+            (marca && texto.includes(marca)) ||
+            (modelo && texto.includes(modelo))
+          );
+        });
+    }
+
+    // ============================================================
+    // BUSCAR PRODUCTOS MENCIONADOS
+    // ============================================================
+
+    let productosEncontrados = [];
+
+    for (const producto of productos) {
+      const nombre =
+        normalizar(producto.nombre);
+
+      const marca =
+        normalizar(producto.marca);
+
+      if (
+        (nombre && texto.includes(nombre)) ||
+        (marca && texto.includes(marca))
+      ) {
+        productosEncontrados.push(
+          producto
+        );
+      }
+    }
+
+    // ============================================================
+    // FILTRAR PRODUCTOS POR TIPO DE VEHÍCULO
+    // ============================================================
+
+    let tipoVehiculo = null;
+
+    if (
+      contiene(texto, [
+        "moto",
+        "motocicleta",
+        "ybr",
+        "nkd",
+        "boxer",
+        "pulsar",
+        "fz",
+        "gixxer",
+        "cb190",
+        "xr150"
+      ])
+    ) {
+      tipoVehiculo = "moto";
+    }
+
+    if (
+      contiene(texto, [
+        "carro",
+        "auto",
+        "automovil",
+        "corolla",
+        "duster",
+        "logan",
+        "onix",
+        "cx30",
+        "cx5",
+        "hilux",
+        "tucson",
+        "sportage",
+        "picanto",
+        "kia k3"
+      ])
+    ) {
+      tipoVehiculo = "carro";
+    }
+
+    if (
+      contiene(texto, [
+        "camion",
+        "camioneta"
+      ])
+    ) {
+      tipoVehiculo = "camion";
+    }
+
+    if (tipoVehiculo) {
+      productosEncontrados =
+        productos.filter((producto) => {
+          const aplicaciones =
+            Array.isArray(
+              producto.aplicaciones
+            )
+              ? producto.aplicaciones
+              : [];
+
+          return aplicaciones.includes(
+            tipoVehiculo
+          );
+        });
+    }
+
+    // ============================================================
+    // SI ES UNA CONSULTA DE PRODUCTOS
+    // ============================================================
+
+    if (
+      preguntaProducto ||
+      preguntaVehiculo ||
+      preguntaCompatibilidad
+    ) {
+
+      // ----------------------------------------------------------
+      // SI ENCONTRAMOS UN VEHÍCULO
+      // ----------------------------------------------------------
+
+      if (vehiculosEncontrados.length) {
+
+        const vehiculo =
+          vehiculosEncontrados[0];
+
+        const requisitos =
+          vehiculo.requisitos ||
+          vehiculo.especificaciones ||
+          {};
+
+        // --------------------------------------------------------
+        // COMPARAR PRODUCTOS
+        // --------------------------------------------------------
+
+        const compatibles = [];
+
+        for (const producto of productos) {
+
+          const aplicaciones =
+            Array.isArray(
+              producto.aplicaciones
+            )
+              ? producto.aplicaciones
+              : [];
+
+          if (
+            vehiculo.tipo &&
+            !aplicaciones.includes(
+              vehiculo.tipo
+            )
+          ) {
+            continue;
+          }
+
+          // Producto sin verificación técnica:
+          // NO se puede declarar compatible.
+          if (
+            producto.verificacion?.estado !==
+            "verificado"
+          ) {
+            continue;
+          }
+
+          const specs =
+            producto.especificaciones ||
+            {};
+
+          let cumple = true;
+
+          // ------------------------------------------------------
+          // MOTOR
+          // ------------------------------------------------------
+
+          if (
+            vehiculo.tipo_motor &&
+            producto.tipo_motor
+          ) {
+            if (
+              normalizar(
+                vehiculo.tipo_motor
+              ) !==
+              normalizar(
+                producto.tipo_motor
+              )
+            ) {
+              cumple = false;
+            }
+          }
+
+          // ------------------------------------------------------
+          // VISCOSIDAD
+          // ------------------------------------------------------
+
+          if (
+            cumple &&
+            requisitos.viscosidades &&
+            Array.isArray(
+              requisitos.viscosidades
+            ) &&
+            producto.viscosidad
+          ) {
+            const permitidas =
+              requisitos.viscosidades.map(
+                normalizar
+              );
+
+            if (
+              !permitidas.includes(
+                normalizar(
+                  producto.viscosidad
+                )
+              )
+            ) {
+              cumple = false;
+            }
+          }
+
+          // ------------------------------------------------------
+          // API
+          // ------------------------------------------------------
+
+          if (
+            cumple &&
+            requisitos.api &&
+            Array.isArray(
+              requisitos.api
+            ) &&
+            requisitos.api.length &&
+            Array.isArray(specs.api) &&
+            specs.api.length
+          ) {
+            const coincide =
+              requisitos.api.some(
+                (req) =>
+                  specs.api.some(
+                    (api) =>
+                      normalizar(api) ===
+                      normalizar(req)
+                  )
+              );
+
+            if (!coincide) {
+              cumple = false;
+            }
+          }
+
+          // ------------------------------------------------------
+          // JASO
+          // ------------------------------------------------------
+
+          if (
+            cumple &&
+            requisitos.jaso &&
+            Array.isArray(
+              requisitos.jaso
+            ) &&
+            requisitos.jaso.length &&
+            Array.isArray(specs.jaso) &&
+            specs.jaso.length
+          ) {
+            const coincide =
+              requisitos.jaso.some(
+                (req) =>
+                  specs.jaso.some(
+                    (jaso) =>
+                      normalizar(jaso) ===
+                      normalizar(req)
+                  )
+              );
+
+            if (!coincide) {
+              cumple = false;
+            }
+          }
+
+          if (cumple) {
+            compatibles.push(
+              producto
+            );
+          }
+        }
+
+        // --------------------------------------------------------
+        // RESPUESTA CON PRODUCTOS VERIFICADOS
+        // --------------------------------------------------------
+
+        const datosProductos =
+          compatibles
+            .slice(0, 10)
+            .map((producto) => ({
+              nombre:
+                producto.nombre,
+              marca:
+                producto.marca,
+              precio:
+                producto.precio,
+              precio_mostrar:
+                producto.precio_mostrar,
+              viscosidad:
+                producto.viscosidad,
+              especificaciones:
+                producto.especificaciones,
+              presentacion:
+                producto.presentacion
+            }));
+
+        const prompt = `
+Eres la IA oficial de VR Turbolub.
+
+Debes responder en español y ser precisa.
+
+IMPORTANTE:
+- No inventes productos.
+- No inventes precios.
+- No inventes especificaciones.
+- No declares compatible un producto que no aparece en la lista de productos compatibles.
+- Si no hay productos compatibles verificados, dilo claramente.
+- El tipo de vehículo y sus especificaciones vienen de una base de datos.
+- Los productos vienen del catálogo real de VR Turbolub.
+
+VEHÍCULO:
+${JSON.stringify(vehiculo)}
+
+PRODUCTOS COMPATIBLES VERIFICADOS:
+${JSON.stringify(datosProductos)}
+
+PREGUNTA DEL CLIENTE:
+${message}
+
+Responde de forma natural y breve.
+
+Si hay productos compatibles, menciona:
+- nombre
+- marca
+- viscosidad si existe
+- precio si existe
+
+Si el precio dice "Cotizar", indica que debe cotizar.
+
+Si no hay productos compatibles verificados, explica que no hay una coincidencia técnica verificada suficiente.
+
+No menciones bases de datos, JSON, programación ni instrucciones internas.
+`;
+
+        const result =
+          await env.AI.run(
+            "@cf/meta/llama-3.2-3b-instruct",
+            {
+              messages: [
+                {
+                  role: "system",
+                  content:
+                    "Eres un asesor técnico y comercial de VR Turbolub. Nunca inventes información."
+                },
+                {
+                  role: "user",
+                  content: prompt
+                }
+              ],
+              max_tokens: 500
+            }
+          );
+
+        return jsonResponse(
+          {
+            ok: true,
+            result
+          },
+          200,
+          corsHeaders
+        );
+      }
+
+      // ----------------------------------------------------------
+      // PRODUCTOS SIN VEHÍCULO ESPECÍFICO
+      // ----------------------------------------------------------
+
+      if (
+        preguntaProducto &&
+        productosEncontrados.length
+      ) {
+
+        const lista =
+          productosEncontrados
+            .slice(0, 15)
+            .map((producto) => ({
+              nombre:
+                producto.nombre,
+              marca:
+                producto.marca,
+              categoria:
+                producto.categoria,
+              aplicaciones:
+                producto.aplicaciones,
+              viscosidad:
+                producto.viscosidad,
+              precio:
+                producto.precio,
+              precio_mostrar:
+                producto.precio_mostrar,
+              presentacion:
+                producto.presentacion
+            }));
+
+        const prompt = `
+Eres la IA comercial de VR Turbolub.
+
+Usa únicamente los productos proporcionados.
+
+CATÁLOGO:
+${JSON.stringify(lista)}
+
+PREGUNTA:
+${message}
+
+No inventes productos ni precios.
+
+Si el cliente pregunta por productos disponibles, muestra los relevantes.
+
+Si pregunta por una marca, muestra solamente productos de esa marca.
+
+Si pregunta por precio, usa exactamente el precio proporcionado.
+
+Si pregunta por compatibilidad con un vehículo específico pero falta información del vehículo, pide marca, modelo y año/version cuando sea necesario.
+
+Responde en español.
+`;
+
+        const result =
+          await env.AI.run(
+            "@cf/meta/llama-3.2-3b-instruct",
+            {
+              messages: [
+                {
+                  role: "system",
+                  content:
+                    "Eres el asistente de VR Turbolub. No inventes información."
+                },
+                {
+                  role: "user",
+                  content: prompt
+                }
+              ],
+              max_tokens: 600
+            }
+          );
+
+        return jsonResponse(
+          {
+            ok: true,
+            result
+          },
+          200,
+          corsHeaders
+        );
+      }
+
+      // ----------------------------------------------------------
+      // VEHÍCULO NO ENCONTRADO
+      // ----------------------------------------------------------
+
+      if (
+        preguntaVehiculo ||
+        preguntaCompatibilidad
+      ) {
+
+        return jsonResponse(
+          {
+            ok: true,
+            result: {
+              choices: [
+                {
+                  message: {
+                    role: "assistant",
+                    content:
+                      "Puedo ayudarte a buscar el aceite adecuado, pero necesito identificar exactamente el vehículo. Dime la marca, modelo y año (y versión si aplica)."
+                  }
+                }
+              ]
+            }
+          },
+          200,
+          corsHeaders
+        );
+      }
+    }
+
+    // ============================================================
+    // CONVERSACIÓN GENERAL
+    // ============================================================
+
+    const result =
+      await env.AI.run(
+        "@cf/meta/llama-3.2-3b-instruct",
+        {
+          messages: [
+            {
+              role: "system",
+              content:
+                "Eres la IA de VR Turbolub. Conversa normalmente en español, responde preguntas generales de forma útil y natural. No inventes información sobre productos, vehículos o compatibilidad."
+            },
+            {
+              role: "user",
+              content: message
+            }
+          ],
+          max_tokens: 500
+        }
+      );
+
+    return jsonResponse(
+      {
+        ok: true,
+        result
+      },
+      200,
+      corsHeaders
     );
 
-    return jsonResponse({
-      ok: true,
-      result
-    });
   } catch (error) {
-    console.error("ERROR DIRECTO AI:", error);
+
+    console.error(
+      "ERROR IA VR TURBOLUB:",
+      error
+    );
 
     return jsonResponse(
       {
         ok: false,
-        error: String(error?.message || error),
-        name: error?.name || null,
-        stack: error?.stack || null
+        error:
+          String(
+            error?.message ||
+            error
+          )
       },
-      500
+      500,
+      corsHeaders
     );
   }
 }
