@@ -381,40 +381,31 @@ document.addEventListener("DOMContentLoaded", () => {
   /* =====================================================
      CONEXIÓN CON LA IA
   ===================================================== */
-
   async function askAI(userQuestion) {
 
     const response = await fetch(
       "https://vrturbolub.vrturbolubmiappworkersdev.workers.dev/ia",
       {
         method: "POST",
-
         headers: {
           "Content-Type":
             "application/json"
         },
-
         body: JSON.stringify({
-
           message: userQuestion,
-
           history:
             conversationHistory
-
         })
       }
     );
 
-
     const data =
       await response.json();
-
 
     if (
       !response.ok ||
       data.ok === false
     ) {
-
       console.error(
         "Error de VR Turbolub IA:",
         data
@@ -425,24 +416,31 @@ document.addEventListener("DOMContentLoaded", () => {
       );
     }
 
+    /*
+      Cloudflare Workers AI actualmente responde:
+      data.result.choices[0].message.content
 
+      Se mantienen response/respuesta como
+      compatibilidad con respuestas anteriores.
+    */
     const answer =
-      data.response ||
-      data.respuesta;
-
+      data?.result?.choices?.[0]?.message?.content ||
+      data?.response ||
+      data?.respuesta;
 
     if (!answer) {
+      console.error(
+        "Respuesta inesperada de la IA:",
+        data
+      );
 
       throw new Error(
-        "Gemini no devolvió respuesta."
+        "La IA no devolvió respuesta."
       );
     }
 
-
     return answer;
   }
-
-
   /* =====================================================
      ENVIAR PREGUNTA - IA GRANDE
   ===================================================== */
