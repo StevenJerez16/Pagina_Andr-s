@@ -1,0 +1,419 @@
+{
+  "version": 1,
+  "fuente_principal": "manuales y documentación de fabricante",
+  "vehiculos": [
+    {
+      "id": "yamaha-ybr-125",
+      "tipo": "moto",
+      "marca": "Yamaha",
+      "modelo": "YBR 125",
+      "variantes": [
+        {
+          "id": "yamaha-ybr-125-generica",
+          "anios": [],
+          "motor": {
+            "cilindraje_cc": 123,
+            "tipo": "4T",
+            "combustible": "gasolina"
+          },
+          "aceite_motor": {
+            "viscosidades": [
+              "10W-30",
+              "10W-40",
+              "10W-50",
+              "15W-40",
+              "20W-40",
+              "20W-50"
+            ],
+            "api": [
+              "SG"
+            ],
+            "jaso": [
+              "MA"
+            ],
+            "capacidad_servicio_litros": 1.0
+          },
+          "transmision": {
+            "tipo": "manual",
+            "especificacion": null
+          },
+          "refrigerante": {
+            "especificacion": null
+          },
+          "liquido_frenos": {
+            "dot": null
+          },
+          "fuentes": [
+            {
+              "tipo": "manual_propietario",
+              "url": "https://www.carmanualsonline.info/yamaha-ybr125-2010-owners-manual/8"
+            }
+          ],
+          "estado_verificacion": "parcial"
+        }
+      ]
+    },
+
+    {
+      "id": "akt-nkd-125",
+      "tipo": "moto",
+      "marca": "AKT",
+      "modelo": "NKD 125",
+      "variantes": [
+        {
+          "id": "akt-nkd-125-2025",
+          "anios": [
+            2025
+          ],
+          "motor": {
+            "cilindraje_cc": 125,
+            "tipo": "4T",
+            "combustible": "gasolina"
+          },
+          "aceite_motor": {
+            "viscosidades": [
+              "20W-50"
+            ],
+            "api": [
+              "SN"
+            ],
+            "jaso": [
+              "MA2"
+            ],
+            "capacidad_servicio_litros": null
+          },
+          "transmision": {
+            "tipo": "manual",
+            "especificacion": null
+          },
+          "refrigerante": {
+            "especificacion": null
+          },
+          "liquido_frenos": {
+            "dot": null
+          },
+          "fuentes": [
+            {
+              "tipo": "manual_fabricante",
+              "url": "https://aktmotos.com/sites/default/files/2025-10/Manual%20de%20usuario%20NKD%202025.pdf"
+            },
+            {
+              "tipo": "manuales_fabricante",
+              "url": "https://aktmotos.com/manuales/"
+            }
+          ],
+          "estado_verificacion": "verificado"
+        }
+      ]
+    },
+
+    {
+      "id": "bajaj-boxer-ct100",
+      "tipo": "moto",
+      "marca": "Bajaj",
+      "modelo": "Boxer CT100",
+      "variantes": [
+        {
+          "id": "bajaj-boxer-ct100-2026",
+          "anios": [
+            2026
+          ],
+          "motor": {
+            "cilindraje_cc": 99.27,
+            "tipo": "4T",
+            "combustible": "gasolina"
+          },
+          "aceite_motor": {
+            "viscosidades": [
+              "20W-50",
+              "10W-30"
+            ],
+            "api": [
+              "SN"
+            ],
+            "jaso": [
+              "MA2"
+            ],
+            "capacidad_servicio_litros": 1.0
+          },
+          "transmision": {
+            "tipo": "manual",
+            "especificacion": null
+          },
+          "refrigerante": {
+            "especificacion": null
+          },
+          "liquido_frenos": {
+            "dot": null
+          },
+          "fuentes": [
+            {
+              "tipo": "manual_fabricante",
+              "url": "https://grupouma.com/colombia/wp-content/uploads/sites/2/2026/04/MU-BOXER-CT-100-KS-CBS-2026.pdf"
+            }
+          ],
+          "estado_verificacion": "verificado"
+        }
+      ]
+    },
+
+    {
+      "id": "bajaj-pulsar-ns200",
+      "tipo": "moto",
+      "marca": "Bajaj",
+      "modelo": "Pulsar NS200",
+      "variantes": [
+        {
+          "id": "bajaj-pulsar-ns200-2026",
+          "anios": [
+            2026
+          ],
+          "motor": {
+            "cilindraje_cc": 199.5,
+            "tipo": "4T",
+            "combustible": "gasolina"
+          },
+          "aceite_motor": {
+            "viscosidades": [
+              "20W-50",
+              "10W-50"
+            ],
+            "api": [
+              "SN"
+            ],
+            "jaso": [
+              "MA2"
+            ],
+            "capacidad_servicio_litros": 1.2
+          },
+          "transmision": {
+            "tipo": "manual",
+            "especificacion": null
+          },
+          "refrigerante": {
+            "especificacion": null
+          },
+          "liquido_frenos": {
+            "dot": null
+          },
+          "fuentes": [
+            {
+              "tipo": "manual_fabricante",
+              "url": "https://cdn.bajajauto.com/-/media/assets/bajajauto/customer-service/owners-manual/owners-manual-pdf/owner-manual-pdf-2026/pulsar-ns200_single-channel-abs.pdf"
+            }
+          ],
+          "estado_verificacion": "verificado"
+        }
+      ]
+    },
+
+    {
+      "id": "yamaha-fz-150",
+      "tipo": "moto",
+      "marca": "Yamaha",
+      "modelo": "FZ 150",
+      "variantes": [
+        {
+          "id": "yamaha-fz-150-2019",
+          "anios": [
+            2019
+          ],
+          "motor": {
+            "cilindraje_cc": 149,
+            "tipo": "4T",
+            "combustible": "gasolina"
+          },
+          "aceite_motor": {
+            "viscosidades": [
+              "10W-40"
+            ],
+            "api": [
+              "SG"
+            ],
+            "jaso": [
+              "MA"
+            ],
+            "capacidad_servicio_litros": null
+          },
+          "transmision": {
+            "tipo": "manual",
+            "especificacion": null
+          },
+          "refrigerante": {
+            "especificacion": null
+          },
+          "liquido_frenos": {
+            "dot": null
+          },
+          "fuentes": [
+            {
+              "tipo": "manual_propietario",
+              "url": "https://www.manualslib.es/manual/723911/Yamaha-Fz-S-Fi-2019.html"
+            }
+          ],
+          "estado_verificacion": "parcial"
+        }
+      ]
+    },
+
+    {
+      "id": "suzuki-gixxer-150",
+      "tipo": "moto",
+      "marca": "Suzuki",
+      "modelo": "Gixxer 150",
+      "variantes": [
+        {
+          "id": "suzuki-gixxer-150-generica",
+          "anios": [],
+          "motor": {
+            "cilindraje_cc": 150,
+            "tipo": "4T",
+            "combustible": "gasolina"
+          },
+          "aceite_motor": {
+            "viscosidades": [
+              "10W-40"
+            ],
+            "api": [
+              "SL"
+            ],
+            "jaso": [
+              "MA2"
+            ],
+            "capacidad_servicio_litros": null
+          },
+          "transmision": {
+            "tipo": "manual",
+            "especificacion": null
+          },
+          "refrigerante": {
+            "especificacion": null
+          },
+          "liquido_frenos": {
+            "dot": null
+          },
+          "fuentes": [
+            {
+              "tipo": "producto_fabricante",
+              "url": "https://tienda.suzuki.com.co/products/aceite-lubricante-full-sintetico-r9000-10w40-946-ml"
+            },
+            {
+              "tipo": "sitio_fabricante",
+              "url": "https://www.suzuki.com.co/motocicletas/categoria/sport"
+            }
+          ],
+          "estado_verificacion": "parcial"
+        }
+      ]
+    },
+
+    {
+      "id": "honda-cb190r",
+      "tipo": "moto",
+      "marca": "Honda",
+      "modelo": "CB190R",
+      "variantes": [
+        {
+          "id": "honda-cb190r-manual-anterior",
+          "anios": [],
+          "motor": {
+            "cilindraje_cc": 184,
+            "tipo": "4T",
+            "combustible": "gasolina"
+          },
+          "aceite_motor": {
+            "viscosidades": [
+              "10W-30"
+            ],
+            "api": [
+              "SG"
+            ],
+            "jaso": [
+              "MA"
+            ],
+            "capacidad_servicio_litros": 1.0
+          },
+          "transmision": {
+            "tipo": "manual",
+            "especificacion": null
+          },
+          "refrigerante": {
+            "especificacion": null
+          },
+          "liquido_frenos": {
+            "dot": [
+              "DOT 3",
+              "DOT 4"
+            ]
+          },
+          "fuentes": [
+            {
+              "tipo": "manual_fabricante",
+              "url": "https://motos.honda.com.co/manuales/manual-cb190r-repsol.pdf"
+            },
+            {
+              "tipo": "manual_fabricante",
+              "url": "https://motos.honda.com.co/manuales/nueva-CB190R.pdf"
+            },
+            {
+              "tipo": "sitio_fabricante",
+              "url": "https://motos.honda.com.co/CB-190-R-20"
+            }
+          ],
+          "estado_verificacion": "parcial"
+        }
+      ]
+    },
+
+    {
+      "id": "honda-xr150l",
+      "tipo": "moto",
+      "marca": "Honda",
+      "modelo": "XR150L",
+      "variantes": [
+        {
+          "id": "honda-xr150l-manual-anterior",
+          "anios": [],
+          "motor": {
+            "cilindraje_cc": 149.1,
+            "tipo": "4T",
+            "combustible": "gasolina"
+          },
+          "aceite_motor": {
+            "viscosidades": [
+              "10W-30"
+            ],
+            "api": [
+              "SL"
+            ],
+            "jaso": [
+              "MA2"
+            ],
+            "capacidad_servicio_litros": null
+          },
+          "transmision": {
+            "tipo": "manual",
+            "especificacion": null
+          },
+          "refrigerante": {
+            "especificacion": null
+          },
+          "liquido_frenos": {
+            "dot": null
+          },
+          "fuentes": [
+            {
+              "tipo": "manual_fabricante",
+              "url": "https://motos.honda.com.co/manuales/manual-xr150l.pdf"
+            },
+            {
+              "tipo": "sitio_fabricante",
+              "url": "https://motos.honda.com.co/XR-150L-20"
+            }
+          ],
+          "estado_verificacion": "parcial"
+        }
+      ]
+    }
+  ]
+}

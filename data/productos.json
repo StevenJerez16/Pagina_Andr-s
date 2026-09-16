@@ -1,0 +1,1379 @@
+{
+  "version": 2,
+  "moneda": "COP",
+  "fuente_precios": "catalogo_actual_vr_turbolub",
+  "nota": "Los datos técnicos solo se consideran verificados cuando existe una fuente del fabricante. Los campos null o [] indican información técnica aún no verificada.",
+  "productos": [
+    {
+      "id": "aceite-2t-terpel-celerity",
+      "nombre": "Aceite 2T Terpel Celerity",
+      "marca": "Terpel",
+      "categoria": "aceite_2t",
+      "aplicaciones": ["moto"],
+      "viscosidad": null,
+      "tipo_motor": "2T",
+      "especificaciones": {
+        "api": [],
+        "acea": [],
+        "jaso": ["FB"],
+        "oem": []
+      },
+      "precio": 25000,
+      "precio_min": null,
+      "precio_max": null,
+      "precio_mostrar": "$25.000",
+      "presentacion": null,
+      "imagen": "img/motocelerity2t.webp",
+      "descripcion": "Aceite Terpel Celerity para motores de 2 tiempos.",
+      "verificacion": {
+        "estado": "verificado",
+        "fuente": "Terpel",
+        "url": "https://www.terpel.com/empresas/lubricantes/lubricantes-terpel/motociclistas/terpel-celerity-fb"
+      }
+    },
+
+    {
+      "id": "aceite-4t-terpel-celerity-20w50",
+      "nombre": "Aceite 4T Terpel Celerity 20W-50",
+      "marca": "Terpel",
+      "categoria": "aceite_motor",
+      "aplicaciones": ["moto"],
+      "viscosidad": "20W-50",
+      "tipo_motor": "4T",
+      "especificaciones": {
+        "api": ["SL"],
+        "acea": [],
+        "jaso": ["MA2"],
+        "oem": []
+      },
+      "precio": 31000,
+      "precio_min": null,
+      "precio_max": null,
+      "precio_mostrar": "$31.000",
+      "presentacion": null,
+      "imagen": "img/motocelerity4t.webp",
+      "descripcion": "Aceite 4T Terpel Celerity 20W-50 para motocicletas.",
+      "verificacion": {
+        "estado": "verificado",
+        "fuente": "Terpel",
+        "url": "https://www.terpel.com/empresas/lubricantes/lubricantes-terpel/motociclistas/terpel-celerity-20w-50-titanio"
+      }
+    },
+
+    {
+      "id": "aceite-4t-terpel-celerity-15w50",
+      "nombre": "Aceite 4T Terpel Celerity 15W-50",
+      "marca": "Terpel",
+      "categoria": "aceite_motor",
+      "aplicaciones": ["moto"],
+      "viscosidad": "15W-50",
+      "tipo_motor": "4T",
+      "especificaciones": {
+        "api": ["SL"],
+        "acea": [],
+        "jaso": ["MA2"],
+        "oem": []
+      },
+      "precio": 32000,
+      "precio_min": null,
+      "precio_max": null,
+      "precio_mostrar": "$32.000",
+      "presentacion": null,
+      "imagen": "img/aceite4t.webp",
+      "descripcion": "Aceite 4T Terpel Celerity 15W-50 para motocicletas.",
+      "verificacion": {
+        "estado": "verificado",
+        "fuente": "Terpel",
+        "url": "https://www.terpel.com/empresas/lubricantes/lubricantes-terpel/motociclistas/terpel-celerity-15w-50-semisintetico"
+      }
+    },
+
+    {
+      "id": "aceite-4t-mobil-super-20w50",
+      "nombre": "Aceite 4T Mobil Super 20W-50",
+      "marca": "Mobil",
+      "categoria": "aceite_motor",
+      "aplicaciones": ["moto"],
+      "viscosidad": "20W-50",
+      "tipo_motor": "4T",
+      "especificaciones": {
+        "api": ["SL"],
+        "acea": [],
+        "jaso": ["MA", "MA2"],
+        "oem": []
+      },
+      "precio": 34000,
+      "precio_min": null,
+      "precio_max": null,
+      "precio_mostrar": "$34.000",
+      "presentacion": null,
+      "imagen": "img/mobil4t.webp",
+      "descripcion": "Aceite Mobil Super Moto 4T 20W-50.",
+      "verificacion": {
+        "estado": "verificado",
+        "fuente": "Mobil",
+        "url": "https://www.mobil.com/es-co/passenger-vehicle-lube/pds/as-co-mobil-super-moto-4t-20w-50"
+      }
+    },
+
+    {
+      "id": "aceite-4t-motul-5000-20w50",
+      "nombre": "Aceite 4T Motul 5000 20W-50",
+      "marca": "Motul",
+      "categoria": "aceite_motor",
+      "aplicaciones": ["moto"],
+      "viscosidad": "20W-50",
+      "tipo_motor": "4T",
+      "especificaciones": {
+        "api": ["SN"],
+        "acea": [],
+        "jaso": ["MA2"],
+        "oem": []
+      },
+      "precio": 37000,
+      "precio_min": null,
+      "precio_max": null,
+      "precio_mostrar": "$37.000",
+      "presentacion": null,
+      "imagen": "img/motul5000.webp",
+      "descripcion": "Aceite Motul 5000 4T 20W-50.",
+      "verificacion": {
+        "estado": "verificado",
+        "fuente": "Motul",
+        "url": "https://www.motul.com/es-CO/products/14911"
+      }
+    },
+
+    {
+      "id": "aceite-4t-motul-5100-15w50",
+      "nombre": "Aceite 4T Motul 5100 15W-50",
+      "marca": "Motul",
+      "categoria": "aceite_motor",
+      "aplicaciones": ["moto"],
+      "viscosidad": "15W-50",
+      "tipo_motor": "4T",
+      "especificaciones": {
+        "api": ["SP"],
+        "acea": [],
+        "jaso": ["MA2"],
+        "oem": []
+      },
+      "precio": 42000,
+      "precio_min": null,
+      "precio_max": null,
+      "precio_mostrar": "$42.000",
+      "presentacion": null,
+      "imagen": "img/motul5100.webp",
+      "descripcion": "Aceite Motul 5100 4T 15W-50.",
+      "verificacion": {
+        "estado": "verificado",
+        "fuente": "Motul",
+        "url": "https://www.motul.com/es-CO/products/15400"
+      }
+    },
+
+    {
+      "id": "aceite-4t-motul-7100-10w40",
+      "nombre": "Aceite 4T Motul 7100 10W-40",
+      "marca": "Motul",
+      "categoria": "aceite_motor",
+      "aplicaciones": ["moto"],
+      "viscosidad": "10W-40",
+      "tipo_motor": "4T",
+      "especificaciones": {
+        "api": ["SP"],
+        "acea": [],
+        "jaso": ["MA2"],
+        "oem": []
+      },
+      "precio": 60000,
+      "precio_min": null,
+      "precio_max": null,
+      "precio_mostrar": "$60.000",
+      "presentacion": null,
+      "imagen": "img/motul7100.webp",
+      "descripcion": "Aceite Motul 7100 4T 10W-40.",
+      "verificacion": {
+        "estado": "verificado",
+        "fuente": "Motul",
+        "url": "https://www.motul.com/es-CO/products/16500"
+      }
+    },
+
+    {
+      "id": "aceite-terpel-celerity-25w50",
+      "nombre": "Aceite Terpel Celerity 25W-50 Grueso",
+      "marca": "Terpel",
+      "categoria": "aceite_motor",
+      "aplicaciones": ["moto"],
+      "viscosidad": "25W-50",
+      "tipo_motor": "4T",
+      "especificaciones": {
+        "api": ["SL"],
+        "acea": [],
+        "jaso": ["MA2"],
+        "oem": []
+      },
+      "precio": 27000,
+      "precio_min": null,
+      "precio_max": null,
+      "precio_mostrar": "$27.000",
+      "presentacion": null,
+      "imagen": "img/terpel4tcarrito.webp",
+      "descripcion": "Aceite para motocicletas y motocarros 4T de alto kilometraje.",
+      "verificacion": {
+        "estado": "verificado",
+        "fuente": "Terpel",
+        "url": "https://www.terpel.com/empresas/lubricantes/lubricantes-terpel/motociclistas/terpel-celerity-25w50-grueso"
+      }
+    },
+
+    {
+      "id": "lubricante-cadenas-urbanas",
+      "nombre": "Lubricante Cadenas Urbanas",
+      "marca": null,
+      "categoria": "lubricante",
+      "aplicaciones": ["moto"],
+      "viscosidad": null,
+      "tipo_motor": null,
+      "especificaciones": {
+        "api": [],
+        "acea": [],
+        "jaso": [],
+        "oem": []
+      },
+      "precio": 30000,
+      "precio_min": null,
+      "precio_max": null,
+      "precio_mostrar": "$30.000",
+      "presentacion": null,
+      "imagen": "img/lubricantescadena.webp",
+      "descripcion": "Lubricante para cadenas de motocicleta.",
+      "verificacion": {
+        "estado": "pendiente",
+        "fuente": null,
+        "url": null
+      }
+    },
+
+    {
+      "id": "filtro-mf11-yamaha-ybr125",
+      "nombre": "Filtro MF-11 Yamaha YBR-125",
+      "marca": "Yamaha",
+      "categoria": "filtro",
+      "aplicaciones": ["moto"],
+      "viscosidad": null,
+      "tipo_motor": null,
+      "especificaciones": {
+        "api": [],
+        "acea": [],
+        "jaso": [],
+        "oem": []
+      },
+      "precio": null,
+      "precio_min": 2000,
+      "precio_max": 3000,
+      "precio_mostrar": "$2.000 - $3.000",
+      "presentacion": null,
+      "imagen": "img/filtro1.webp",
+      "descripcion": "Filtro MF-11 para Yamaha YBR-125.",
+      "verificacion": {
+        "estado": "pendiente",
+        "fuente": null,
+        "url": null
+      }
+    },
+
+    {
+      "id": "filtro-ml07",
+      "nombre": "Filtro ML-07",
+      "marca": null,
+      "categoria": "filtro",
+      "aplicaciones": ["moto"],
+      "viscosidad": null,
+      "tipo_motor": null,
+      "especificaciones": {
+        "api": [],
+        "acea": [],
+        "jaso": [],
+        "oem": []
+      },
+      "precio": 3900,
+      "precio_min": null,
+      "precio_max": null,
+      "precio_mostrar": "$3.900",
+      "presentacion": null,
+      "imagen": "img/filtro2.webp",
+      "descripcion": "Filtro para motocicleta.",
+      "verificacion": {
+        "estado": "pendiente",
+        "fuente": null,
+        "url": null
+      }
+    },
+
+    {
+      "id": "filtro-ml05",
+      "nombre": "Filtro ML-05",
+      "marca": null,
+      "categoria": "filtro",
+      "aplicaciones": ["moto"],
+      "viscosidad": null,
+      "tipo_motor": null,
+      "especificaciones": {
+        "api": [],
+        "acea": [],
+        "jaso": [],
+        "oem": []
+      },
+      "precio": 3000,
+      "precio_min": null,
+      "precio_max": null,
+      "precio_mostrar": "$3.000",
+      "presentacion": null,
+      "imagen": "img/filtro3.webp",
+      "descripcion": "Filtro para motocicleta.",
+      "verificacion": {
+        "estado": "pendiente",
+        "fuente": null,
+        "url": null
+      }
+    },
+
+    {
+      "id": "impermeables-plasticos",
+      "nombre": "Impermeables plásticos",
+      "marca": null,
+      "categoria": "accesorio",
+      "aplicaciones": ["moto"],
+      "viscosidad": null,
+      "tipo_motor": null,
+      "especificaciones": {
+        "api": [],
+        "acea": [],
+        "jaso": [],
+        "oem": []
+      },
+      "precio": 10000,
+      "precio_min": null,
+      "precio_max": null,
+      "precio_mostrar": "$10.000",
+      "presentacion": null,
+      "imagen": "img/impercap.webp",
+      "descripcion": "Impermeables plásticos para motociclistas.",
+      "verificacion": {
+        "estado": "pendiente",
+        "fuente": null,
+        "url": null
+      }
+    },
+
+    {
+      "id": "grasas-star-oil",
+      "nombre": "Grasas Star Oil",
+      "marca": "Star Oil",
+      "categoria": "grasa",
+      "aplicaciones": ["moto", "carro"],
+      "viscosidad": null,
+      "tipo_motor": null,
+      "especificaciones": {
+        "api": [],
+        "acea": [],
+        "jaso": [],
+        "oem": []
+      },
+      "precio": null,
+      "precio_min": 8000,
+      "precio_max": 15000,
+      "precio_mostrar": "$8.000 - $15.000",
+      "presentacion": null,
+      "imagen": "img/grasa.webp",
+      "descripcion": "Grasa Star Oil. Aplicación indicada en el catálogo para moto y carro.",
+      "verificacion": {
+        "estado": "pendiente",
+        "fuente": null,
+        "url": null
+      }
+    },
+
+    {
+      "id": "renovador-partes-negras",
+      "nombre": "Renovador Partes Negras",
+      "marca": null,
+      "categoria": "limpieza",
+      "aplicaciones": ["moto", "carro"],
+      "viscosidad": null,
+      "tipo_motor": null,
+      "especificaciones": {
+        "api": [],
+        "acea": [],
+        "jaso": [],
+        "oem": []
+      },
+      "precio": 14000,
+      "precio_min": null,
+      "precio_max": null,
+      "precio_mostrar": "$14.000",
+      "presentacion": null,
+      "imagen": "img/partesnegras.webp",
+      "descripcion": "Renovador para partes negras de carros y motos.",
+      "verificacion": {
+        "estado": "pendiente",
+        "fuente": null,
+        "url": null
+      }
+    },
+
+    {
+      "id": "liquido-frenos-cofre",
+      "nombre": "Líquido Frenos COFRE BRAKE FLUID",
+      "marca": "COFRE",
+      "categoria": "liquido_frenos",
+      "aplicaciones": ["moto"],
+      "viscosidad": null,
+      "tipo_motor": null,
+      "especificaciones": {
+        "api": [],
+        "acea": [],
+        "jaso": [],
+        "oem": []
+      },
+      "precio": 29000,
+      "precio_min": null,
+      "precio_max": null,
+      "precio_mostrar": "$29.000",
+      "presentacion": null,
+      "imagen": "img/liquidoparafrenos2.webp",
+      "descripcion": "Líquido de frenos COFRE.",
+      "verificacion": {
+        "estado": "pendiente",
+        "fuente": null,
+        "url": null
+      }
+    },
+
+    {
+      "id": "silicona-ultra-rapida",
+      "nombre": "Silicona Ultra-Rápida",
+      "marca": null,
+      "categoria": "otro",
+      "aplicaciones": ["moto"],
+      "viscosidad": null,
+      "tipo_motor": null,
+      "especificaciones": {
+        "api": [],
+        "acea": [],
+        "jaso": [],
+        "oem": []
+      },
+      "precio": 16000,
+      "precio_min": null,
+      "precio_max": null,
+      "precio_mostrar": "$16.000",
+      "presentacion": null,
+      "imagen": "img/silicona.webp",
+      "descripcion": "Silicona ultra-rápida.",
+      "verificacion": {
+        "estado": "pendiente",
+        "fuente": null,
+        "url": null
+      }
+    },
+
+    {
+      "id": "goldmax-gear-cajas",
+      "nombre": "Valvulina GoldMax Gear para Cajas",
+      "marca": "GoldMax",
+      "categoria": "aceite_transmision",
+      "aplicaciones": ["carro"],
+      "viscosidad": null,
+      "tipo_motor": null,
+      "especificaciones": {
+        "api": [],
+        "acea": [],
+        "jaso": [],
+        "oem": []
+      },
+      "precio": 10000,
+      "precio_min": null,
+      "precio_max": null,
+      "precio_mostrar": "$10.000",
+      "presentacion": null,
+      "imagen": "img/maxgear.webp",
+      "descripcion": "Valvulina GoldMax Gear para cajas.",
+      "verificacion": {
+        "estado": "pendiente",
+        "fuente": null,
+        "url": null
+      }
+    },
+
+    {
+      "id": "shell-spirax-s2a-80w90",
+      "nombre": "Aceite Shell SPIRAX para Diferenciales S2 A 80W-90",
+      "marca": "Shell",
+      "categoria": "aceite_diferencial",
+      "aplicaciones": ["carro"],
+      "viscosidad": "80W-90",
+      "tipo_motor": null,
+      "especificaciones": {
+        "api": [],
+        "acea": [],
+        "jaso": [],
+        "oem": []
+      },
+      "precio": 28000,
+      "precio_min": null,
+      "precio_max": null,
+      "precio_mostrar": "$28.000",
+      "presentacion": null,
+      "imagen": "img/acietediferenciales.webp",
+      "descripcion": "Aceite Shell SPIRAX para diferenciales.",
+      "verificacion": {
+        "estado": "pendiente",
+        "fuente": null,
+        "url": null
+      }
+    },
+
+    {
+      "id": "terpel-oiltec-20w50-multigrado",
+      "nombre": "Aceite Terpel Oiltec 20W-50 Multigrado",
+      "marca": "Terpel",
+      "categoria": "aceite_motor",
+      "aplicaciones": ["carro"],
+      "viscosidad": "20W-50",
+      "tipo_motor": null,
+      "especificaciones": {
+        "api": [],
+        "acea": [],
+        "jaso": [],
+        "oem": []
+      },
+      "precio": 113000,
+      "precio_min": null,
+      "precio_max": null,
+      "precio_mostrar": "$113.000",
+      "presentacion": null,
+      "imagen": "img/terpeloiltec.webp",
+      "descripcion": "Aceite Terpel Oiltec 20W-50 multigrado.",
+      "verificacion": {
+        "estado": "pendiente",
+        "fuente": null,
+        "url": null
+      }
+    },
+
+    {
+      "id": "terpel-oiltec-20w50",
+      "nombre": "Aceite Terpel Oiltec 20W-50",
+      "marca": "Terpel",
+      "categoria": "aceite_motor",
+      "aplicaciones": ["carro"],
+      "viscosidad": "20W-50",
+      "tipo_motor": null,
+      "especificaciones": {
+        "api": [],
+        "acea": [],
+        "jaso": [],
+        "oem": []
+      },
+      "precio": 32000,
+      "precio_min": null,
+      "precio_max": null,
+      "precio_mostrar": "$32.000",
+      "presentacion": null,
+      "imagen": "img/terpeloiltec20w.webp",
+      "descripcion": "Aceite Terpel Oiltec 20W-50.",
+      "verificacion": {
+        "estado": "pendiente",
+        "fuente": null,
+        "url": null
+      }
+    },
+
+    {
+      "id": "terpel-ultrek-50",
+      "nombre": "Aceite Terpel Ultrek 50 Monogrado",
+      "marca": "Terpel",
+      "categoria": "aceite_motor",
+      "aplicaciones": ["carro"],
+      "viscosidad": "SAE 50",
+      "tipo_motor": null,
+      "especificaciones": {
+        "api": [],
+        "acea": [],
+        "jaso": [],
+        "oem": []
+      },
+      "precio": 100000,
+      "precio_min": null,
+      "precio_max": null,
+      "precio_mostrar": "$100.000",
+      "presentacion": null,
+      "imagen": "img/terpelultrek50.webp",
+      "descripcion": "Aceite Terpel Ultrek 50 monogrado.",
+      "verificacion": {
+        "estado": "pendiente",
+        "fuente": null,
+        "url": null
+      }
+    },
+
+    {
+      "id": "havoline-20w50",
+      "nombre": "Aceite Havoline 20W-50",
+      "marca": "Havoline",
+      "categoria": "aceite_motor",
+      "aplicaciones": ["carro"],
+      "viscosidad": "20W-50",
+      "tipo_motor": null,
+      "especificaciones": {
+        "api": [],
+        "acea": [],
+        "jaso": [],
+        "oem": []
+      },
+      "precio": 100000,
+      "precio_min": null,
+      "precio_max": null,
+      "precio_mostrar": "$100.000",
+      "presentacion": null,
+      "imagen": "img/havoline20w-50.webp",
+      "descripcion": "Aceite Havoline 20W-50.",
+      "verificacion": {
+        "estado": "pendiente",
+        "fuente": null,
+        "url": null
+      }
+    },
+
+    {
+      "id": "petronas-syntium-500-1l-20w50",
+      "nombre": "Aceite Petronas SYNTIUM 1L 500 20W-50",
+      "marca": "Petronas",
+      "categoria": "aceite_motor",
+      "aplicaciones": ["carro"],
+      "viscosidad": "20W-50",
+      "tipo_motor": null,
+      "especificaciones": {
+        "api": [],
+        "acea": [],
+        "jaso": [],
+        "oem": []
+      },
+      "precio": 27000,
+      "precio_min": null,
+      "precio_max": null,
+      "precio_mostrar": "$27.000",
+      "presentacion": "1L",
+      "imagen": "img/petronassyntium.webp",
+      "descripcion": "Petronas SYNTIUM 500 20W-50, presentación 1L.",
+      "verificacion": {
+        "estado": "pendiente",
+        "fuente": null,
+        "url": null
+      }
+    },
+
+    {
+      "id": "petronas-syntium-500-4l-20w50",
+      "nombre": "Aceite Petronas SYNTIUM 4L 500 20W-50",
+      "marca": "Petronas",
+      "categoria": "aceite_motor",
+      "aplicaciones": ["carro"],
+      "viscosidad": "20W-50",
+      "tipo_motor": null,
+      "especificaciones": {
+        "api": [],
+        "acea": [],
+        "jaso": [],
+        "oem": []
+      },
+      "precio": 105000,
+      "precio_min": null,
+      "precio_max": null,
+      "precio_mostrar": "$105.000",
+      "presentacion": "4L",
+      "imagen": "img/petronassyntium500.webp",
+      "descripcion": "Petronas SYNTIUM 500 20W-50, presentación 4L.",
+      "verificacion": {
+        "estado": "pendiente",
+        "fuente": null,
+        "url": null
+      }
+    },
+
+    {
+      "id": "mobil-super-1000-20w50",
+      "nombre": "Aceite Mobil Super 1000 20W-50",
+      "marca": "Mobil",
+      "categoria": "aceite_motor",
+      "aplicaciones": ["carro"],
+      "viscosidad": "20W-50",
+      "tipo_motor": null,
+      "especificaciones": {
+        "api": ["SM", "SN", "SN PLUS", "SP", "SQ"],
+        "acea": [],
+        "jaso": [],
+        "oem": []
+      },
+      "precio": 130000,
+      "precio_min": null,
+      "precio_max": null,
+      "precio_mostrar": "$130.000",
+      "presentacion": null,
+      "imagen": "img/mobilsuper1000.webp",
+      "descripcion": "Aceite Mobil Super 1000 20W-50 para vehículos de pasajeros y camionetas.",
+      "verificacion": {
+        "estado": "verificado",
+        "fuente": "Mobil",
+        "url": "https://www.mobil.com/es-co/passenger-vehicle-lube/pds/as-co-mobil-super-1000-20w-50"
+      }
+    },
+
+    {
+      "id": "mobil-super-2000-10w30",
+      "nombre": "Aceite Mobil Super 2000 10W-30",
+      "marca": "Mobil",
+      "categoria": "aceite_motor",
+      "aplicaciones": ["carro"],
+      "viscosidad": "10W-30",
+      "tipo_motor": null,
+      "especificaciones": {
+        "api": [],
+        "acea": [],
+        "jaso": [],
+        "oem": []
+      },
+      "precio": 44000,
+      "precio_min": null,
+      "precio_max": null,
+      "precio_mostrar": "$44.000",
+      "presentacion": null,
+      "imagen": "img/mobilsuper2000.webp",
+      "descripcion": "Aceite Mobil Super 2000 10W-30.",
+      "verificacion": {
+        "estado": "pendiente",
+        "fuente": null,
+        "url": null
+      }
+    },
+
+    {
+      "id": "shell-helix-hx7-10w40",
+      "nombre": "Aceite Shell HELIX HX7 10W-40",
+      "marca": "Shell",
+      "categoria": "aceite_motor",
+      "aplicaciones": ["carro"],
+      "viscosidad": "10W-40",
+      "tipo_motor": null,
+      "especificaciones": {
+        "api": [],
+        "acea": [],
+        "jaso": [],
+        "oem": []
+      },
+      "precio": 43000,
+      "precio_min": null,
+      "precio_max": null,
+      "precio_mostrar": "$43.000",
+      "presentacion": null,
+      "imagen": "img/shellhx7.webp",
+      "descripcion": "Aceite Shell HELIX HX7 10W-40.",
+      "verificacion": {
+        "estado": "pendiente",
+        "fuente": null,
+        "url": null
+      }
+    },
+
+    {
+      "id": "mobil-hidraulico-aw68",
+      "nombre": "Aceite Mobil Hidráulico AW 68",
+      "marca": "Mobil",
+      "categoria": "fluido_hidraulico",
+      "aplicaciones": ["carro"],
+      "viscosidad": "ISO VG 68",
+      "tipo_motor": null,
+      "especificaciones": {
+        "api": [],
+        "acea": [],
+        "jaso": [],
+        "oem": []
+      },
+      "precio": 24000,
+      "precio_min": null,
+      "precio_max": null,
+      "precio_mostrar": "$24.000",
+      "presentacion": null,
+      "imagen": "img/mobilhidraulico.webp",
+      "descripcion": "Fluido hidráulico Mobil AW 68.",
+      "verificacion": {
+        "estado": "pendiente",
+        "fuente": null,
+        "url": null
+      }
+    },
+
+    {
+      "id": "refrigerante-premium-coolant",
+      "nombre": "Refrigerante Radiador Premium-Coolant",
+      "marca": null,
+      "categoria": "refrigerante",
+      "aplicaciones": ["carro"],
+      "viscosidad": null,
+      "tipo_motor": null,
+      "especificaciones": {
+        "api": [],
+        "acea": [],
+        "jaso": [],
+        "oem": []
+      },
+      "precio": 15000,
+      "precio_min": null,
+      "precio_max": null,
+      "precio_mostrar": "$15.000",
+      "presentacion": null,
+      "imagen": "img/refrigerante.webp",
+      "descripcion": "Refrigerante para radiador.",
+      "verificacion": {
+        "estado": "pendiente",
+        "fuente": null,
+        "url": null
+      }
+    },
+
+    {
+      "id": "refrigerante-mobil-permazone",
+      "nombre": "Refrigerante Mobil Permazone",
+      "marca": "Mobil",
+      "categoria": "refrigerante",
+      "aplicaciones": ["carro"],
+      "viscosidad": null,
+      "tipo_motor": null,
+      "especificaciones": {
+        "api": [],
+        "acea": [],
+        "jaso": [],
+        "oem": []
+      },
+      "precio": 24000,
+      "precio_min": null,
+      "precio_max": null,
+      "precio_mostrar": "$24.000",
+      "presentacion": null,
+      "imagen": "img/mobilrefrigerante.webp",
+      "descripcion": "Refrigerante Mobil Permazone.",
+      "verificacion": {
+        "estado": "pendiente",
+        "fuente": null,
+        "url": null
+      }
+    },
+
+    {
+      "id": "refrigerante-terpel",
+      "nombre": "Refrigerante Terpel",
+      "marca": "Terpel",
+      "categoria": "refrigerante",
+      "aplicaciones": ["carro"],
+      "viscosidad": null,
+      "tipo_motor": null,
+      "especificaciones": {
+        "api": [],
+        "acea": [],
+        "jaso": [],
+        "oem": []
+      },
+      "precio": 10000,
+      "precio_min": null,
+      "precio_max": null,
+      "precio_mostrar": "$10.000",
+      "presentacion": null,
+      "imagen": "img/terpelrefrigerante.webp",
+      "descripcion": "Refrigerante Terpel.",
+      "verificacion": {
+        "estado": "pendiente",
+        "fuente": null,
+        "url": null
+      }
+    },
+
+    {
+      "id": "aditivo-aceite",
+      "nombre": "Aditivo Aceite",
+      "marca": null,
+      "categoria": "aditivo",
+      "aplicaciones": ["carro"],
+      "viscosidad": null,
+      "tipo_motor": null,
+      "especificaciones": {
+        "api": [],
+        "acea": [],
+        "jaso": [],
+        "oem": []
+      },
+      "precio": 26000,
+      "precio_min": null,
+      "precio_max": null,
+      "precio_mostrar": "$26.000",
+      "presentacion": null,
+      "imagen": "img/aditivo.webp",
+      "descripcion": "Aditivo para aceite.",
+      "verificacion": {
+        "estado": "pendiente",
+        "fuente": null,
+        "url": null
+      }
+    },
+
+    {
+      "id": "lubricante-lubristone",
+      "nombre": "Lubricante Lubristone",
+      "marca": "Lubristone",
+      "categoria": "lubricante",
+      "aplicaciones": ["carro"],
+      "viscosidad": null,
+      "tipo_motor": null,
+      "especificaciones": {
+        "api": [],
+        "acea": [],
+        "jaso": [],
+        "oem": []
+      },
+      "precio": 8000,
+      "precio_min": null,
+      "precio_max": null,
+      "precio_mostrar": "$8.000",
+      "presentacion": null,
+      "imagen": "img/lubricante.webp",
+      "descripcion": "Lubricante Lubristone.",
+      "verificacion": {
+        "estado": "pendiente",
+        "fuente": null,
+        "url": null
+      }
+    },
+
+    {
+      "id": "filtros-para-carros",
+      "nombre": "Filtros Para Carros",
+      "marca": null,
+      "categoria": "filtro",
+      "aplicaciones": ["carro"],
+      "viscosidad": null,
+      "tipo_motor": null,
+      "especificaciones": {
+        "api": [],
+        "acea": [],
+        "jaso": [],
+        "oem": []
+      },
+      "precio": null,
+      "precio_min": null,
+      "precio_max": null,
+      "precio_mostrar": "Cotizar",
+      "presentacion": null,
+      "imagen": "img/filtros.webp",
+      "descripcion": "Filtros para carros. Referencia y aplicación deben verificarse según vehículo.",
+      "verificacion": {
+        "estado": "pendiente",
+        "fuente": null,
+        "url": null
+      }
+    },
+
+    {
+      "id": "kit-carretera",
+      "nombre": "Kit carretera",
+      "marca": null,
+      "categoria": "accesorio",
+      "aplicaciones": ["carro"],
+      "viscosidad": null,
+      "tipo_motor": null,
+      "especificaciones": {
+        "api": [],
+        "acea": [],
+        "jaso": [],
+        "oem": []
+      },
+      "precio": 50000,
+      "precio_min": null,
+      "precio_max": null,
+      "precio_mostrar": "$50.000",
+      "presentacion": null,
+      "imagen": "img/kitcarretera.webp",
+      "descripcion": "Kit de carretera.",
+      "verificacion": {
+        "estado": "pendiente",
+        "fuente": null,
+        "url": null
+      }
+    },
+
+    {
+      "id": "liquido-frenos-terpel",
+      "nombre": "Líquido de frenos Terpel",
+      "marca": "Terpel",
+      "categoria": "liquido_frenos",
+      "aplicaciones": ["carro"],
+      "viscosidad": null,
+      "tipo_motor": null,
+      "especificaciones": {
+        "api": [],
+        "acea": [],
+        "jaso": [],
+        "oem": []
+      },
+      "precio": null,
+      "precio_min": 8000,
+      "precio_max": 10000,
+      "precio_mostrar": "$8.000 - $10.000",
+      "presentacion": null,
+      "imagen": "img/liquidofrenos.webp",
+      "descripcion": "Líquido de frenos Terpel. El DOT específico debe verificarse antes de recomendarlo para un vehículo.",
+      "verificacion": {
+        "estado": "pendiente",
+        "fuente": null,
+        "url": null
+      }
+    },
+
+    {
+      "id": "plumillas",
+      "nombre": "Plumillas",
+      "marca": null,
+      "categoria": "accesorio",
+      "aplicaciones": ["carro"],
+      "viscosidad": null,
+      "tipo_motor": null,
+      "especificaciones": {
+        "api": [],
+        "acea": [],
+        "jaso": [],
+        "oem": []
+      },
+      "precio": null,
+      "precio_min": 22000,
+      "precio_max": 25000,
+      "precio_mostrar": "$22.000 - $25.000",
+      "presentacion": null,
+      "imagen": "img/accesorio.webp",
+      "descripcion": "Plumillas para automóvil. La medida debe verificarse según vehículo.",
+      "verificacion": {
+        "estado": "pendiente",
+        "fuente": null,
+        "url": null
+      }
+    },
+
+    {
+      "id": "shampoo-cera-autobrillante",
+      "nombre": "Shampoo con cera autobrillante",
+      "marca": null,
+      "categoria": "limpieza",
+      "aplicaciones": ["carro"],
+      "viscosidad": null,
+      "tipo_motor": null,
+      "especificaciones": {
+        "api": [],
+        "acea": [],
+        "jaso": [],
+        "oem": []
+      },
+      "precio": 36000,
+      "precio_min": null,
+      "precio_max": null,
+      "precio_mostrar": "$36.000",
+      "presentacion": null,
+      "imagen": "img/shampoo.webp",
+      "descripcion": "Shampoo con cera autobrillante.",
+      "verificacion": {
+        "estado": "pendiente",
+        "fuente": null,
+        "url": null
+      }
+    },
+
+    {
+      "id": "limpiador-cuero-acondicionador",
+      "nombre": "Limpiador de Cuero con Acondicionador",
+      "marca": null,
+      "categoria": "limpieza",
+      "aplicaciones": ["carro"],
+      "viscosidad": null,
+      "tipo_motor": null,
+      "especificaciones": {
+        "api": [],
+        "acea": [],
+        "jaso": [],
+        "oem": []
+      },
+      "precio": 48000,
+      "precio_min": null,
+      "precio_max": null,
+      "precio_mostrar": "$48.000",
+      "presentacion": null,
+      "imagen": "img/cuero.webp",
+      "descripcion": "Limpiador de cuero con acondicionador.",
+      "verificacion": {
+        "estado": "pendiente",
+        "fuente": null,
+        "url": null
+      }
+    },
+
+    {
+      "id": "limpiador-electronico",
+      "nombre": "Limpiador Electrónico",
+      "marca": null,
+      "categoria": "limpieza",
+      "aplicaciones": ["carro"],
+      "viscosidad": null,
+      "tipo_motor": null,
+      "especificaciones": {
+        "api": [],
+        "acea": [],
+        "jaso": [],
+        "oem": []
+      },
+      "precio": 21000,
+      "precio_min": null,
+      "precio_max": null,
+      "precio_mostrar": "$21.000",
+      "presentacion": null,
+      "imagen": "img/cleaner.webp",
+      "descripcion": "Limpiador electrónico.",
+      "verificacion": {
+        "estado": "pendiente",
+        "fuente": null,
+        "url": null
+      }
+    },
+
+    {
+      "id": "mobil-delvac-modern-15w40",
+      "nombre": "Aceite Mobil Delvac Modern 15W-40",
+      "marca": "Mobil",
+      "categoria": "aceite_motor",
+      "aplicaciones": ["camion"],
+      "viscosidad": "15W-40",
+      "tipo_motor": "diesel",
+      "especificaciones": {
+        "api": [],
+        "acea": [],
+        "jaso": [],
+        "oem": []
+      },
+      "precio": 120000,
+      "precio_min": null,
+      "precio_max": null,
+      "precio_mostrar": "$120.000",
+      "presentacion": null,
+      "imagen": "img/mobildelvac.webp",
+      "descripcion": "Aceite Mobil Delvac Modern 15W-40 para uso pesado.",
+      "verificacion": {
+        "estado": "pendiente",
+        "fuente": null,
+        "url": null
+      }
+    },
+
+    {
+      "id": "acdelco-sae-20w50",
+      "nombre": "Aceite ACDelco SAE 20W-50",
+      "marca": "ACDelco",
+      "categoria": "aceite_motor",
+      "aplicaciones": ["camion"],
+      "viscosidad": "20W-50",
+      "tipo_motor": null,
+      "especificaciones": {
+        "api": [],
+        "acea": [],
+        "jaso": [],
+        "oem": []
+      },
+      "precio": 100000,
+      "precio_min": null,
+      "precio_max": null,
+      "precio_mostrar": "$100.000",
+      "presentacion": null,
+      "imagen": "img/acdelco.webp",
+      "descripcion": "Aceite ACDelco SAE 20W-50.",
+      "verificacion": {
+        "estado": "pendiente",
+        "fuente": null,
+        "url": null
+      }
+    },
+
+    {
+      "id": "shell-helix-hx5-20w50",
+      "nombre": "Aceite Shell HELIX HX5 20W-50",
+      "marca": "Shell",
+      "categoria": "aceite_motor",
+      "aplicaciones": ["camion"],
+      "viscosidad": "20W-50",
+      "tipo_motor": null,
+      "especificaciones": {
+        "api": [],
+        "acea": [],
+        "jaso": [],
+        "oem": []
+      },
+      "precio": 140000,
+      "precio_min": null,
+      "precio_max": null,
+      "precio_mostrar": "$140.000",
+      "presentacion": null,
+      "imagen": "img/shellhelix.webp",
+      "descripcion": "Aceite Shell HELIX HX5 20W-50.",
+      "verificacion": {
+        "estado": "pendiente",
+        "fuente": null,
+        "url": null
+      }
+    },
+
+    {
+      "id": "shell-spirax-s2a-85w140",
+      "nombre": "Aceite Shell SPIRAX S2 A 85W-140",
+      "marca": "Shell",
+      "categoria": "aceite_diferencial",
+      "aplicaciones": ["camion"],
+      "viscosidad": "85W-140",
+      "tipo_motor": null,
+      "especificaciones": {
+        "api": [],
+        "acea": [],
+        "jaso": [],
+        "oem": []
+      },
+      "precio": 28000,
+      "precio_min": null,
+      "precio_max": null,
+      "precio_mostrar": "$28.000",
+      "presentacion": null,
+      "imagen": "img/aceitespirax.webp",
+      "descripcion": "Aceite Shell SPIRAX S2 A 85W-140 para diferenciales.",
+      "verificacion": {
+        "estado": "pendiente",
+        "fuente": null,
+        "url": null
+      }
+    },
+
+    {
+      "id": "castrol-gtx-10w40",
+      "nombre": "Aceite Castrol GTX 10W-40",
+      "marca": "Castrol",
+      "categoria": "aceite_motor",
+      "aplicaciones": ["camion"],
+      "viscosidad": "10W-40",
+      "tipo_motor": null,
+      "especificaciones": {
+        "api": [],
+        "acea": [],
+        "jaso": [],
+        "oem": []
+      },
+      "precio": 46000,
+      "precio_min": null,
+      "precio_max": null,
+      "precio_mostrar": "$46.000",
+      "presentacion": null,
+      "imagen": "img/gastrolgtx.webp",
+      "descripcion": "Aceite Castrol GTX 10W-40.",
+      "verificacion": {
+        "estado": "pendiente",
+        "fuente": null,
+        "url": null
+      }
+    },
+
+    {
+      "id": "refrigerante-premium-coolant-1-galon",
+      "nombre": "Refrigerante Radiador Premium-Coolant 1 Galón",
+      "marca": null,
+      "categoria": "refrigerante",
+      "aplicaciones": ["camion"],
+      "viscosidad": null,
+      "tipo_motor": null,
+      "especificaciones": {
+        "api": [],
+        "acea": [],
+        "jaso": [],
+        "oem": []
+      },
+      "precio": 35000,
+      "precio_min": null,
+      "precio_max": null,
+      "precio_mostrar": "$35.000",
+      "presentacion": "1 galón",
+      "imagen": "img/refrigerante1galon.webp",
+      "descripcion": "Refrigerante para radiador en presentación de 1 galón.",
+      "verificacion": {
+        "estado": "pendiente",
+        "fuente": null,
+        "url": null
+      }
+    },
+
+    {
+      "id": "limpiador-llantas-llantax",
+      "nombre": "Limpiador Llantas, LLantax",
+      "marca": "LLantax",
+      "categoria": "limpieza",
+      "aplicaciones": ["moto", "carro"],
+      "viscosidad": null,
+      "tipo_motor": null,
+      "especificaciones": {
+        "api": [],
+        "acea": [],
+        "jaso": [],
+        "oem": []
+      },
+      "precio": 30000,
+      "precio_min": null,
+      "precio_max": null,
+      "precio_mostrar": "$30.000",
+      "presentacion": null,
+      "imagen": "img/limpiadorllantas.webp",
+      "descripcion": "Limpiador de llantas para moto y carro.",
+      "verificacion": {
+        "estado": "pendiente",
+        "fuente": null,
+        "url": null
+      }
+    },
+
+    {
+      "id": "pines",
+      "nombre": "Pines",
+      "marca": null,
+      "categoria": "accesorio",
+      "aplicaciones": ["moto", "carro", "camion"],
+      "viscosidad": null,
+      "tipo_motor": null,
+      "especificaciones": {
+        "api": [],
+        "acea": [],
+        "jaso": [],
+        "oem": []
+      },
+      "precio": null,
+      "precio_min": null,
+      "precio_max": null,
+      "precio_mostrar": "Cotizar",
+      "presentacion": null,
+      "imagen": "img/pines.webp",
+      "descripcion": "Pines. Precio y disponibilidad bajo cotización.",
+      "verificacion": {
+        "estado": "pendiente",
+        "fuente": null,
+        "url": null
+      }
+    }
+  ]
+}
