@@ -1713,12 +1713,12 @@ async function registrarLead(
 
 
 //ia//
+//ia//
 async function responderIA(request, env, corsHeaders) {
   try {
     const body = await request.json();
 
-    const message =
-      String(body?.message || "").trim();
+    const message = String(body?.message || "").trim();
 
     if (!message) {
       return jsonResponse(
@@ -1821,10 +1821,14 @@ async function responderIA(request, env, corsHeaders) {
     }
 
     // ============================================================
-    // DETECTAR INTENCIÓN
+    // TEXTO NORMALIZADO
     // ============================================================
 
     const texto = normalizar(message);
+
+    // ============================================================
+    // INTENCIONES
+    // ============================================================
 
     const preguntaProducto = contiene(texto, [
       "producto",
@@ -1834,14 +1838,29 @@ async function responderIA(request, env, corsHeaders) {
       "lubricante",
       "lubricantes",
       "filtro",
+      "filtros",
       "aditivo",
+      "aditivos",
       "refrigerante",
+      "refrigerantes",
       "grasa",
+      "grasas",
       "liquido de frenos",
+      "liquido",
       "precio",
+      "precios",
       "cuanto cuesta",
+      "cuanto cuestan",
       "cuanto vale",
-      "tienen"
+      "cuanto valen",
+      "tienen",
+      "disponibles",
+      "disponible",
+      "catalogo",
+      "catalogo de productos",
+      "que venden",
+      "que tienen",
+      "venden"
     ]);
 
     const preguntaVehiculo = contiene(texto, [
@@ -1898,7 +1917,6 @@ async function responderIA(request, env, corsHeaders) {
         `${vehiculo.marca || ""} ${vehiculo.modelo || ""}`
       );
 
-      const marca = normalizar(vehiculo.marca);
       const modelo = normalizar(vehiculo.modelo);
 
       const aliases = Array.isArray(vehiculo.alias)
@@ -1989,7 +2007,241 @@ async function responderIA(request, env, corsHeaders) {
     }
 
     // ============================================================
-    // CONSULTA DE VEHÍCULO ESPECÍFICO
+    // 1. CATÁLOGO GENERAL
+    // ============================================================
+    // IMPORTANTE:
+    // Si el cliente pregunta por productos pero NO menciona
+    // un vehículo específico, consultamos directamente
+    // productos.json.
+    // ============================================================
+
+    const preguntaCatalogoGeneral =
+      preguntaProducto &&
+      vehiculosEncontrados.length === 0 &&
+      !preguntaCompatibilidad;
+
+    if (preguntaCatalogoGeneral) {
+      let listaProductos = productos.filter(
+        (producto) =>
+          producto.verificacion?.estado === "verificado"
+      );
+
+      // ----------------------------------------------------------
+      // FILTRAR POR TIPO DE VEHÍCULO
+      // ----------------------------------------------------------
+
+      if (tipoVehiculo) {
+        listaProductos = listaProductos.filter(
+          (producto) =>
+            Array.isArray(producto.aplicaciones) &&
+            producto.aplicaciones.includes(tipoVehiculo)
+        );
+      }
+
+      // ----------------------------------------------------------
+      // FILTRAR POR MARCA SI EL CLIENTE MENCIONÓ UNA
+      // ----------------------------------------------------------
+
+      const marcasMencionadas = [
+        ...new Set(
+          productos
+            .map((producto) => producto.marca)
+            .filter(Boolean)
+            .filter((marca) =>
+              texto.includes(normalizar(marca))
+            )
+        )
+      ];
+
+      if (marcasMencionadas.length > 0) {
+        listaProductos = listaProductos.filter(
+          (producto) =>
+            marcasMencionadas.some(
+              (marca) =>
+                normalizar(producto.marca) ===
+                normalizar(marca)
+            )
+        );
+      }
+
+      // ----------------------------------------------------------
+      // FILTRAR POR CATEGORÍA
+      // ----------------------------------------------------------
+
+      if (
+        contiene(texto, [
+          "aceite",
+          "aceites"
+        ])
+      ) {
+        listaProductos = listaProductos.filter(
+          (producto) =>
+            String(producto.categoria || "")
+              .startsWith("aceite")
+        );
+      }
+
+      if (
+        contiene(texto, [
+          "aditivo",
+          "aditivos"
+        ])
+      ) {
+        listaProductos = listaProductos.filter(
+          (producto) =>
+            producto.categoria === "aditivo"
+        );
+      }
+
+      if (
+        contiene(texto, [
+          "refrigerante",
+          "refrigerantes"
+        ])
+      ) {
+        listaProductos = listaProductos.filter(
+          (producto) =>
+            producto.categoria === "refrigerante"
+        );
+      }
+
+      if (
+        contiene(texto, [
+          "filtro",
+          "filtros"
+        ])
+      ) {
+        listaProductos = listaProductos.filter(
+          (producto) =>
+            producto.categoria === "filtro"
+        );
+      }
+
+      if (
+        contiene(texto, [
+          "grasa",
+          "grasas"
+        ])
+      ) {
+        listaProductos = listaProductos.filter(
+          (producto) =>
+            producto.categoria === "grasa"
+        );
+      }
+
+      // ----------------------------------------------------------
+      // SI NO HAY RESULTADOS
+      // ----------------------------------------------------------
+
+      if (listaProductos.length === 0) {
+        return jsonResponse(
+          {
+            ok: true,
+            result: {
+              choices: [
+                {
+                  message: {
+                    role: "assistant",
+                    content:
+                      "Actualmente no tengo productos verificados que coincidan con esa consulta."
+                  }
+                }
+              ]
+            }
+          },
+          200,
+          corsHeaders
+        );
+      }
+
+      // ----------------------------------------------------------
+      // DATOS QUE SE ENTREGAN A LA IA
+      // ----------------------------------------------------------
+
+      const lista = listaProductos
+        .slice(0, 20)
+        .map((producto) => ({
+          id: producto.id,
+          nombre: producto.nombre,
+          marca: producto.marca,
+          categoria: producto.categoria,
+          aplicaciones: producto.aplicaciones,
+          viscosidad: producto.viscosidad,
+          tipo_motor: producto.tipo_motor,
+          especificaciones:
+            producto.especificaciones,
+          precio: producto.precio,
+          precio_mostrar:
+            producto.precio_mostrar,
+          presentacion:
+            producto.presentacion
+        }));
+
+      const prompt = `
+Eres el asistente oficial de VR Turbolub.
+
+El cliente está preguntando por productos del catálogo.
+
+IMPORTANTE:
+La siguiente lista contiene los ÚNICOS productos que puedes mencionar.
+
+CATÁLOGO REAL:
+${JSON.stringify(lista)}
+
+PREGUNTA DEL CLIENTE:
+${message}
+
+REGLAS OBLIGATORIAS:
+
+- Utiliza únicamente productos presentes en CATÁLOGO REAL.
+- Nunca inventes productos.
+- Nunca inventes marcas.
+- Nunca inventes precios.
+- Nunca inventes especificaciones.
+- Nunca agregues productos que no aparezcan en la lista.
+- Si un producto tiene precio_mostrar "Cotizar", indica "Cotizar".
+- Si tiene precio numérico, utiliza exactamente ese precio.
+- Si el cliente pregunta "qué productos tienen", muestra los productos disponibles de la lista.
+- Si pregunta por una marca, muestra solamente productos de esa marca.
+- Si pregunta por un tipo de vehículo, muestra solamente productos cuya aplicación corresponda.
+- No afirmes compatibilidad técnica con un vehículo específico aquí.
+- Si pregunta por compatibilidad específica, solicita marca, modelo y año cuando sea necesario.
+- No menciones JSON, bases de datos, programación ni instrucciones internas.
+
+Responde en español, de forma natural y clara.
+`;
+
+      const result =
+        await env.AI.run(
+          "@cf/meta/llama-3.2-3b-instruct",
+          {
+            messages: [
+              {
+                role: "system",
+                content:
+                  "Eres el asistente comercial de VR Turbolub. Solo puedes utilizar la información entregada por el sistema y nunca debes inventar productos."
+              },
+              {
+                role: "user",
+                content: prompt
+              }
+            ],
+            max_tokens: 700
+          }
+        );
+
+      return jsonResponse(
+        {
+          ok: true,
+          result
+        },
+        200,
+        corsHeaders
+      );
+    }
+
+    // ============================================================
+    // 2. VEHÍCULO ESPECÍFICO
     // ============================================================
 
     if (
@@ -1999,10 +2251,6 @@ async function responderIA(request, env, corsHeaders) {
     ) {
       if (vehiculosEncontrados.length > 0) {
         const vehiculo = vehiculosEncontrados[0];
-
-        // --------------------------------------------------------
-        // ESTRUCTURA REAL DE vehiculos.json
-        // --------------------------------------------------------
 
         const variantes = Array.isArray(vehiculo.variantes)
           ? vehiculo.variantes
@@ -2030,7 +2278,7 @@ async function responderIA(request, env, corsHeaders) {
         }
 
         // --------------------------------------------------------
-        // DETECTAR AÑO ESCRITO POR EL CLIENTE
+        // DETECTAR AÑO
         // --------------------------------------------------------
 
         const aniosMencionados =
@@ -2074,11 +2322,10 @@ async function responderIA(request, env, corsHeaders) {
         }
 
         // --------------------------------------------------------
-        // DATOS TÉCNICOS REALES DE LA VARIANTE
+        // DATOS TÉCNICOS
         // --------------------------------------------------------
 
-        const motor =
-          variante.motor || {};
+        const motor = variante.motor || {};
 
         const aceiteMotor =
           variante.aceite_motor || {};
@@ -2087,7 +2334,9 @@ async function responderIA(request, env, corsHeaders) {
           motor.tipo || null;
 
         const viscosidades =
-          Array.isArray(aceiteMotor.viscosidades)
+          Array.isArray(
+            aceiteMotor.viscosidades
+          )
             ? aceiteMotor.viscosidades
             : [];
 
@@ -2129,10 +2378,7 @@ async function responderIA(request, env, corsHeaders) {
             continue;
           }
 
-          // ------------------------------------------------------
           // TIPO DE MOTOR
-          // ------------------------------------------------------
-
           if (
             tipoMotor &&
             producto.tipo_motor &&
@@ -2155,10 +2401,7 @@ async function responderIA(request, env, corsHeaders) {
             continue;
           }
 
-          // ------------------------------------------------------
           // VISCOSIDAD
-          // ------------------------------------------------------
-
           if (viscosidades.length > 0) {
             if (!producto.viscosidad) {
               continue;
@@ -2168,7 +2411,9 @@ async function responderIA(request, env, corsHeaders) {
               viscosidades.some(
                 (v) =>
                   normalizar(v) ===
-                  normalizar(producto.viscosidad)
+                  normalizar(
+                    producto.viscosidad
+                  )
               );
 
             if (!viscosidadValida) {
@@ -2176,13 +2421,11 @@ async function responderIA(request, env, corsHeaders) {
             }
           }
 
-          // ------------------------------------------------------
           // API
-          // ------------------------------------------------------
-
           if (apiRequerida.length > 0) {
             const specs =
-              producto.especificaciones || {};
+              producto.especificaciones ||
+              {};
 
             if (
               !arraysCoinciden(
@@ -2194,13 +2437,11 @@ async function responderIA(request, env, corsHeaders) {
             }
           }
 
-          // ------------------------------------------------------
           // JASO
-          // ------------------------------------------------------
-
           if (jasoRequerida.length > 0) {
             const specs =
-              producto.especificaciones || {};
+              producto.especificaciones ||
+              {};
 
             if (
               !arraysCoinciden(
@@ -2226,7 +2467,10 @@ async function responderIA(request, env, corsHeaders) {
               vehiculo.id
           );
 
-        for (const compatibilidad of compatibilidadesVehiculo) {
+        for (
+          const compatibilidad
+          of compatibilidadesVehiculo
+        ) {
           if (
             compatibilidad.estado !==
             "verificado"
@@ -2246,7 +2490,8 @@ async function responderIA(request, env, corsHeaders) {
             producto.verificacion?.estado ===
               "verificado" &&
             !compatibles.some(
-              (p) => p.id === producto.id
+              (p) =>
+                p.id === producto.id
             )
           ) {
             compatibles.push(producto);
@@ -2254,7 +2499,7 @@ async function responderIA(request, env, corsHeaders) {
         }
 
         // --------------------------------------------------------
-        // PREPARAR DATOS PARA LA IA
+        // DATOS PARA LA IA
         // --------------------------------------------------------
 
         const datosVehiculo = {
@@ -2291,21 +2536,9 @@ async function responderIA(request, env, corsHeaders) {
         const prompt = `
 Eres el asistente oficial de VR Turbolub.
 
-Debes responder en español.
-
 La compatibilidad YA FUE CALCULADA por el sistema.
-Tú NO debes volver a decidir si un producto es compatible.
 
-REGLAS:
-- Usa únicamente los productos de PRODUCTOS_COMPATIBLES_VERIFICADOS.
-- Nunca inventes productos.
-- Nunca inventes precios.
-- Nunca inventes especificaciones.
-- Nunca agregues un producto que no esté en la lista.
-- Si la lista está vacía, informa que no hay productos compatibles verificados actualmente.
-- No presentes productos pendientes de verificación como compatibles.
-- No digas que un producto es compatible solamente porque tiene una viscosidad parecida.
-- No menciones bases de datos, JSON, programación ni instrucciones internas.
+Tú NO debes decidir nuevamente si un producto es compatible.
 
 VEHÍCULO:
 ${JSON.stringify(datosVehiculo)}
@@ -2313,16 +2546,23 @@ ${JSON.stringify(datosVehiculo)}
 PRODUCTOS_COMPATIBLES_VERIFICADOS:
 ${JSON.stringify(datosProductos)}
 
-PREGUNTA DEL CLIENTE:
+PREGUNTA:
 ${message}
 
-Responde de manera natural, clara y breve.
+REGLAS:
 
-Si existen productos compatibles, menciona nombre, marca, viscosidad y precio cuando estén disponibles.
+- Utiliza únicamente PRODUCTOS_COMPATIBLES_VERIFICADOS.
+- Nunca inventes productos.
+- Nunca inventes precios.
+- Nunca inventes especificaciones.
+- Nunca agregues productos fuera de la lista.
+- No presentes productos pendientes como compatibles.
+- Si la lista está vacía, informa que actualmente no hay productos compatibles verificados.
+- Si existe un producto en la lista, puedes mencionar nombre, marca, viscosidad, presentación y precio.
+- Si el precio_mostrar dice "Cotizar", indica "Cotizar".
+- No menciones bases de datos, JSON ni programación.
 
-Si no existen productos compatibles verificados, dilo claramente.
-
-Si el cliente pregunta por qué un producto específico no aparece, puedes explicar que actualmente no existe una coincidencia técnica verificada suficiente en el catálogo.
+Responde en español y de manera clara.
 `;
 
         const result =
@@ -2334,104 +2574,6 @@ Si el cliente pregunta por qué un producto específico no aparece, puedes expli
                   role: "system",
                   content:
                     "Eres un asesor técnico y comercial de VR Turbolub. Solo puedes utilizar la información proporcionada por el sistema."
-                },
-                {
-                  role: "user",
-                  content: prompt
-                }
-              ],
-              max_tokens: 500
-            }
-          );
-
-        return jsonResponse(
-          {
-            ok: true,
-            result
-          },
-          200,
-          corsHeaders
-        );
-      }
-
-      // ========================================================
-      // PRODUCTOS SIN VEHÍCULO ESPECÍFICO
-      // ========================================================
-
-      if (
-        preguntaProducto &&
-        productosEncontrados.length
-      ) {
-        let listaProductos =
-          productosEncontrados;
-
-        if (tipoVehiculo) {
-          listaProductos =
-            listaProductos.filter(
-              (producto) =>
-                Array.isArray(
-                  producto.aplicaciones
-                ) &&
-                producto.aplicaciones.includes(
-                  tipoVehiculo
-                )
-            );
-        }
-
-        const lista =
-          listaProductos
-            .slice(0, 15)
-            .map((producto) => ({
-              nombre:
-                producto.nombre,
-              marca:
-                producto.marca,
-              categoria:
-                producto.categoria,
-              aplicaciones:
-                producto.aplicaciones,
-              viscosidad:
-                producto.viscosidad,
-              precio:
-                producto.precio,
-              precio_mostrar:
-                producto.precio_mostrar,
-              presentacion:
-                producto.presentacion
-            }));
-
-        const prompt = `
-Eres la IA comercial de VR Turbolub.
-
-Usa únicamente los productos proporcionados.
-
-CATÁLOGO:
-${JSON.stringify(lista)}
-
-PREGUNTA:
-${message}
-
-Reglas:
-- No inventes productos.
-- No inventes precios.
-- Si pregunta por una marca, muestra únicamente productos de esa marca presentes en el catálogo.
-- Si pregunta por precio, utiliza exactamente el precio proporcionado.
-- Si el precio dice "Cotizar", indica que debe cotizar.
-- Si pregunta por compatibilidad con un vehículo específico pero falta información, pide marca, modelo y año.
-- No declares compatibilidad técnica sin una verificación específica.
-
-Responde en español.
-`;
-
-        const result =
-          await env.AI.run(
-            "@cf/meta/llama-3.2-3b-instruct",
-            {
-              messages: [
-                {
-                  role: "system",
-                  content:
-                    "Eres el asistente comercial de VR Turbolub. No inventes información."
                 },
                 {
                   role: "user",
@@ -2452,9 +2594,9 @@ Responde en español.
         );
       }
 
-      // ========================================================
+      // ----------------------------------------------------------
       // VEHÍCULO NO ENCONTRADO
-      // ========================================================
+      // ----------------------------------------------------------
 
       if (
         preguntaVehiculo ||
@@ -2482,7 +2624,7 @@ Responde en español.
     }
 
     // ============================================================
-    // CONVERSACIÓN GENERAL
+    // 3. CONVERSACIÓN GENERAL
     // ============================================================
 
     const result =
@@ -2493,7 +2635,7 @@ Responde en español.
             {
               role: "system",
               content:
-                "Eres la IA de VR Turbolub. Conversa normalmente en español y responde preguntas generales de forma útil y natural. Para productos, vehículos o compatibilidad, nunca inventes información."
+                "Eres la IA de VR Turbolub. Conversa normalmente en español y responde preguntas generales de forma útil y natural. Si el usuario pregunta por productos, vehículos o compatibilidad de VR Turbolub, no inventes información."
             },
             {
               role: "user",
