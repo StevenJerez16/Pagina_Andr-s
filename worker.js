@@ -1711,20 +1711,19 @@ async function registrarLead(
   }
 }
 
-// ============================================================
-// IA VR TURBOLUB
-// ============================================================
-
 async function responderIA(request, env, corsHeaders) {
-
   try {
-
     const body = await request.json();
 
-    const message = String(body?.message || "").trim();
+    const message = String(
+      body?.message || ""
+    ).trim();
+
+    const history = Array.isArray(body?.history)
+      ? body.history
+      : [];
 
     if (!message) {
-
       return jsonResponse(
         {
           ok: false,
@@ -1733,7 +1732,6 @@ async function responderIA(request, env, corsHeaders) {
         400,
         corsHeaders
       );
-
     }
 
     // ============================================================
@@ -1741,23 +1739,23 @@ async function responderIA(request, env, corsHeaders) {
     // ============================================================
 
     async function cargarJSON(ruta) {
-
-      const url = new URL(ruta, request.url);
-
-      const response = await env.ASSETS.fetch(
-        new Request(url.toString())
+      const url = new URL(
+        ruta,
+        request.url
       );
 
-      if (!response.ok) {
+      const response =
+        await env.ASSETS.fetch(
+          new Request(url.toString())
+        );
 
+      if (!response.ok) {
         throw new Error(
           `No se pudo cargar ${ruta}. HTTP ${response.status}`
         );
-
       }
 
       return await response.json();
-
     }
 
     const [
@@ -1765,13 +1763,9 @@ async function responderIA(request, env, corsHeaders) {
       vehiculosData,
       compatibilidadesData
     ] = await Promise.all([
-
       cargarJSON("/data/productos.json"),
-
       cargarJSON("/data/vehiculos.json"),
-
       cargarJSON("/data/compatibilidades.json")
-
     ]);
 
     const productos =
@@ -1796,7 +1790,6 @@ async function responderIA(request, env, corsHeaders) {
     // ============================================================
 
     function normalizar(texto) {
-
       return String(texto || "")
         .toLowerCase()
         .normalize("NFD")
@@ -1804,56 +1797,36 @@ async function responderIA(request, env, corsHeaders) {
         .replace(/[^\w\s.-]/g, " ")
         .replace(/\s+/g, " ")
         .trim();
-
     }
 
     function escaparRegex(texto) {
-
       return String(texto || "").replace(
         /[.*+?^${}()|[\]\\]/g,
         "\\$&"
       );
-
     }
 
     function contienePalabra(texto, termino) {
+      const base = normalizar(texto);
+      const objetivo = normalizar(termino);
 
-      const t = normalizar(texto);
-
-      const term = normalizar(termino);
-
-      if (!t || !term) {
+      if (!base || !objetivo) {
         return false;
       }
 
       const regex = new RegExp(
-        `(^|\\s)${escaparRegex(term)}(?=\\s|$)`,
+        `(^|\\s)${escaparRegex(objetivo)}(?=\\s|$)`,
         "i"
       );
 
-      return regex.test(t);
-
+      return regex.test(base);
     }
 
-    // ============================================================
-    // NUEVO:
-    // DETECTAR FRASES COMPLETAS POR TOKENS
-    //
-    // Evita que:
-    //
-    // "ns" coincida accidentalmente con otra cosa
-    //
-    // y permite reconocer:
-    //
-    // "gixxer 150 fi"
-    // "pulsar ns 200"
-    // "gixxer sf 250"
-    // ============================================================
-
-    function textoIncluyeFrase(textoBase, frase) {
-
+    function textoIncluyeFrase(
+      textoBase,
+      frase
+    ) {
       const base = normalizar(textoBase);
-
       const objetivo = normalizar(frase);
 
       if (!base || !objetivo) {
@@ -1872,10 +1845,11 @@ async function responderIA(request, env, corsHeaders) {
 
       for (
         let i = 0;
-        i <= baseTokens.length - objetivoTokens.length;
+        i <=
+        baseTokens.length -
+          objetivoTokens.length;
         i++
       ) {
-
         let coincide = true;
 
         for (
@@ -1883,71 +1857,161 @@ async function responderIA(request, env, corsHeaders) {
           j < objetivoTokens.length;
           j++
         ) {
-
           if (
             baseTokens[i + j] !==
             objetivoTokens[j]
           ) {
-
             coincide = false;
             break;
-
           }
-
         }
 
         if (coincide) {
           return true;
         }
-
       }
 
       return false;
-
     }
 
     function contiene(texto, lista) {
-
-      return lista.some((item) =>
-        contienePalabra(texto, item)
+      return lista.some(
+        (item) =>
+          contienePalabra(
+            texto,
+            item
+          )
       );
-
     }
 
     function arraysCoinciden(
       requeridos,
       disponibles
     ) {
-
       if (
         !Array.isArray(requeridos) ||
         requeridos.length === 0
       ) {
-
         return true;
-
       }
 
       if (
         !Array.isArray(disponibles) ||
         disponibles.length === 0
       ) {
-
         return false;
-
       }
 
-      return requeridos.some((requerido) =>
-        disponibles.some(
-          (disponible) =>
-            normalizar(disponible) ===
-            normalizar(requerido)
-        )
+      return requeridos.some(
+        (requerido) =>
+          disponibles.some(
+            (disponible) =>
+              normalizar(disponible) ===
+              normalizar(requerido)
+          )
       );
-
     }
 
-    const texto = normalizar(message);
+    // ============================================================
+    // HISTORIAL
+    // ============================================================
+
+    const historialValido =
+      history
+        .filter(
+          (item) =>
+            item &&
+            (
+              item.role === "user" ||
+              item.role === "assistant"
+            ) &&
+            typeof item.content === "string"
+        )
+        .slice(-20);
+
+    const mensajesUsuario =
+      historialValido
+        .filter(
+          (item) =>
+            item.role === "user"
+        )
+        .map(
+          (item) =>
+            String(item.content || "").trim()
+        )
+        .filter(Boolean);
+
+    /*
+      El frontend ya agrega el mensaje actual
+      al historial antes de llamar al Worker.
+
+      Por seguridad, si no estuviera presente,
+      lo agregamos.
+    */
+
+    const ultimoMensajeHistorial =
+      mensajesUsuario[
+        mensajesUsuario.length - 1
+      ] || "";
+
+    if (
+      normalizar(
+        ultimoMensajeHistorial
+      ) !== normalizar(message)
+    ) {
+      mensajesUsuario.push(message);
+    }
+
+    /*
+      Solo usamos las últimas conversaciones
+      para recuperar contexto estructurado.
+
+      No utilizamos respuestas anteriores de la IA
+      para inventar datos técnicos.
+    */
+
+    const contextoUsuario =
+      mensajesUsuario
+        .slice(-8)
+        .join(" ");
+
+    const texto =
+      normalizar(message);
+
+    const textoContexto =
+      normalizar(contextoUsuario);
+
+    // ============================================================
+    // AÑO
+    // ============================================================
+
+    function extraerAnios(textoBase) {
+      return [
+        ...normalizar(textoBase).matchAll(
+          /\b(19\d{2}|20\d{2})\b/g
+        )
+      ].map(
+        (match) =>
+          Number(match[1])
+      );
+    }
+
+    const aniosMensaje =
+      extraerAnios(message);
+
+    const aniosContexto =
+      extraerAnios(contextoUsuario);
+
+    /*
+      Primero tiene prioridad el año del mensaje actual.
+      Si el usuario escribe solamente "2026" después
+      de preguntar por un vehículo, usamos ese año.
+    */
+
+    const anioActual =
+      aniosMensaje.length > 0
+        ? aniosMensaje[0]
+        : null;
 
     // ============================================================
     // INTENCIONES
@@ -1955,7 +2019,6 @@ async function responderIA(request, env, corsHeaders) {
 
     const preguntaProducto =
       contiene(texto, [
-
         "producto",
         "productos",
         "aceite",
@@ -1984,12 +2047,10 @@ async function responderIA(request, env, corsHeaders) {
         "que venden",
         "que tienen",
         "venden"
-
       ]);
 
     const preguntaCompatibilidad =
       contiene(texto, [
-
         "sirve",
         "sirven",
         "compatible",
@@ -1999,289 +2060,13 @@ async function responderIA(request, env, corsHeaders) {
         "recomiend",
         "recomend",
         "aceite para mi",
-        "aceite de mi"
-
+        "aceite de mi",
+        "que aceite",
+        "qué aceite"
       ]);
-
-    // ============================================================
-    // DETECTAR VEHÍCULOS DESDE vehiculos.json
-    //
-    // NO hay una lista fija de modelos.
-    // Todo sale de vehiculos.json
-    // ============================================================
-
-    function obtenerTerminosVehiculo(vehiculo) {
-
-      const terminos = [];
-
-      if (vehiculo.marca) {
-        terminos.push(vehiculo.marca);
-      }
-
-      if (vehiculo.modelo) {
-        terminos.push(vehiculo.modelo);
-      }
-
-      if (vehiculo.familia) {
-        terminos.push(vehiculo.familia);
-      }
-
-      if (
-        Array.isArray(vehiculo.alias)
-      ) {
-
-        terminos.push(
-          ...vehiculo.alias
-        );
-
-      }
-
-      return [
-        ...new Set(
-          terminos
-            .map(normalizar)
-            .filter(Boolean)
-        )
-      ];
-
-    }
-
-    // ============================================================
-    // PUNTUACIÓN DE VEHÍCULO
-    //
-    // Las coincidencias específicas pesan mucho más que
-    // una marca o familia.
-    // ============================================================
-
-    function puntuacionVehiculo(vehiculo) {
-
-      const marca =
-        normalizar(
-          vehiculo.marca
-        );
-
-      const modelo =
-        normalizar(
-          vehiculo.modelo
-        );
-
-      const familia =
-        normalizar(
-          vehiculo.familia
-        );
-
-      const aliases =
-        Array.isArray(
-          vehiculo.alias
-        )
-          ? vehiculo.alias
-              .map(normalizar)
-              .filter(Boolean)
-          : [];
-
-      let score = 0;
-
-      const coincidencias = [];
-
-      // ----------------------------------------------------------
-      // MODELO EXACTO
-      // ----------------------------------------------------------
-
-      if (
-        modelo &&
-        textoIncluyeFrase(
-          texto,
-          modelo
-        )
-      ) {
-
-        score += 1000;
-
-        coincidencias.push({
-          tipo: "modelo_exacto",
-          valor: modelo,
-          peso: 1000
-        });
-
-      }
-
-      // ----------------------------------------------------------
-      // MARCA + MODELO
-      // ----------------------------------------------------------
-
-      if (
-        marca &&
-        modelo &&
-        textoIncluyeFrase(
-          texto,
-          `${marca} ${modelo}`
-        )
-      ) {
-
-        score += 500;
-
-        coincidencias.push({
-          tipo: "marca_modelo",
-          valor: `${marca} ${modelo}`,
-          peso: 500
-        });
-
-      }
-
-      // ----------------------------------------------------------
-      // ALIAS
-      // ----------------------------------------------------------
-
-      for (
-        const alias of aliases
-      ) {
-
-        if (!alias) {
-          continue;
-        }
-
-        if (
-          textoIncluyeFrase(
-            texto,
-            alias
-          )
-        ) {
-
-          const cantidadPalabras =
-            alias
-              .split(/\s+/)
-              .filter(Boolean)
-              .length;
-
-          let peso = 0;
-
-          if (
-            cantidadPalabras >= 3
-          ) {
-
-            peso = 800;
-
-          } else if (
-            cantidadPalabras === 2
-          ) {
-
-            peso = 600;
-
-          } else {
-
-            peso = 150;
-
-          }
-
-          score += peso;
-
-          coincidencias.push({
-            tipo: "alias",
-            valor: alias,
-            peso
-          });
-
-        }
-
-      }
-
-      // ----------------------------------------------------------
-      // FAMILIA
-      // ----------------------------------------------------------
-
-      if (
-        familia &&
-        textoIncluyeFrase(
-          texto,
-          familia
-        )
-      ) {
-
-        score += 100;
-
-        coincidencias.push({
-          tipo: "familia",
-          valor: familia,
-          peso: 100
-        });
-
-      }
-
-      // ----------------------------------------------------------
-      // MARCA SOLA
-      //
-      // Una marca sola NO debe escoger arbitrariamente
-      // un modelo.
-      // ----------------------------------------------------------
-
-      if (
-        marca &&
-        contienePalabra(
-          texto,
-          marca
-        )
-      ) {
-
-        score += 20;
-
-        coincidencias.push({
-          tipo: "marca",
-          valor: marca,
-          peso: 20
-        });
-
-      }
-
-      return {
-        score,
-        coincidencias
-      };
-
-    }
-
-    // ============================================================
-    // GENERAR CANDIDATOS
-    // ============================================================
-
-    const candidatos = [];
-
-    for (
-      const vehiculo of vehiculos
-    ) {
-
-      const resultado =
-        puntuacionVehiculo(
-          vehiculo
-        );
-
-      if (
-        resultado.score > 0
-      ) {
-
-        candidatos.push({
-          vehiculo,
-          score:
-            resultado.score,
-          coincidencias:
-            resultado.coincidencias
-        });
-
-      }
-
-    }
-
-    candidatos.sort(
-      (a, b) =>
-        b.score - a.score
-    );
-
-    // ============================================================
-    // VEHÍCULO GENÉRICO
-    // ============================================================
 
     const mencionaTipoVehiculo =
       contiene(texto, [
-
         "carro",
         "carros",
         "auto",
@@ -2298,16 +2083,426 @@ async function responderIA(request, env, corsHeaders) {
         "camionetas",
         "vehiculo",
         "vehiculos"
-
       ]);
 
     // ============================================================
+    // DETECTAR VEHÍCULOS
+    // ============================================================
+
+    function compactar(texto) {
+      return normalizar(texto)
+        .replace(/\s+/g, "");
+    }
+
+    function contieneFraseFlexible(
+      textoBase,
+      frase
+    ) {
+      const base =
+        normalizar(textoBase);
+
+      const objetivo =
+        normalizar(frase);
+
+      if (!base || !objetivo) {
+        return false;
+      }
+
+      // Coincidencia normal
+      if (
+        textoIncluyeFrase(
+          base,
+          objetivo
+        )
+      ) {
+        return true;
+      }
+
+      /*
+        Permite reconocer:
+
+        ns 125 → ns125
+        ns 200 → ns200
+        gixxer 150 → gixxer150
+
+        pero únicamente para frases
+        específicas de 2 o más tokens.
+      */
+
+      const tokens =
+        objetivo
+          .split(/\s+/)
+          .filter(Boolean);
+
+      if (tokens.length < 2) {
+        return false;
+      }
+
+      const baseCompacta =
+        compactar(base);
+
+      const objetivoCompacto =
+        compactar(objetivo);
+
+      return (
+        objetivoCompacto.length >= 4 &&
+        baseCompacta.includes(
+          objetivoCompacto
+        )
+      );
+    }
+
+    function obtenerAliases(
+      vehiculo
+    ) {
+      const aliases =
+        Array.isArray(
+          vehiculo.alias
+        )
+          ? vehiculo.alias
+          : [];
+
+      return [
+        ...new Set(
+          aliases
+            .map(normalizar)
+            .filter(Boolean)
+        )
+      ];
+    }
+
+    function puntuacionVehiculo(
+      vehiculo,
+      textoBusqueda
+    ) {
+      const marca =
+        normalizar(
+          vehiculo.marca
+        );
+
+      const modelo =
+        normalizar(
+          vehiculo.modelo
+        );
+
+      const familia =
+        normalizar(
+          vehiculo.familia
+        );
+
+      const aliases =
+        obtenerAliases(
+          vehiculo
+        );
+
+      let score = 0;
+
+      const coincidencias = [];
+
+      // ----------------------------------------------------------
+      // MODELO
+      // ----------------------------------------------------------
+
+      if (
+        modelo &&
+        contieneFraseFlexible(
+          textoBusqueda,
+          modelo
+        )
+      ) {
+        score += 1200;
+
+        coincidencias.push({
+          tipo: "modelo_exacto",
+          valor: modelo,
+          peso: 1200,
+          especifica: true
+        });
+      }
+
+      // ----------------------------------------------------------
+      // MARCA + MODELO
+      // ----------------------------------------------------------
+
+      if (
+        marca &&
+        modelo &&
+        contieneFraseFlexible(
+          textoBusqueda,
+          `${marca} ${modelo}`
+        )
+      ) {
+        score += 1000;
+
+        coincidencias.push({
+          tipo: "marca_modelo",
+          valor:
+            `${marca} ${modelo}`,
+          peso: 1000,
+          especifica: true
+        });
+      }
+
+      // ----------------------------------------------------------
+      // ALIASES
+      // ----------------------------------------------------------
+
+      for (
+        const alias of aliases
+      ) {
+        if (!alias) {
+          continue;
+        }
+
+        const tokens =
+          alias
+            .split(/\s+/)
+            .filter(Boolean);
+
+        const cantidad =
+          tokens.length;
+
+        if (
+          !contieneFraseFlexible(
+            textoBusqueda,
+            alias
+          )
+        ) {
+          continue;
+        }
+
+        /*
+          Un alias de una sola palabra puede ser
+          genérico:
+
+          ns
+          gixxer
+          boxer
+          pulsar
+
+          Por eso pesa mucho menos.
+
+          Los alias específicos:
+
+          ns125
+          ns 125
+          pulsar ns125
+
+          tienen prioridad.
+        */
+
+        let peso = 0;
+
+        if (
+          cantidad >= 3
+        ) {
+          peso = 900;
+        } else if (
+          cantidad === 2
+        ) {
+          peso = 700;
+        } else {
+          peso = 100;
+        }
+
+        score += peso;
+
+        coincidencias.push({
+          tipo: "alias",
+          valor: alias,
+          peso,
+          especifica:
+            cantidad >= 2
+        });
+      }
+
+      // ----------------------------------------------------------
+      // FAMILIA
+      // ----------------------------------------------------------
+
+      if (
+        familia &&
+        contieneFraseFlexible(
+          textoBusqueda,
+          familia
+        )
+      ) {
+        score += 100;
+
+        coincidencias.push({
+          tipo: "familia",
+          valor: familia,
+          peso: 100,
+          especifica: false
+        });
+      }
+
+      // ----------------------------------------------------------
+      // MARCA SOLA
+      // ----------------------------------------------------------
+
+      if (
+        marca &&
+        contienePalabra(
+          textoBusqueda,
+          marca
+        )
+      ) {
+        score += 20;
+
+        coincidencias.push({
+          tipo: "marca",
+          valor: marca,
+          peso: 20,
+          especifica: false
+        });
+      }
+
+      return {
+        score,
+        coincidencias
+      };
+    }
+
+    // ============================================================
+    // PRIMERO BUSCAMOS EN EL MENSAJE ACTUAL
+    // ============================================================
+
+    function encontrarCandidatos(
+      textoBusqueda
+    ) {
+      const candidatos = [];
+
+      for (
+        const vehiculo of vehiculos
+      ) {
+        const resultado =
+          puntuacionVehiculo(
+            vehiculo,
+            textoBusqueda
+          );
+
+        if (
+          resultado.score > 0
+        ) {
+          candidatos.push({
+            vehiculo,
+            score:
+              resultado.score,
+            coincidencias:
+              resultado.coincidencias
+          });
+        }
+      }
+
+      candidatos.sort(
+        (a, b) =>
+          b.score - a.score
+      );
+
+      return candidatos;
+    }
+
+    let candidatos =
+      encontrarCandidatos(
+        texto
+      );
+
+    // ============================================================
+    // CONTEXTO DE VEHÍCULO
+    // ============================================================
+
+    /*
+      Si el mensaje actual no identifica vehículo,
+      buscamos un vehículo reciente en la conversación.
+
+      Esto permite:
+
+      "NS200"
+      "¿de qué año?"
+
+      y:
+
+      "Yamaha FZ150"
+      "2022"
+    */
+
+    let candidatosContexto = [];
+
+    if (
+      candidatos.length === 0
+    ) {
+      candidatosContexto =
+        encontrarCandidatos(
+          textoContexto
+        );
+    }
+
+    /*
+      Si el mensaje actual es corto o es solamente
+      un año, el contexto anterior tiene prioridad.
+    */
+
+    const mensajeEsSoloAnio =
+      /^\s*(19\d{2}|20\d{2})\s*$/.test(
+        message
+      );
+
+    const mensajeEsSeguimiento =
+      mensajeEsSoloAnio ||
+      contiene(texto, [
+        "ese",
+        "esa",
+        "ese mismo",
+        "el mismo",
+        "la misma",
+        "mi moto",
+        "mi carro",
+        "mi camion",
+        "mi vehiculo",
+        "ese vehiculo",
+        "y ese",
+        "y esa"
+      ]);
+
+    if (
+      candidatos.length === 0 &&
+      candidatosContexto.length > 0
+    ) {
+      candidatos =
+        candidatosContexto;
+    }
+
+    // ============================================================
+    // ELIMINAR COINCIDENCIAS GENÉRICAS CUANDO EXISTE UNA ESPECÍFICA
+    // ============================================================
+
+    if (
+      candidatos.length > 1
+    ) {
+      const tieneEspecifica =
+        candidatos.some(
+          (candidato) =>
+            candidato.coincidencias.some(
+              (coincidencia) =>
+                coincidencia.especifica === true
+            )
+        );
+
+      if (tieneEspecifica) {
+        candidatos =
+          candidatos.filter(
+            (candidato) =>
+              candidato.coincidencias.some(
+                (coincidencia) =>
+                  coincidencia.especifica === true
+              )
+          );
+      }
+    }
+
+    // ============================================================
     // RESOLVER VEHÍCULO
-    //
-    // IMPORTANTE:
-    //
-    // Si una palabra corta como "ns" o "gixxer" aparece
-    // en varias variantes, NO elegimos arbitrariamente.
     // ============================================================
 
     let vehiculosEncontrados = [];
@@ -2315,230 +2510,87 @@ async function responderIA(request, env, corsHeaders) {
     if (
       candidatos.length > 0
     ) {
-
       const mejor =
         candidatos[0];
 
-      // ----------------------------------------------------------
-      // DETECTAR CANDIDATOS CON COINCIDENCIA FUERTE
-      // ----------------------------------------------------------
-
-      const coincidenciasFuertes =
+      const especificos =
         candidatos.filter(
-          (candidato) => {
-
-            return candidato.coincidencias.some(
+          (candidato) =>
+            candidato.coincidencias.some(
               (coincidencia) =>
-
-                coincidencia.tipo ===
-                  "modelo_exacto" ||
-
-                coincidencia.tipo ===
-                  "marca_modelo" ||
-
-                coincidencia.tipo ===
-                  "alias"
-
-            );
-
-          }
+                coincidencia.especifica === true
+            )
         );
 
-      // ----------------------------------------------------------
-      // SI HAY VARIOS VEHÍCULOS CON UNA COINCIDENCIA FUERTE
-      // Y LAS PUNTUACIONES ESTÁN CERCANAS,
-      // SE CONSIDERA AMBIGUO.
-      // ----------------------------------------------------------
+      /*
+        Si hay coincidencias específicas,
+        solamente comparamos esas.
+      */
 
-      if (
-        coincidenciasFuertes.length > 1
-      ) {
+      const grupo =
+        especificos.length > 0
+          ? especificos
+          : candidatos;
 
-        const mejorFuerte =
-          coincidenciasFuertes[0];
+      const mejorGrupo =
+        grupo[0];
 
-        const ambiguos =
-          coincidenciasFuertes.filter(
-            (candidato) => {
-
-              const diferencia =
-                mejorFuerte.score -
-                candidato.score;
-
-              return (
-                candidato.score >= 100 &&
-                diferencia < 250
-              );
-
-            }
-          );
-
-        if (
-          ambiguos.length > 1
-        ) {
-
-          vehiculosEncontrados =
-            ambiguos
-              .slice(0, 8)
-              .map(
-                (candidato) =>
-                  candidato.vehiculo
-              );
-
-        } else {
-
-          vehiculosEncontrados = [
-            mejorFuerte.vehiculo
-          ];
-
-        }
-
-      } else {
-
-        vehiculosEncontrados = [
-          mejor.vehiculo
-        ];
-
-      }
-
-    }
-
-    // ============================================================
-    // IMPORTANTE:
-    //
-    // SI SOLO SE MENCIONA UNA MARCA
-    //
-    // Honda → no escoger una Honda arbitrariamente.
-    // Suzuki → no escoger una Suzuki arbitrariamente.
-    // Toyota → no escoger una Toyota arbitrariamente.
-    // ============================================================
-
-    if (
-      candidatos.length > 0
-    ) {
-
-      const mejores =
-        candidatos.filter(
+      const ambiguos =
+        grupo.filter(
           (candidato) =>
-            candidato.score >=
-            candidatos[0].score - 10
-        );
-
-      const todosSonMarca =
-        mejores.every(
-          (candidato) =>
-            candidato.coincidencias.length === 1 &&
-            candidato.coincidencias[0].tipo ===
-              "marca"
+            (
+              mejorGrupo.score -
+              candidato.score
+            ) < 250
         );
 
       if (
-        todosSonMarca &&
-        mejores.length > 1
+        ambiguos.length > 1
       ) {
-
         vehiculosEncontrados =
-          mejores.map(
-            (candidato) =>
-              candidato.vehiculo
-          );
-
+          ambiguos
+            .slice(0, 8)
+            .map(
+              (candidato) =>
+                candidato.vehiculo
+            );
+      } else {
+        vehiculosEncontrados = [
+          mejorGrupo.vehiculo
+        ];
       }
-
     }
 
     // ============================================================
-    // SI SOLO SE MENCIONA UNA FAMILIA AMBIGUA
-    //
-    // Ejemplos:
-    //
-    // ns
-    // gixxer
-    // pulsar
+    // SI EL MENSAJE ES SOLO UN AÑO,
+    // DEBE HABER CONTEXTO PREVIO
     // ============================================================
 
     if (
-      candidatos.length > 1 &&
-      vehiculosEncontrados.length === 1
+      mensajeEsSoloAnio &&
+      candidatosContexto.length > 0
     ) {
-
-      const unico =
-        vehiculosEncontrados[0];
-
-      const familiaUnico =
-        normalizar(
-          unico.familia
+      const especificos =
+        candidatosContexto.filter(
+          (candidato) =>
+            candidato.coincidencias.some(
+              (coincidencia) =>
+                coincidencia.especifica === true
+            )
         );
 
+      const grupo =
+        especificos.length > 0
+          ? especificos
+          : candidatosContexto;
+
       if (
-        familiaUnico &&
-        textoIncluyeFrase(
-          texto,
-          familiaUnico
-        )
+        grupo.length === 1
       ) {
-
-        const candidatosFamilia =
-          candidatos.filter(
-            (candidato) => {
-
-              const familia =
-                normalizar(
-                  candidato.vehiculo.familia
-                );
-
-              return (
-                familia &&
-                familia ===
-                  familiaUnico
-              );
-
-            }
-          );
-
-        if (
-          candidatosFamilia.length > 1
-        ) {
-
-          const mejorFamilia =
-            candidatosFamilia[0];
-
-          const diferenciaMaxima =
-            250;
-
-          const ambiguosFamilia =
-            candidatosFamilia.filter(
-              (candidato) => {
-
-                return (
-                  candidato.score >= 100 &&
-                  (
-                    mejorFamilia.score -
-                    candidato.score
-                  ) < diferenciaMaxima
-                );
-
-              }
-            );
-
-          if (
-            ambiguosFamilia.length > 1
-          ) {
-
-            vehiculosEncontrados =
-              ambiguosFamilia
-                .slice(0, 8)
-                .map(
-                  (candidato) =>
-                    candidato.vehiculo
-                );
-
-          }
-
-        }
-
+        vehiculosEncontrados = [
+          grupo[0].vehiculo
+        ];
       }
-
     }
 
     // ============================================================
@@ -2548,10 +2600,9 @@ async function responderIA(request, env, corsHeaders) {
     if (
       vehiculosEncontrados.length > 1
     ) {
-
       const opciones =
         vehiculosEncontrados
-          .slice(0, 10)
+          .slice(0, 8)
           .map(
             (vehiculo) =>
               `• ${vehiculo.marca} ${vehiculo.modelo}`
@@ -2576,7 +2627,6 @@ async function responderIA(request, env, corsHeaders) {
         200,
         corsHeaders
       );
-
     }
 
     // ============================================================
@@ -2588,11 +2638,9 @@ async function responderIA(request, env, corsHeaders) {
     if (
       vehiculosEncontrados.length === 1
     ) {
-
       tipoVehiculo =
         vehiculosEncontrados[0].tipo ||
         null;
-
     }
 
     if (
@@ -2604,9 +2652,7 @@ async function responderIA(request, env, corsHeaders) {
         "motocicletas"
       ])
     ) {
-
       tipoVehiculo = "moto";
-
     }
 
     if (
@@ -2620,23 +2666,17 @@ async function responderIA(request, env, corsHeaders) {
         "automoviles"
       ])
     ) {
-
       tipoVehiculo = "carro";
-
     }
 
     if (
       !tipoVehiculo &&
       contiene(texto, [
         "camion",
-        "camiones",
-        "camioneta",
-        "camionetas"
+        "camiones"
       ])
     ) {
-
       tipoVehiculo = "camion";
-
     }
 
     // ============================================================
@@ -2646,7 +2686,6 @@ async function responderIA(request, env, corsHeaders) {
     const productosEncontrados =
       productos.filter(
         (producto) => {
-
           const nombre =
             normalizar(
               producto.nombre
@@ -2658,7 +2697,6 @@ async function responderIA(request, env, corsHeaders) {
             );
 
           return (
-
             (
               nombre &&
               textoIncluyeFrase(
@@ -2666,7 +2704,6 @@ async function responderIA(request, env, corsHeaders) {
                 nombre
               )
             ) ||
-
             (
               marca &&
               contienePalabra(
@@ -2674,9 +2711,7 @@ async function responderIA(request, env, corsHeaders) {
                 marca
               )
             )
-
           );
-
         }
       );
 
@@ -2693,7 +2728,6 @@ async function responderIA(request, env, corsHeaders) {
     if (
       consultaCatalogoGeneral
     ) {
-
       let listaProductos =
         productos.filter(
           (producto) =>
@@ -2702,36 +2736,31 @@ async function responderIA(request, env, corsHeaders) {
         );
 
       // ----------------------------------------------------------
-      // TIPO DE VEHÍCULO
+      // TIPO VEHÍCULO
       // ----------------------------------------------------------
 
       if (
         tipoVehiculo
       ) {
-
         listaProductos =
           listaProductos.filter(
             (producto) =>
-
               Array.isArray(
                 producto.aplicaciones
               ) &&
-
               producto.aplicaciones.includes(
                 tipoVehiculo
               )
           );
-
       }
 
       // ----------------------------------------------------------
-      // MARCA DEL PRODUCTO
+      // MARCA
       // ----------------------------------------------------------
 
       const marcasMencionadas =
         [
           ...new Set(
-
             productos
               .map(
                 (producto) =>
@@ -2745,14 +2774,12 @@ async function responderIA(request, env, corsHeaders) {
                     marca
                   )
               )
-
           )
         ];
 
       if (
         marcasMencionadas.length > 0
       ) {
-
         listaProductos =
           listaProductos.filter(
             (producto) =>
@@ -2766,7 +2793,6 @@ async function responderIA(request, env, corsHeaders) {
                   )
               )
           );
-
       }
 
       // ----------------------------------------------------------
@@ -2779,7 +2805,6 @@ async function responderIA(request, env, corsHeaders) {
           "aceites"
         ])
       ) {
-
         listaProductos =
           listaProductos.filter(
             (producto) =>
@@ -2789,7 +2814,6 @@ async function responderIA(request, env, corsHeaders) {
                 "aceite"
               )
           );
-
       }
 
       if (
@@ -2798,14 +2822,12 @@ async function responderIA(request, env, corsHeaders) {
           "aditivos"
         ])
       ) {
-
         listaProductos =
           listaProductos.filter(
             (producto) =>
               producto.categoria ===
               "aditivo"
           );
-
       }
 
       if (
@@ -2814,14 +2836,12 @@ async function responderIA(request, env, corsHeaders) {
           "refrigerantes"
         ])
       ) {
-
         listaProductos =
           listaProductos.filter(
             (producto) =>
               producto.categoria ===
               "refrigerante"
           );
-
       }
 
       if (
@@ -2830,14 +2850,12 @@ async function responderIA(request, env, corsHeaders) {
           "filtros"
         ])
       ) {
-
         listaProductos =
           listaProductos.filter(
             (producto) =>
               producto.categoria ===
               "filtro"
           );
-
       }
 
       if (
@@ -2846,14 +2864,12 @@ async function responderIA(request, env, corsHeaders) {
           "grasas"
         ])
       ) {
-
         listaProductos =
           listaProductos.filter(
             (producto) =>
               producto.categoria ===
               "grasa"
           );
-
       }
 
       // ----------------------------------------------------------
@@ -2863,7 +2879,6 @@ async function responderIA(request, env, corsHeaders) {
       if (
         listaProductos.length === 0
       ) {
-
         return jsonResponse(
           {
             ok: true,
@@ -2882,7 +2897,6 @@ async function responderIA(request, env, corsHeaders) {
           200,
           corsHeaders
         );
-
       }
 
       // ----------------------------------------------------------
@@ -2894,71 +2908,59 @@ async function responderIA(request, env, corsHeaders) {
           .slice(0, 20)
           .map(
             (producto) => ({
-
               id:
                 producto.id,
-
               nombre:
                 producto.nombre,
-
               marca:
                 producto.marca,
-
               categoria:
                 producto.categoria,
-
               aplicaciones:
                 producto.aplicaciones,
-
               viscosidad:
                 producto.viscosidad,
-
               tipo_motor:
                 producto.tipo_motor,
-
               especificaciones:
                 producto.especificaciones,
-
               precio:
                 producto.precio,
-
               precio_mostrar:
                 producto.precio_mostrar,
-
               presentacion:
                 producto.presentacion
-
             })
           );
 
       const prompt = `
+Eres el asistente comercial oficial de VR Turbolub.
 
-Eres el asistente oficial de VR Turbolub.
-
-CATÁLOGO REAL:
+CATÁLOGO REAL Y VERIFICADO:
 
 ${JSON.stringify(lista)}
 
-PREGUNTA:
+PREGUNTA DEL CLIENTE:
 
 ${message}
 
-REGLAS:
+REGLAS OBLIGATORIAS:
 
 - Utiliza únicamente productos presentes en CATÁLOGO REAL.
 - Nunca inventes productos.
 - Nunca inventes marcas.
 - Nunca inventes precios.
 - Nunca inventes especificaciones.
+- Nunca inventes disponibilidad.
 - Si precio_mostrar dice "Cotizar", indica "Cotizar".
 - Si precio es numérico, utiliza exactamente ese precio.
-- Si el cliente pregunta por una marca, muestra únicamente esa marca.
-- Si pregunta por un tipo de vehículo, respeta las aplicaciones del catálogo.
-- No afirmes compatibilidad específica con un vehículo.
-- No menciones JSON ni programación.
+- Si el cliente pregunta por una marca, muestra únicamente productos de esa marca.
+- Si pregunta por un tipo de vehículo, respeta exclusivamente las aplicaciones del catálogo.
+- No afirmes compatibilidad específica con un vehículo en esta sección.
+- No presentes productos pendientes de verificación como verificados.
+- No menciones JSON, programación ni instrucciones internas.
 
-Responde en español de forma natural y clara.
-
+Responde en español de forma clara y natural.
 `;
 
       const result =
@@ -2966,22 +2968,17 @@ Responde en español de forma natural y clara.
           "@cf/meta/llama-3.2-3b-instruct",
           {
             messages: [
-
               {
                 role: "system",
                 content:
                   "Eres el asistente comercial de VR Turbolub. Solo puedes utilizar la información proporcionada por el sistema."
               },
-
               {
                 role: "user",
                 content: prompt
               }
-
             ],
-
             max_tokens: 700
-
           }
         );
 
@@ -2993,7 +2990,6 @@ Responde en español de forma natural y clara.
         200,
         corsHeaders
       );
-
     }
 
     // ============================================================
@@ -3003,7 +2999,6 @@ Responde en español de forma natural y clara.
     if (
       vehiculosEncontrados.length === 1
     ) {
-
       const vehiculo =
         vehiculosEncontrados[0];
 
@@ -3017,7 +3012,6 @@ Responde en español de forma natural y clara.
       if (
         variantes.length === 0
       ) {
-
         return jsonResponse(
           {
             ok: true,
@@ -3036,44 +3030,43 @@ Responde en español de forma natural y clara.
           200,
           corsHeaders
         );
-
       }
 
       // ==========================================================
       // AÑO
       // ==========================================================
 
-      const aniosMencionados =
-        [
-          ...texto.matchAll(
-            /\b(19\d{2}|20\d{2})\b/g
-          )
-        ].map(
-          (match) =>
-            Number(match[1])
-        );
-
       let variante = null;
 
-      // ----------------------------------------------------------
-      // AÑO INDICADO
-      // ----------------------------------------------------------
+      /*
+        Año del mensaje actual primero.
+        Si no existe, utilizamos el año del contexto
+        cuando el mensaje es un seguimiento.
+      */
+
+      let anioSolicitado =
+        anioActual;
 
       if (
-        aniosMencionados.length > 0
+        !anioSolicitado &&
+        mensajeEsSeguimiento &&
+        aniosContexto.length > 0
       ) {
+        anioSolicitado =
+          aniosContexto[
+            aniosContexto.length - 1
+          ];
+      }
 
-        const anioSolicitado =
-          aniosMencionados[0];
-
+      if (
+        anioSolicitado
+      ) {
         variante =
           variantes.find(
             (v) =>
-
               Array.isArray(
                 v.anios
               ) &&
-
               v.anios.includes(
                 anioSolicitado
               )
@@ -3082,7 +3075,6 @@ Responde en español de forma natural y clara.
         if (
           !variante
         ) {
-
           return jsonResponse(
             {
               ok: true,
@@ -3101,21 +3093,15 @@ Responde en español de forma natural y clara.
             200,
             corsHeaders
           );
-
         }
-
-      }
-
-      // ----------------------------------------------------------
-      // SIN AÑO
-      // ----------------------------------------------------------
-
-      else {
+      } else {
+        // --------------------------------------------------------
+        // SIN AÑO
+        // --------------------------------------------------------
 
         if (
           variantes.length === 1
         ) {
-
           const unica =
             variantes[0];
 
@@ -3125,12 +3111,9 @@ Responde en español de forma natural y clara.
             ) &&
             unica.anios.length === 0
           ) {
-
             variante =
               unica;
-
           } else {
-
             return jsonResponse(
               {
                 ok: true,
@@ -3149,15 +3132,12 @@ Responde en español de forma natural y clara.
               200,
               corsHeaders
             );
-
           }
-
         }
 
         if (
           variantes.length > 1
         ) {
-
           return jsonResponse(
             {
               ok: true,
@@ -3176,9 +3156,7 @@ Responde en español de forma natural y clara.
             200,
             corsHeaders
           );
-
         }
-
       }
 
       // ==========================================================
@@ -3188,7 +3166,6 @@ Responde en español de forma natural y clara.
       if (
         !variante
       ) {
-
         return jsonResponse(
           {
             ok: true,
@@ -3207,7 +3184,6 @@ Responde en español de forma natural y clara.
           200,
           corsHeaders
         );
-
       }
 
       // ==========================================================
@@ -3218,7 +3194,6 @@ Responde en español de forma natural y clara.
         variante.estado_verificacion !==
         "verificado"
       ) {
-
         return jsonResponse(
           {
             ok: true,
@@ -3237,7 +3212,6 @@ Responde en español de forma natural y clara.
           200,
           corsHeaders
         );
-
       }
 
       const motor =
@@ -3279,14 +3253,11 @@ Responde en español de forma natural y clara.
       for (
         const producto of productos
       ) {
-
         if (
           producto.verificacion?.estado !==
           "verificado"
         ) {
-
           continue;
-
         }
 
         const aplicaciones =
@@ -3306,13 +3277,11 @@ Responde en español de forma natural y clara.
             vehiculo.tipo
           )
         ) {
-
           continue;
-
         }
 
         // --------------------------------------------------------
-        // TIPO DE MOTOR
+        // TIPO MOTOR
         // --------------------------------------------------------
 
         if (
@@ -3325,9 +3294,7 @@ Responde en español de forma natural y clara.
             producto.tipo_motor
           )
         ) {
-
           continue;
-
         }
 
         if (
@@ -3336,14 +3303,11 @@ Responde en español de forma natural y clara.
           (
             producto.categoria ===
               "aceite_motor" ||
-
             producto.categoria ===
               "aceite_2t"
           )
         ) {
-
           continue;
-
         }
 
         // --------------------------------------------------------
@@ -3353,23 +3317,18 @@ Responde en español de forma natural y clara.
         if (
           viscosidades.length > 0
         ) {
-
           if (
             !producto.viscosidad
           ) {
-
             continue;
-
           }
 
           const viscosidadValida =
             viscosidades.some(
               (viscosidad) =>
-
                 normalizar(
                   viscosidad
                 ) ===
-
                 normalizar(
                   producto.viscosidad
                 )
@@ -3378,11 +3337,8 @@ Responde en español de forma natural y clara.
           if (
             !viscosidadValida
           ) {
-
             continue;
-
           }
-
         }
 
         // --------------------------------------------------------
@@ -3392,7 +3348,6 @@ Responde en español de forma natural y clara.
         if (
           apiRequerida.length > 0
         ) {
-
           const specs =
             producto.especificaciones ||
             {};
@@ -3403,11 +3358,8 @@ Responde en español de forma natural y clara.
               specs.api
             )
           ) {
-
             continue;
-
           }
-
         }
 
         // --------------------------------------------------------
@@ -3417,7 +3369,6 @@ Responde en español de forma natural y clara.
         if (
           jasoRequerida.length > 0
         ) {
-
           const specs =
             producto.especificaciones ||
             {};
@@ -3428,17 +3379,13 @@ Responde en español de forma natural y clara.
               specs.jaso
             )
           ) {
-
             continue;
-
           }
-
         }
 
         compatibles.push(
           producto
         );
-
       }
 
       // ==========================================================
@@ -3448,19 +3395,16 @@ Responde en español de forma natural y clara.
       const compatibilidadesVehiculo =
         compatibilidades.filter(
           (item) =>
-
             item.vehiculo_id ===
-            vehiculo.id &&
-
+              vehiculo.id &&
             item.estado ===
-            "verificado"
+              "verificado"
         );
 
       for (
-        const compatibilidad
-        of compatibilidadesVehiculo
+        const compatibilidad of
+          compatibilidadesVehiculo
       ) {
-
         const producto =
           productos.find(
             (p) =>
@@ -3470,23 +3414,18 @@ Responde en español de forma natural y clara.
 
         if (
           producto &&
-
           producto.verificacion?.estado ===
             "verificado" &&
-
           !compatibles.some(
             (p) =>
               p.id ===
               producto.id
           )
         ) {
-
           compatibles.push(
             producto
           );
-
         }
-
       }
 
       // ==========================================================
@@ -3494,30 +3433,21 @@ Responde en español de forma natural y clara.
       // ==========================================================
 
       const datosVehiculo = {
-
         id:
           vehiculo.id,
-
         marca:
           vehiculo.marca,
-
         modelo:
           vehiculo.modelo,
-
         tipo:
           vehiculo.tipo,
-
         variante_id:
           variante.id,
-
         anios:
           variante.anios,
-
         motor,
-
         aceite_motor:
           aceiteMotor
-
       };
 
       const datosProductos =
@@ -3525,37 +3455,26 @@ Responde en español de forma natural y clara.
           .slice(0, 10)
           .map(
             (producto) => ({
-
               id:
                 producto.id,
-
               nombre:
                 producto.nombre,
-
               marca:
                 producto.marca,
-
               categoria:
                 producto.categoria,
-
               precio:
                 producto.precio,
-
               precio_mostrar:
                 producto.precio_mostrar,
-
               viscosidad:
                 producto.viscosidad,
-
               tipo_motor:
                 producto.tipo_motor,
-
               especificaciones:
                 producto.especificaciones,
-
               presentacion:
                 producto.presentacion
-
             })
           );
 
@@ -3566,7 +3485,6 @@ Responde en español de forma natural y clara.
       if (
         datosProductos.length === 0
       ) {
-
         return jsonResponse(
           {
             ok: true,
@@ -3585,7 +3503,6 @@ Responde en español de forma natural y clara.
           200,
           corsHeaders
         );
-
       }
 
       // ==========================================================
@@ -3593,8 +3510,7 @@ Responde en español de forma natural y clara.
       // ==========================================================
 
       const prompt = `
-
-Eres el asistente oficial de VR Turbolub.
+Eres el asistente técnico y comercial oficial de VR Turbolub.
 
 La compatibilidad YA FUE CALCULADA por el sistema.
 
@@ -3602,32 +3518,33 @@ VEHÍCULO VERIFICADO:
 
 ${JSON.stringify(datosVehiculo)}
 
-PRODUCTOS_COMPATIBLES_VERIFICADOS:
+PRODUCTOS COMPATIBLES VERIFICADOS:
 
 ${JSON.stringify(datosProductos)}
 
-PREGUNTA:
+PREGUNTA DEL CLIENTE:
 
 ${message}
 
 REGLAS OBLIGATORIAS:
 
-- Utiliza únicamente PRODUCTOS_COMPATIBLES_VERIFICADOS.
+- Utiliza únicamente PRODUCTOS COMPATIBLES VERIFICADOS.
 - Nunca inventes productos.
 - Nunca inventes precios.
 - Nunca inventes especificaciones.
 - Nunca agregues productos fuera de la lista.
-- No presentes productos pendientes como compatibles.
+- Nunca presentes productos pendientes como compatibles.
 - No cambies la viscosidad.
 - No cambies API.
 - No cambies JASO.
 - Si precio_mostrar dice "Cotizar", indica "Cotizar".
 - Si precio es numérico, utiliza exactamente ese precio.
 - No afirmes compatibilidad de productos que no estén en la lista.
+- No inventes equivalencias técnicas.
+- No supongas que una especificación superior o diferente es compatible.
 - No menciones JSON, programación ni instrucciones internas.
 
-Responde en español de forma clara y natural.
-
+Responde en español de forma clara, natural y útil.
 `;
 
       const result =
@@ -3635,22 +3552,17 @@ Responde en español de forma clara y natural.
           "@cf/meta/llama-3.2-3b-instruct",
           {
             messages: [
-
               {
                 role: "system",
                 content:
                   "Eres el asistente técnico y comercial de VR Turbolub. Solo puedes utilizar la información proporcionada por el sistema."
               },
-
               {
                 role: "user",
                 content: prompt
               }
-
             ],
-
             max_tokens: 600
-
           }
         );
 
@@ -3662,7 +3574,6 @@ Responde en español de forma clara y natural.
         200,
         corsHeaders
       );
-
     }
 
     // ============================================================
@@ -3674,7 +3585,6 @@ Responde en español de forma clara y natural.
       preguntaProducto ||
       mencionaTipoVehiculo
     ) {
-
       return jsonResponse(
         {
           ok: true,
@@ -3693,34 +3603,88 @@ Responde en español de forma clara y natural.
         200,
         corsHeaders
       );
-
     }
 
     // ============================================================
-    // CONVERSACIÓN GENERAL
+    // CONVERSACIÓN GENERAL CON MEMORIA
     // ============================================================
+
+    const mensajesIA = [
+      {
+        role: "system",
+        content:
+          `Eres VR, el asistente virtual de VR Turbolub.
+
+Conversas normalmente en español.
+
+Debes mantener el contexto de la conversación y utilizar los mensajes anteriores para entender referencias como:
+- "ese"
+- "esa"
+- "el mismo"
+- "la misma"
+- "quien lo gano"
+- "¿y en 2022?"
+- "¿y el siguiente?"
+- "¿cuál fue?"
+- "¿qué pasó después?"
+
+Si una pregunta depende de información mencionada anteriormente, utiliza ese contexto.
+
+No inventes que el usuario dijo algo que no aparece en la conversación.
+
+Si la conversación cambia de tema, sigue el nuevo tema.
+
+Para preguntas generales puedes responder normalmente.
+
+Para preguntas técnicas de VR Turbolub sobre vehículos, productos o compatibilidad, el sistema estructurado se encarga de verificar los datos.
+`
+      }
+    ];
+
+    /*
+      Enviamos el historial real de la conversación.
+
+      El mensaje actual ya suele estar dentro del historial
+      porque script.js lo agrega antes de llamar al Worker.
+
+      Si no está, lo añadimos.
+    */
+
+    for (
+      const item of historialValido
+    ) {
+      mensajesIA.push({
+        role:
+          item.role,
+        content:
+          item.content
+      });
+    }
+
+    if (
+      mensajesIA[
+        mensajesIA.length - 1
+      ]?.role !== "user" ||
+      normalizar(
+        mensajesIA[
+          mensajesIA.length - 1
+        ]?.content
+      ) !==
+      normalizar(message)
+    ) {
+      mensajesIA.push({
+        role: "user",
+        content: message
+      });
+    }
 
     const result =
       await env.AI.run(
         "@cf/meta/llama-3.2-3b-instruct",
         {
-          messages: [
-
-            {
-              role: "system",
-              content:
-                "Eres la IA de VR Turbolub. Conversa normalmente en español y responde preguntas generales de forma útil y natural."
-            },
-
-            {
-              role: "user",
-              content: message
-            }
-
-          ],
-
+          messages:
+            mensajesIA,
           max_tokens: 500
-
         }
       );
 
@@ -3734,7 +3698,6 @@ Responde en español de forma clara y natural.
     );
 
   } catch (error) {
-
     console.error(
       "ERROR IA VR TURBOLUB:",
       error
@@ -3752,9 +3715,7 @@ Responde en español de forma clara y natural.
       500,
       corsHeaders
     );
-
   }
-
 }
 
   // ============================================================
