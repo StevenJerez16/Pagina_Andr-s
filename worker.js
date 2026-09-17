@@ -1711,16 +1711,20 @@ async function registrarLead(
   }
 }
 
+// ============================================================
+// IA VR TURBOLUB
+// ============================================================
 
-//ia//
-//ia//
 async function responderIA(request, env, corsHeaders) {
+
   try {
+
     const body = await request.json();
 
     const message = String(body?.message || "").trim();
 
     if (!message) {
+
       return jsonResponse(
         {
           ok: false,
@@ -1729,6 +1733,7 @@ async function responderIA(request, env, corsHeaders) {
         400,
         corsHeaders
       );
+
     }
 
     // ============================================================
@@ -1736,6 +1741,7 @@ async function responderIA(request, env, corsHeaders) {
     // ============================================================
 
     async function cargarJSON(ruta) {
+
       const url = new URL(ruta, request.url);
 
       const response = await env.ASSETS.fetch(
@@ -1743,12 +1749,15 @@ async function responderIA(request, env, corsHeaders) {
       );
 
       if (!response.ok) {
+
         throw new Error(
           `No se pudo cargar ${ruta}. HTTP ${response.status}`
         );
+
       }
 
       return await response.json();
+
     }
 
     const [
@@ -1756,29 +1765,38 @@ async function responderIA(request, env, corsHeaders) {
       vehiculosData,
       compatibilidadesData
     ] = await Promise.all([
+
       cargarJSON("/data/productos.json"),
+
       cargarJSON("/data/vehiculos.json"),
+
       cargarJSON("/data/compatibilidades.json")
+
     ]);
 
-    const productos = Array.isArray(productosData?.productos)
-      ? productosData.productos
-      : [];
+    const productos =
+      Array.isArray(productosData?.productos)
+        ? productosData.productos
+        : [];
 
-    const vehiculos = Array.isArray(vehiculosData?.vehiculos)
-      ? vehiculosData.vehiculos
-      : [];
+    const vehiculos =
+      Array.isArray(vehiculosData?.vehiculos)
+        ? vehiculosData.vehiculos
+        : [];
 
     const compatibilidades =
-      Array.isArray(compatibilidadesData?.compatibilidades)
+      Array.isArray(
+        compatibilidadesData?.compatibilidades
+      )
         ? compatibilidadesData.compatibilidades
         : [];
 
     // ============================================================
-    // NORMALIZADORES
+    // NORMALIZACIÓN
     // ============================================================
 
     function normalizar(texto) {
+
       return String(texto || "")
         .toLowerCase()
         .normalize("NFD")
@@ -1786,29 +1804,137 @@ async function responderIA(request, env, corsHeaders) {
         .replace(/[^\w\s.-]/g, " ")
         .replace(/\s+/g, " ")
         .trim();
+
     }
 
-    function contiene(texto, palabras) {
+    function escaparRegex(texto) {
+
+      return String(texto || "").replace(
+        /[.*+?^${}()|[\]\\]/g,
+        "\\$&"
+      );
+
+    }
+
+    function contienePalabra(texto, termino) {
+
       const t = normalizar(texto);
 
-      return palabras.some((palabra) =>
-        t.includes(normalizar(palabra))
+      const term = normalizar(termino);
+
+      if (!t || !term) {
+        return false;
+      }
+
+      const regex = new RegExp(
+        `(^|\\s)${escaparRegex(term)}(?=\\s|$)`,
+        "i"
       );
+
+      return regex.test(t);
+
     }
 
-    function arraysCoinciden(requeridos, disponibles) {
+    // ============================================================
+    // NUEVO:
+    // DETECTAR FRASES COMPLETAS POR TOKENS
+    //
+    // Evita que:
+    //
+    // "ns" coincida accidentalmente con otra cosa
+    //
+    // y permite reconocer:
+    //
+    // "gixxer 150 fi"
+    // "pulsar ns 200"
+    // "gixxer sf 250"
+    // ============================================================
+
+    function textoIncluyeFrase(textoBase, frase) {
+
+      const base = normalizar(textoBase);
+
+      const objetivo = normalizar(frase);
+
+      if (!base || !objetivo) {
+        return false;
+      }
+
+      const baseTokens =
+        base.split(/\s+/).filter(Boolean);
+
+      const objetivoTokens =
+        objetivo.split(/\s+/).filter(Boolean);
+
+      if (objetivoTokens.length === 0) {
+        return false;
+      }
+
+      for (
+        let i = 0;
+        i <= baseTokens.length - objetivoTokens.length;
+        i++
+      ) {
+
+        let coincide = true;
+
+        for (
+          let j = 0;
+          j < objetivoTokens.length;
+          j++
+        ) {
+
+          if (
+            baseTokens[i + j] !==
+            objetivoTokens[j]
+          ) {
+
+            coincide = false;
+            break;
+
+          }
+
+        }
+
+        if (coincide) {
+          return true;
+        }
+
+      }
+
+      return false;
+
+    }
+
+    function contiene(texto, lista) {
+
+      return lista.some((item) =>
+        contienePalabra(texto, item)
+      );
+
+    }
+
+    function arraysCoinciden(
+      requeridos,
+      disponibles
+    ) {
+
       if (
         !Array.isArray(requeridos) ||
         requeridos.length === 0
       ) {
+
         return true;
+
       }
 
       if (
         !Array.isArray(disponibles) ||
         disponibles.length === 0
       ) {
+
         return false;
+
       }
 
       return requeridos.some((requerido) =>
@@ -1818,11 +1944,8 @@ async function responderIA(request, env, corsHeaders) {
             normalizar(requerido)
         )
       );
-    }
 
-    // ============================================================
-    // TEXTO NORMALIZADO
-    // ============================================================
+    }
 
     const texto = normalizar(message);
 
@@ -1830,242 +1953,824 @@ async function responderIA(request, env, corsHeaders) {
     // INTENCIONES
     // ============================================================
 
-    const preguntaProducto = contiene(texto, [
-      "producto",
-      "productos",
-      "aceite",
-      "aceites",
-      "lubricante",
-      "lubricantes",
-      "filtro",
-      "filtros",
-      "aditivo",
-      "aditivos",
-      "refrigerante",
-      "refrigerantes",
-      "grasa",
-      "grasas",
-      "liquido de frenos",
-      "liquido",
-      "precio",
-      "precios",
-      "cuanto cuesta",
-      "cuanto cuestan",
-      "cuanto vale",
-      "cuanto valen",
-      "tienen",
-      "disponibles",
-      "disponible",
-      "catalogo",
-      "catalogo de productos",
-      "que venden",
-      "que tienen",
-      "venden"
-    ]);
+    const preguntaProducto =
+      contiene(texto, [
 
-    const preguntaVehiculo = contiene(texto, [
-      "carro",
-      "auto",
-      "automovil",
-      "moto",
-      "motocicleta",
-      "camion",
-      "camioneta",
-      "vehiculo",
-      "ybr",
-      "nkd",
-      "boxer",
-      "pulsar",
-      "fz",
-      "gixxer",
-      "cb190",
-      "xr150",
-      "corolla",
-      "duster",
-      "logan",
-      "onix",
-      "cx30",
-      "cx5",
-      "hilux",
-      "tucson",
-      "sportage",
-      "picanto",
-      "kia k3"
-    ]);
+        "producto",
+        "productos",
+        "aceite",
+        "aceites",
+        "lubricante",
+        "lubricantes",
+        "filtro",
+        "filtros",
+        "aditivo",
+        "aditivos",
+        "refrigerante",
+        "refrigerantes",
+        "grasa",
+        "grasas",
+        "liquido de frenos",
+        "precio",
+        "precios",
+        "cuanto cuesta",
+        "cuanto cuestan",
+        "cuanto vale",
+        "cuanto valen",
+        "tienen",
+        "disponibles",
+        "disponible",
+        "catalogo",
+        "que venden",
+        "que tienen",
+        "venden"
 
-    const preguntaCompatibilidad = contiene(texto, [
-      "sirve",
-      "compatible",
-      "compatibilidad",
-      "le sirve",
-      "puedo usar",
-      "puedo echar",
-      "recomiend",
-      "recomend",
-      "aceite para mi",
-      "aceite de mi"
-    ]);
+      ]);
+
+    const preguntaCompatibilidad =
+      contiene(texto, [
+
+        "sirve",
+        "sirven",
+        "compatible",
+        "compatibilidad",
+        "puedo usar",
+        "puedo echar",
+        "recomiend",
+        "recomend",
+        "aceite para mi",
+        "aceite de mi"
+
+      ]);
 
     // ============================================================
-    // BUSCAR VEHÍCULO
+    // DETECTAR VEHÍCULOS DESDE vehiculos.json
+    //
+    // NO hay una lista fija de modelos.
+    // Todo sale de vehiculos.json
+    // ============================================================
+
+    function obtenerTerminosVehiculo(vehiculo) {
+
+      const terminos = [];
+
+      if (vehiculo.marca) {
+        terminos.push(vehiculo.marca);
+      }
+
+      if (vehiculo.modelo) {
+        terminos.push(vehiculo.modelo);
+      }
+
+      if (vehiculo.familia) {
+        terminos.push(vehiculo.familia);
+      }
+
+      if (
+        Array.isArray(vehiculo.alias)
+      ) {
+
+        terminos.push(
+          ...vehiculo.alias
+        );
+
+      }
+
+      return [
+        ...new Set(
+          terminos
+            .map(normalizar)
+            .filter(Boolean)
+        )
+      ];
+
+    }
+
+    // ============================================================
+    // PUNTUACIÓN DE VEHÍCULO
+    //
+    // Las coincidencias específicas pesan mucho más que
+    // una marca o familia.
+    // ============================================================
+
+    function puntuacionVehiculo(vehiculo) {
+
+      const marca =
+        normalizar(
+          vehiculo.marca
+        );
+
+      const modelo =
+        normalizar(
+          vehiculo.modelo
+        );
+
+      const familia =
+        normalizar(
+          vehiculo.familia
+        );
+
+      const aliases =
+        Array.isArray(
+          vehiculo.alias
+        )
+          ? vehiculo.alias
+              .map(normalizar)
+              .filter(Boolean)
+          : [];
+
+      let score = 0;
+
+      const coincidencias = [];
+
+      // ----------------------------------------------------------
+      // MODELO EXACTO
+      // ----------------------------------------------------------
+
+      if (
+        modelo &&
+        textoIncluyeFrase(
+          texto,
+          modelo
+        )
+      ) {
+
+        score += 1000;
+
+        coincidencias.push({
+          tipo: "modelo_exacto",
+          valor: modelo,
+          peso: 1000
+        });
+
+      }
+
+      // ----------------------------------------------------------
+      // MARCA + MODELO
+      // ----------------------------------------------------------
+
+      if (
+        marca &&
+        modelo &&
+        textoIncluyeFrase(
+          texto,
+          `${marca} ${modelo}`
+        )
+      ) {
+
+        score += 500;
+
+        coincidencias.push({
+          tipo: "marca_modelo",
+          valor: `${marca} ${modelo}`,
+          peso: 500
+        });
+
+      }
+
+      // ----------------------------------------------------------
+      // ALIAS
+      // ----------------------------------------------------------
+
+      for (
+        const alias of aliases
+      ) {
+
+        if (!alias) {
+          continue;
+        }
+
+        if (
+          textoIncluyeFrase(
+            texto,
+            alias
+          )
+        ) {
+
+          const cantidadPalabras =
+            alias
+              .split(/\s+/)
+              .filter(Boolean)
+              .length;
+
+          let peso = 0;
+
+          if (
+            cantidadPalabras >= 3
+          ) {
+
+            peso = 800;
+
+          } else if (
+            cantidadPalabras === 2
+          ) {
+
+            peso = 600;
+
+          } else {
+
+            peso = 150;
+
+          }
+
+          score += peso;
+
+          coincidencias.push({
+            tipo: "alias",
+            valor: alias,
+            peso
+          });
+
+        }
+
+      }
+
+      // ----------------------------------------------------------
+      // FAMILIA
+      // ----------------------------------------------------------
+
+      if (
+        familia &&
+        textoIncluyeFrase(
+          texto,
+          familia
+        )
+      ) {
+
+        score += 100;
+
+        coincidencias.push({
+          tipo: "familia",
+          valor: familia,
+          peso: 100
+        });
+
+      }
+
+      // ----------------------------------------------------------
+      // MARCA SOLA
+      //
+      // Una marca sola NO debe escoger arbitrariamente
+      // un modelo.
+      // ----------------------------------------------------------
+
+      if (
+        marca &&
+        contienePalabra(
+          texto,
+          marca
+        )
+      ) {
+
+        score += 20;
+
+        coincidencias.push({
+          tipo: "marca",
+          valor: marca,
+          peso: 20
+        });
+
+      }
+
+      return {
+        score,
+        coincidencias
+      };
+
+    }
+
+    // ============================================================
+    // GENERAR CANDIDATOS
+    // ============================================================
+
+    const candidatos = [];
+
+    for (
+      const vehiculo of vehiculos
+    ) {
+
+      const resultado =
+        puntuacionVehiculo(
+          vehiculo
+        );
+
+      if (
+        resultado.score > 0
+      ) {
+
+        candidatos.push({
+          vehiculo,
+          score:
+            resultado.score,
+          coincidencias:
+            resultado.coincidencias
+        });
+
+      }
+
+    }
+
+    candidatos.sort(
+      (a, b) =>
+        b.score - a.score
+    );
+
+    // ============================================================
+    // VEHÍCULO GENÉRICO
+    // ============================================================
+
+    const mencionaTipoVehiculo =
+      contiene(texto, [
+
+        "carro",
+        "carros",
+        "auto",
+        "autos",
+        "automovil",
+        "automoviles",
+        "moto",
+        "motos",
+        "motocicleta",
+        "motocicletas",
+        "camion",
+        "camiones",
+        "camioneta",
+        "camionetas",
+        "vehiculo",
+        "vehiculos"
+
+      ]);
+
+    // ============================================================
+    // RESOLVER VEHÍCULO
+    //
+    // IMPORTANTE:
+    //
+    // Si una palabra corta como "ns" o "gixxer" aparece
+    // en varias variantes, NO elegimos arbitrariamente.
     // ============================================================
 
     let vehiculosEncontrados = [];
 
-    for (const vehiculo of vehiculos) {
-      const nombre = normalizar(
-        `${vehiculo.marca || ""} ${vehiculo.modelo || ""}`
-      );
+    if (
+      candidatos.length > 0
+    ) {
 
-      const modelo = normalizar(vehiculo.modelo);
+      const mejor =
+        candidatos[0];
 
-      const aliases = Array.isArray(vehiculo.alias)
-        ? vehiculo.alias
-        : [];
+      // ----------------------------------------------------------
+      // DETECTAR CANDIDATOS CON COINCIDENCIA FUERTE
+      // ----------------------------------------------------------
 
-      const coincideNombre =
-        (nombre && texto.includes(nombre)) ||
-        (modelo && texto.includes(modelo)) ||
-        aliases.some((alias) =>
-          texto.includes(normalizar(alias))
+      const coincidenciasFuertes =
+        candidatos.filter(
+          (candidato) => {
+
+            return candidato.coincidencias.some(
+              (coincidencia) =>
+
+                coincidencia.tipo ===
+                  "modelo_exacto" ||
+
+                coincidencia.tipo ===
+                  "marca_modelo" ||
+
+                coincidencia.tipo ===
+                  "alias"
+
+            );
+
+          }
         );
 
-      if (coincideNombre) {
-        vehiculosEncontrados.push(vehiculo);
-      }
-    }
-
-    // ============================================================
-    // BUSCAR PRODUCTOS MENCIONADOS
-    // ============================================================
-
-    let productosEncontrados = [];
-
-    for (const producto of productos) {
-      const nombre = normalizar(producto.nombre);
-      const marca = normalizar(producto.marca);
+      // ----------------------------------------------------------
+      // SI HAY VARIOS VEHÍCULOS CON UNA COINCIDENCIA FUERTE
+      // Y LAS PUNTUACIONES ESTÁN CERCANAS,
+      // SE CONSIDERA AMBIGUO.
+      // ----------------------------------------------------------
 
       if (
-        (nombre && texto.includes(nombre)) ||
-        (marca && texto.includes(marca))
+        coincidenciasFuertes.length > 1
       ) {
-        productosEncontrados.push(producto);
+
+        const mejorFuerte =
+          coincidenciasFuertes[0];
+
+        const ambiguos =
+          coincidenciasFuertes.filter(
+            (candidato) => {
+
+              const diferencia =
+                mejorFuerte.score -
+                candidato.score;
+
+              return (
+                candidato.score >= 100 &&
+                diferencia < 250
+              );
+
+            }
+          );
+
+        if (
+          ambiguos.length > 1
+        ) {
+
+          vehiculosEncontrados =
+            ambiguos
+              .slice(0, 8)
+              .map(
+                (candidato) =>
+                  candidato.vehiculo
+              );
+
+        } else {
+
+          vehiculosEncontrados = [
+            mejorFuerte.vehiculo
+          ];
+
+        }
+
+      } else {
+
+        vehiculosEncontrados = [
+          mejor.vehiculo
+        ];
+
       }
+
     }
 
     // ============================================================
-    // DETERMINAR TIPO DE VEHÍCULO
+    // IMPORTANTE:
+    //
+    // SI SOLO SE MENCIONA UNA MARCA
+    //
+    // Honda → no escoger una Honda arbitrariamente.
+    // Suzuki → no escoger una Suzuki arbitrariamente.
+    // Toyota → no escoger una Toyota arbitrariamente.
+    // ============================================================
+
+    if (
+      candidatos.length > 0
+    ) {
+
+      const mejores =
+        candidatos.filter(
+          (candidato) =>
+            candidato.score >=
+            candidatos[0].score - 10
+        );
+
+      const todosSonMarca =
+        mejores.every(
+          (candidato) =>
+            candidato.coincidencias.length === 1 &&
+            candidato.coincidencias[0].tipo ===
+              "marca"
+        );
+
+      if (
+        todosSonMarca &&
+        mejores.length > 1
+      ) {
+
+        vehiculosEncontrados =
+          mejores.map(
+            (candidato) =>
+              candidato.vehiculo
+          );
+
+      }
+
+    }
+
+    // ============================================================
+    // SI SOLO SE MENCIONA UNA FAMILIA AMBIGUA
+    //
+    // Ejemplos:
+    //
+    // ns
+    // gixxer
+    // pulsar
+    // ============================================================
+
+    if (
+      candidatos.length > 1 &&
+      vehiculosEncontrados.length === 1
+    ) {
+
+      const unico =
+        vehiculosEncontrados[0];
+
+      const familiaUnico =
+        normalizar(
+          unico.familia
+        );
+
+      if (
+        familiaUnico &&
+        textoIncluyeFrase(
+          texto,
+          familiaUnico
+        )
+      ) {
+
+        const candidatosFamilia =
+          candidatos.filter(
+            (candidato) => {
+
+              const familia =
+                normalizar(
+                  candidato.vehiculo.familia
+                );
+
+              return (
+                familia &&
+                familia ===
+                  familiaUnico
+              );
+
+            }
+          );
+
+        if (
+          candidatosFamilia.length > 1
+        ) {
+
+          const mejorFamilia =
+            candidatosFamilia[0];
+
+          const diferenciaMaxima =
+            250;
+
+          const ambiguosFamilia =
+            candidatosFamilia.filter(
+              (candidato) => {
+
+                return (
+                  candidato.score >= 100 &&
+                  (
+                    mejorFamilia.score -
+                    candidato.score
+                  ) < diferenciaMaxima
+                );
+
+              }
+            );
+
+          if (
+            ambiguosFamilia.length > 1
+          ) {
+
+            vehiculosEncontrados =
+              ambiguosFamilia
+                .slice(0, 8)
+                .map(
+                  (candidato) =>
+                    candidato.vehiculo
+                );
+
+          }
+
+        }
+
+      }
+
+    }
+
+    // ============================================================
+    // AMBIGÜEDAD
+    // ============================================================
+
+    if (
+      vehiculosEncontrados.length > 1
+    ) {
+
+      const opciones =
+        vehiculosEncontrados
+          .slice(0, 10)
+          .map(
+            (vehiculo) =>
+              `• ${vehiculo.marca} ${vehiculo.modelo}`
+          )
+          .join("\n");
+
+      return jsonResponse(
+        {
+          ok: true,
+          result: {
+            choices: [
+              {
+                message: {
+                  role: "assistant",
+                  content:
+                    `Encontré varias opciones y no quiero asumir cuál tienes.\n\n${opciones}\n\n¿Cuál es exactamente tu vehículo? Si puedes, indícame también el año.`
+                }
+              }
+            ]
+          }
+        },
+        200,
+        corsHeaders
+      );
+
+    }
+
+    // ============================================================
+    // TIPO DE VEHÍCULO
     // ============================================================
 
     let tipoVehiculo = null;
 
     if (
+      vehiculosEncontrados.length === 1
+    ) {
+
+      tipoVehiculo =
+        vehiculosEncontrados[0].tipo ||
+        null;
+
+    }
+
+    if (
+      !tipoVehiculo &&
       contiene(texto, [
         "moto",
+        "motos",
         "motocicleta",
-        "ybr",
-        "nkd",
-        "boxer",
-        "pulsar",
-        "fz",
-        "gixxer",
-        "cb190",
-        "xr150"
+        "motocicletas"
       ])
     ) {
+
       tipoVehiculo = "moto";
+
     }
 
     if (
+      !tipoVehiculo &&
       contiene(texto, [
         "carro",
+        "carros",
         "auto",
+        "autos",
         "automovil",
-        "corolla",
-        "duster",
-        "logan",
-        "onix",
-        "cx30",
-        "cx5",
-        "hilux",
-        "tucson",
-        "sportage",
-        "picanto",
-        "kia k3"
+        "automoviles"
       ])
     ) {
+
       tipoVehiculo = "carro";
+
     }
 
     if (
+      !tipoVehiculo &&
       contiene(texto, [
         "camion",
-        "camioneta"
+        "camiones",
+        "camioneta",
+        "camionetas"
       ])
     ) {
+
       tipoVehiculo = "camion";
+
     }
 
     // ============================================================
-    // 1. CATÁLOGO GENERAL
-    // ============================================================
-    // IMPORTANTE:
-    // Si el cliente pregunta por productos pero NO menciona
-    // un vehículo específico, consultamos directamente
-    // productos.json.
+    // PRODUCTOS MENCIONADOS
     // ============================================================
 
-    const preguntaCatalogoGeneral =
-      preguntaProducto &&
-      vehiculosEncontrados.length === 0 &&
-      !preguntaCompatibilidad;
+    const productosEncontrados =
+      productos.filter(
+        (producto) => {
 
-    if (preguntaCatalogoGeneral) {
-      let listaProductos = productos.filter(
-        (producto) =>
-          producto.verificacion?.estado === "verificado"
+          const nombre =
+            normalizar(
+              producto.nombre
+            );
+
+          const marca =
+            normalizar(
+              producto.marca
+            );
+
+          return (
+
+            (
+              nombre &&
+              textoIncluyeFrase(
+                texto,
+                nombre
+              )
+            ) ||
+
+            (
+              marca &&
+              contienePalabra(
+                texto,
+                marca
+              )
+            )
+
+          );
+
+        }
       );
 
+    // ============================================================
+    // CATÁLOGO GENERAL
+    // ============================================================
+
+    const consultaCatalogoGeneral =
+      preguntaProducto &&
+      vehiculosEncontrados.length === 0 &&
+      !preguntaCompatibilidad &&
+      !mencionaTipoVehiculo;
+
+    if (
+      consultaCatalogoGeneral
+    ) {
+
+      let listaProductos =
+        productos.filter(
+          (producto) =>
+            producto.verificacion?.estado ===
+            "verificado"
+        );
+
       // ----------------------------------------------------------
-      // FILTRAR POR TIPO DE VEHÍCULO
+      // TIPO DE VEHÍCULO
       // ----------------------------------------------------------
 
-      if (tipoVehiculo) {
-        listaProductos = listaProductos.filter(
-          (producto) =>
-            Array.isArray(producto.aplicaciones) &&
-            producto.aplicaciones.includes(tipoVehiculo)
-        );
+      if (
+        tipoVehiculo
+      ) {
+
+        listaProductos =
+          listaProductos.filter(
+            (producto) =>
+
+              Array.isArray(
+                producto.aplicaciones
+              ) &&
+
+              producto.aplicaciones.includes(
+                tipoVehiculo
+              )
+          );
+
       }
 
       // ----------------------------------------------------------
-      // FILTRAR POR MARCA SI EL CLIENTE MENCIONÓ UNA
+      // MARCA DEL PRODUCTO
       // ----------------------------------------------------------
 
-      const marcasMencionadas = [
-        ...new Set(
-          productos
-            .map((producto) => producto.marca)
-            .filter(Boolean)
-            .filter((marca) =>
-              texto.includes(normalizar(marca))
-            )
-        )
-      ];
+      const marcasMencionadas =
+        [
+          ...new Set(
 
-      if (marcasMencionadas.length > 0) {
-        listaProductos = listaProductos.filter(
-          (producto) =>
-            marcasMencionadas.some(
-              (marca) =>
-                normalizar(producto.marca) ===
-                normalizar(marca)
-            )
-        );
+            productos
+              .map(
+                (producto) =>
+                  producto.marca
+              )
+              .filter(Boolean)
+              .filter(
+                (marca) =>
+                  contienePalabra(
+                    texto,
+                    marca
+                  )
+              )
+
+          )
+        ];
+
+      if (
+        marcasMencionadas.length > 0
+      ) {
+
+        listaProductos =
+          listaProductos.filter(
+            (producto) =>
+              marcasMencionadas.some(
+                (marca) =>
+                  normalizar(
+                    producto.marca
+                  ) ===
+                  normalizar(
+                    marca
+                  )
+              )
+          );
+
       }
 
       // ----------------------------------------------------------
-      // FILTRAR POR CATEGORÍA
+      // CATEGORÍAS
       // ----------------------------------------------------------
 
       if (
@@ -2074,11 +2779,17 @@ async function responderIA(request, env, corsHeaders) {
           "aceites"
         ])
       ) {
-        listaProductos = listaProductos.filter(
-          (producto) =>
-            String(producto.categoria || "")
-              .startsWith("aceite")
-        );
+
+        listaProductos =
+          listaProductos.filter(
+            (producto) =>
+              String(
+                producto.categoria || ""
+              ).startsWith(
+                "aceite"
+              )
+          );
+
       }
 
       if (
@@ -2087,10 +2798,14 @@ async function responderIA(request, env, corsHeaders) {
           "aditivos"
         ])
       ) {
-        listaProductos = listaProductos.filter(
-          (producto) =>
-            producto.categoria === "aditivo"
-        );
+
+        listaProductos =
+          listaProductos.filter(
+            (producto) =>
+              producto.categoria ===
+              "aditivo"
+          );
+
       }
 
       if (
@@ -2099,10 +2814,14 @@ async function responderIA(request, env, corsHeaders) {
           "refrigerantes"
         ])
       ) {
-        listaProductos = listaProductos.filter(
-          (producto) =>
-            producto.categoria === "refrigerante"
-        );
+
+        listaProductos =
+          listaProductos.filter(
+            (producto) =>
+              producto.categoria ===
+              "refrigerante"
+          );
+
       }
 
       if (
@@ -2111,10 +2830,14 @@ async function responderIA(request, env, corsHeaders) {
           "filtros"
         ])
       ) {
-        listaProductos = listaProductos.filter(
-          (producto) =>
-            producto.categoria === "filtro"
-        );
+
+        listaProductos =
+          listaProductos.filter(
+            (producto) =>
+              producto.categoria ===
+              "filtro"
+          );
+
       }
 
       if (
@@ -2123,17 +2846,24 @@ async function responderIA(request, env, corsHeaders) {
           "grasas"
         ])
       ) {
-        listaProductos = listaProductos.filter(
-          (producto) =>
-            producto.categoria === "grasa"
-        );
+
+        listaProductos =
+          listaProductos.filter(
+            (producto) =>
+              producto.categoria ===
+              "grasa"
+          );
+
       }
 
       // ----------------------------------------------------------
-      // SI NO HAY RESULTADOS
+      // SIN RESULTADOS
       // ----------------------------------------------------------
 
-      if (listaProductos.length === 0) {
+      if (
+        listaProductos.length === 0
+      ) {
+
         return jsonResponse(
           {
             ok: true,
@@ -2152,63 +2882,83 @@ async function responderIA(request, env, corsHeaders) {
           200,
           corsHeaders
         );
+
       }
 
       // ----------------------------------------------------------
-      // DATOS QUE SE ENTREGAN A LA IA
+      // DATOS PARA IA
       // ----------------------------------------------------------
 
-      const lista = listaProductos
-        .slice(0, 20)
-        .map((producto) => ({
-          id: producto.id,
-          nombre: producto.nombre,
-          marca: producto.marca,
-          categoria: producto.categoria,
-          aplicaciones: producto.aplicaciones,
-          viscosidad: producto.viscosidad,
-          tipo_motor: producto.tipo_motor,
-          especificaciones:
-            producto.especificaciones,
-          precio: producto.precio,
-          precio_mostrar:
-            producto.precio_mostrar,
-          presentacion:
-            producto.presentacion
-        }));
+      const lista =
+        listaProductos
+          .slice(0, 20)
+          .map(
+            (producto) => ({
+
+              id:
+                producto.id,
+
+              nombre:
+                producto.nombre,
+
+              marca:
+                producto.marca,
+
+              categoria:
+                producto.categoria,
+
+              aplicaciones:
+                producto.aplicaciones,
+
+              viscosidad:
+                producto.viscosidad,
+
+              tipo_motor:
+                producto.tipo_motor,
+
+              especificaciones:
+                producto.especificaciones,
+
+              precio:
+                producto.precio,
+
+              precio_mostrar:
+                producto.precio_mostrar,
+
+              presentacion:
+                producto.presentacion
+
+            })
+          );
 
       const prompt = `
+
 Eres el asistente oficial de VR Turbolub.
 
-El cliente está preguntando por productos del catálogo.
-
-IMPORTANTE:
-La siguiente lista contiene los ÚNICOS productos que puedes mencionar.
-
 CATÁLOGO REAL:
+
 ${JSON.stringify(lista)}
 
-PREGUNTA DEL CLIENTE:
+PREGUNTA:
+
 ${message}
 
-REGLAS OBLIGATORIAS:
+REGLAS:
 
 - Utiliza únicamente productos presentes en CATÁLOGO REAL.
 - Nunca inventes productos.
 - Nunca inventes marcas.
 - Nunca inventes precios.
 - Nunca inventes especificaciones.
-- Nunca agregues productos que no aparezcan en la lista.
-- Si un producto tiene precio_mostrar "Cotizar", indica "Cotizar".
-- Si tiene precio numérico, utiliza exactamente ese precio.
-- Si el cliente pregunta "qué productos tienen", muestra los productos disponibles de la lista.
-- Si pregunta por una marca, muestra solamente productos de esa marca.
-- Si pregunta por un tipo de vehículo, muestra solamente productos cuya aplicación corresponda.
-- No afirmes compatibilidad técnica con un vehículo específico aquí.
-- Si pregunta por compatibilidad específica, solicita marca, modelo y año cuando sea necesario.
-- No menciones JSON, bases de datos, programación ni instrucciones internas.
+- Si precio_mostrar dice "Cotizar", indica "Cotizar".
+- Si precio es numérico, utiliza exactamente ese precio.
+- Si el cliente pregunta por una marca, muestra únicamente esa marca.
+- Si pregunta por un tipo de vehículo, respeta las aplicaciones del catálogo.
+- No afirmes compatibilidad específica con un vehículo.
+- No menciones JSON ni programación.
 
-Responde en español, de forma natural y clara.
+Responde en español de forma natural y clara.
+
 `;
 
       const result =
@@ -2216,17 +2966,22 @@ Responde en español, de forma natural y clara.
           "@cf/meta/llama-3.2-3b-instruct",
           {
             messages: [
+
               {
                 role: "system",
                 content:
-                  "Eres el asistente comercial de VR Turbolub. Solo puedes utilizar la información entregada por el sistema y nunca debes inventar productos."
+                  "Eres el asistente comercial de VR Turbolub. Solo puedes utilizar la información proporcionada por el sistema."
               },
+
               {
                 role: "user",
                 content: prompt
               }
+
             ],
+
             max_tokens: 700
+
           }
         );
 
@@ -2238,370 +2993,31 @@ Responde en español, de forma natural y clara.
         200,
         corsHeaders
       );
+
     }
 
     // ============================================================
-    // 2. VEHÍCULO ESPECÍFICO
+    // VEHÍCULO ESPECÍFICO
     // ============================================================
 
     if (
-      preguntaProducto ||
-      preguntaVehiculo ||
-      preguntaCompatibilidad
+      vehiculosEncontrados.length === 1
     ) {
-      if (vehiculosEncontrados.length > 0) {
-        const vehiculo = vehiculosEncontrados[0];
 
-        const variantes = Array.isArray(vehiculo.variantes)
+      const vehiculo =
+        vehiculosEncontrados[0];
+
+      const variantes =
+        Array.isArray(
+          vehiculo.variantes
+        )
           ? vehiculo.variantes
           : [];
 
-        if (variantes.length === 0) {
-          return jsonResponse(
-            {
-              ok: true,
-              result: {
-                choices: [
-                  {
-                    message: {
-                      role: "assistant",
-                      content:
-                        "Tengo identificado el vehículo, pero todavía no hay una variante técnica verificada para ese modelo."
-                    }
-                  }
-                ]
-              }
-            },
-            200,
-            corsHeaders
-          );
-        }
-
-        // --------------------------------------------------------
-        // DETECTAR AÑO
-        // --------------------------------------------------------
-
-        const aniosMencionados =
-          [...texto.matchAll(/\b(19\d{2}|20\d{2})\b/g)]
-            .map((match) => Number(match[1]));
-
-        let variante = null;
-
-        if (aniosMencionados.length > 0) {
-          const anioSolicitado =
-            aniosMencionados[0];
-
-          variante = variantes.find(
-            (v) =>
-              Array.isArray(v.anios) &&
-              v.anios.includes(anioSolicitado)
-          );
-        } else if (variantes.length === 1) {
-          variante = variantes[0];
-        }
-
-        if (!variante) {
-          return jsonResponse(
-            {
-              ok: true,
-              result: {
-                choices: [
-                  {
-                    message: {
-                      role: "assistant",
-                      content:
-                        "Para verificar correctamente la compatibilidad necesito el año exacto del vehículo."
-                    }
-                  }
-                ]
-              }
-            },
-            200,
-            corsHeaders
-          );
-        }
-
-        // --------------------------------------------------------
-        // DATOS TÉCNICOS
-        // --------------------------------------------------------
-
-        const motor = variante.motor || {};
-
-        const aceiteMotor =
-          variante.aceite_motor || {};
-
-        const tipoMotor =
-          motor.tipo || null;
-
-        const viscosidades =
-          Array.isArray(
-            aceiteMotor.viscosidades
-          )
-            ? aceiteMotor.viscosidades
-            : [];
-
-        const apiRequerida =
-          Array.isArray(aceiteMotor.api)
-            ? aceiteMotor.api
-            : [];
-
-        const jasoRequerida =
-          Array.isArray(aceiteMotor.jaso)
-            ? aceiteMotor.jaso
-            : [];
-
-        // --------------------------------------------------------
-        // COMPATIBILIDAD DETERMINÍSTICA
-        // --------------------------------------------------------
-
-        const compatibles = [];
-
-        for (const producto of productos) {
-          if (
-            producto.verificacion?.estado !==
-            "verificado"
-          ) {
-            continue;
-          }
-
-          const aplicaciones =
-            Array.isArray(producto.aplicaciones)
-              ? producto.aplicaciones
-              : [];
-
-          if (
-            vehiculo.tipo &&
-            !aplicaciones.includes(
-              vehiculo.tipo
-            )
-          ) {
-            continue;
-          }
-
-          // TIPO DE MOTOR
-          if (
-            tipoMotor &&
-            producto.tipo_motor &&
-            normalizar(tipoMotor) !==
-              normalizar(producto.tipo_motor)
-          ) {
-            continue;
-          }
-
-          if (
-            tipoMotor &&
-            !producto.tipo_motor &&
-            (
-              producto.categoria ===
-                "aceite_motor" ||
-              producto.categoria ===
-                "aceite_2t"
-            )
-          ) {
-            continue;
-          }
-
-          // VISCOSIDAD
-          if (viscosidades.length > 0) {
-            if (!producto.viscosidad) {
-              continue;
-            }
-
-            const viscosidadValida =
-              viscosidades.some(
-                (v) =>
-                  normalizar(v) ===
-                  normalizar(
-                    producto.viscosidad
-                  )
-              );
-
-            if (!viscosidadValida) {
-              continue;
-            }
-          }
-
-          // API
-          if (apiRequerida.length > 0) {
-            const specs =
-              producto.especificaciones ||
-              {};
-
-            if (
-              !arraysCoinciden(
-                apiRequerida,
-                specs.api
-              )
-            ) {
-              continue;
-            }
-          }
-
-          // JASO
-          if (jasoRequerida.length > 0) {
-            const specs =
-              producto.especificaciones ||
-              {};
-
-            if (
-              !arraysCoinciden(
-                jasoRequerida,
-                specs.jaso
-              )
-            ) {
-              continue;
-            }
-          }
-
-          compatibles.push(producto);
-        }
-
-        // --------------------------------------------------------
-        // COMPATIBILIDADES EXPLÍCITAS
-        // --------------------------------------------------------
-
-        const compatibilidadesVehiculo =
-          compatibilidades.filter(
-            (item) =>
-              item.vehiculo_id ===
-              vehiculo.id
-          );
-
-        for (
-          const compatibilidad
-          of compatibilidadesVehiculo
-        ) {
-          if (
-            compatibilidad.estado !==
-            "verificado"
-          ) {
-            continue;
-          }
-
-          const producto =
-            productos.find(
-              (p) =>
-                p.id ===
-                compatibilidad.producto_id
-            );
-
-          if (
-            producto &&
-            producto.verificacion?.estado ===
-              "verificado" &&
-            !compatibles.some(
-              (p) =>
-                p.id === producto.id
-            )
-          ) {
-            compatibles.push(producto);
-          }
-        }
-
-        // --------------------------------------------------------
-        // DATOS PARA LA IA
-        // --------------------------------------------------------
-
-        const datosVehiculo = {
-          marca: vehiculo.marca,
-          modelo: vehiculo.modelo,
-          tipo: vehiculo.tipo,
-          variante_id: variante.id,
-          anios: variante.anios,
-          motor: motor,
-          aceite_motor: aceiteMotor
-        };
-
-        const datosProductos =
-          compatibles
-            .slice(0, 10)
-            .map((producto) => ({
-              id: producto.id,
-              nombre: producto.nombre,
-              marca: producto.marca,
-              categoria: producto.categoria,
-              precio: producto.precio,
-              precio_mostrar:
-                producto.precio_mostrar,
-              viscosidad:
-                producto.viscosidad,
-              tipo_motor:
-                producto.tipo_motor,
-              especificaciones:
-                producto.especificaciones,
-              presentacion:
-                producto.presentacion
-            }));
-
-        const prompt = `
-Eres el asistente oficial de VR Turbolub.
-
-La compatibilidad YA FUE CALCULADA por el sistema.
-
-Tú NO debes decidir nuevamente si un producto es compatible.
-
-VEHÍCULO:
-${JSON.stringify(datosVehiculo)}
-
-PRODUCTOS_COMPATIBLES_VERIFICADOS:
-${JSON.stringify(datosProductos)}
-
-PREGUNTA:
-${message}
-
-REGLAS:
-
-- Utiliza únicamente PRODUCTOS_COMPATIBLES_VERIFICADOS.
-- Nunca inventes productos.
-- Nunca inventes precios.
-- Nunca inventes especificaciones.
-- Nunca agregues productos fuera de la lista.
-- No presentes productos pendientes como compatibles.
-- Si la lista está vacía, informa que actualmente no hay productos compatibles verificados.
-- Si existe un producto en la lista, puedes mencionar nombre, marca, viscosidad, presentación y precio.
-- Si el precio_mostrar dice "Cotizar", indica "Cotizar".
-- No menciones bases de datos, JSON ni programación.
-
-Responde en español y de manera clara.
-`;
-
-        const result =
-          await env.AI.run(
-            "@cf/meta/llama-3.2-3b-instruct",
-            {
-              messages: [
-                {
-                  role: "system",
-                  content:
-                    "Eres un asesor técnico y comercial de VR Turbolub. Solo puedes utilizar la información proporcionada por el sistema."
-                },
-                {
-                  role: "user",
-                  content: prompt
-                }
-              ],
-              max_tokens: 600
-            }
-          );
-
-        return jsonResponse(
-          {
-            ok: true,
-            result
-          },
-          200,
-          corsHeaders
-        );
-      }
-
-      // ----------------------------------------------------------
-      // VEHÍCULO NO ENCONTRADO
-      // ----------------------------------------------------------
-
       if (
-        preguntaVehiculo ||
-        preguntaCompatibilidad
+        variantes.length === 0
       ) {
+
         return jsonResponse(
           {
             ok: true,
@@ -2611,7 +3027,7 @@ Responde en español y de manera clara.
                   message: {
                     role: "assistant",
                     content:
-                      "Puedo ayudarte a verificar qué producto es adecuado. Dime la marca, modelo y año exacto del vehículo."
+                      `Tengo identificado ${vehiculo.marca} ${vehiculo.modelo}, pero todavía no hay información técnica verificada suficiente para este vehículo.`
                   }
                 }
               ]
@@ -2620,11 +3036,668 @@ Responde en español y de manera clara.
           200,
           corsHeaders
         );
+
       }
+
+      // ==========================================================
+      // AÑO
+      // ==========================================================
+
+      const aniosMencionados =
+        [
+          ...texto.matchAll(
+            /\b(19\d{2}|20\d{2})\b/g
+          )
+        ].map(
+          (match) =>
+            Number(match[1])
+        );
+
+      let variante = null;
+
+      // ----------------------------------------------------------
+      // AÑO INDICADO
+      // ----------------------------------------------------------
+
+      if (
+        aniosMencionados.length > 0
+      ) {
+
+        const anioSolicitado =
+          aniosMencionados[0];
+
+        variante =
+          variantes.find(
+            (v) =>
+
+              Array.isArray(
+                v.anios
+              ) &&
+
+              v.anios.includes(
+                anioSolicitado
+              )
+          );
+
+        if (
+          !variante
+        ) {
+
+          return jsonResponse(
+            {
+              ok: true,
+              result: {
+                choices: [
+                  {
+                    message: {
+                      role: "assistant",
+                      content:
+                        `No tengo una variante verificada de ${vehiculo.marca} ${vehiculo.modelo} para el año ${anioSolicitado}.`
+                    }
+                  }
+                ]
+              }
+            },
+            200,
+            corsHeaders
+          );
+
+        }
+
+      }
+
+      // ----------------------------------------------------------
+      // SIN AÑO
+      // ----------------------------------------------------------
+
+      else {
+
+        if (
+          variantes.length === 1
+        ) {
+
+          const unica =
+            variantes[0];
+
+          if (
+            Array.isArray(
+              unica.anios
+            ) &&
+            unica.anios.length === 0
+          ) {
+
+            variante =
+              unica;
+
+          } else {
+
+            return jsonResponse(
+              {
+                ok: true,
+                result: {
+                  choices: [
+                    {
+                      message: {
+                        role: "assistant",
+                        content:
+                          `Para verificar correctamente ${vehiculo.marca} ${vehiculo.modelo}, necesito el año exacto del vehículo.`
+                      }
+                    }
+                  ]
+                }
+              },
+              200,
+              corsHeaders
+            );
+
+          }
+
+        }
+
+        if (
+          variantes.length > 1
+        ) {
+
+          return jsonResponse(
+            {
+              ok: true,
+              result: {
+                choices: [
+                  {
+                    message: {
+                      role: "assistant",
+                      content:
+                        `Para verificar correctamente ${vehiculo.marca} ${vehiculo.modelo}, necesito el año exacto del vehículo.`
+                    }
+                  }
+                ]
+              }
+            },
+            200,
+            corsHeaders
+          );
+
+        }
+
+      }
+
+      // ==========================================================
+      // NO HAY VARIANTE
+      // ==========================================================
+
+      if (
+        !variante
+      ) {
+
+        return jsonResponse(
+          {
+            ok: true,
+            result: {
+              choices: [
+                {
+                  message: {
+                    role: "assistant",
+                    content:
+                      `Para verificar correctamente ${vehiculo.marca} ${vehiculo.modelo}, necesito más información sobre el año o versión.`
+                  }
+                }
+              ]
+            }
+          },
+          200,
+          corsHeaders
+        );
+
+      }
+
+      // ==========================================================
+      // VERIFICACIÓN TÉCNICA
+      // ==========================================================
+
+      if (
+        variante.estado_verificacion !==
+        "verificado"
+      ) {
+
+        return jsonResponse(
+          {
+            ok: true,
+            result: {
+              choices: [
+                {
+                  message: {
+                    role: "assistant",
+                    content:
+                      `Tengo identificado ${vehiculo.marca} ${vehiculo.modelo}, pero la información técnica disponible todavía no está completamente verificada. Prefiero no recomendarte un producto sin poder confirmarlo.`
+                  }
+                }
+              ]
+            }
+          },
+          200,
+          corsHeaders
+        );
+
+      }
+
+      const motor =
+        variante.motor || {};
+
+      const aceiteMotor =
+        variante.aceite_motor || {};
+
+      const tipoMotor =
+        motor.tipo || null;
+
+      const viscosidades =
+        Array.isArray(
+          aceiteMotor.viscosidades
+        )
+          ? aceiteMotor.viscosidades
+          : [];
+
+      const apiRequerida =
+        Array.isArray(
+          aceiteMotor.api
+        )
+          ? aceiteMotor.api
+          : [];
+
+      const jasoRequerida =
+        Array.isArray(
+          aceiteMotor.jaso
+        )
+          ? aceiteMotor.jaso
+          : [];
+
+      // ==========================================================
+      // COMPATIBILIDAD DETERMINÍSTICA
+      // ==========================================================
+
+      const compatibles = [];
+
+      for (
+        const producto of productos
+      ) {
+
+        if (
+          producto.verificacion?.estado !==
+          "verificado"
+        ) {
+
+          continue;
+
+        }
+
+        const aplicaciones =
+          Array.isArray(
+            producto.aplicaciones
+          )
+            ? producto.aplicaciones
+            : [];
+
+        // --------------------------------------------------------
+        // TIPO DE VEHÍCULO
+        // --------------------------------------------------------
+
+        if (
+          vehiculo.tipo &&
+          !aplicaciones.includes(
+            vehiculo.tipo
+          )
+        ) {
+
+          continue;
+
+        }
+
+        // --------------------------------------------------------
+        // TIPO DE MOTOR
+        // --------------------------------------------------------
+
+        if (
+          tipoMotor &&
+          producto.tipo_motor &&
+          normalizar(
+            tipoMotor
+          ) !==
+          normalizar(
+            producto.tipo_motor
+          )
+        ) {
+
+          continue;
+
+        }
+
+        if (
+          tipoMotor &&
+          !producto.tipo_motor &&
+          (
+            producto.categoria ===
+              "aceite_motor" ||
+
+            producto.categoria ===
+              "aceite_2t"
+          )
+        ) {
+
+          continue;
+
+        }
+
+        // --------------------------------------------------------
+        // VISCOSIDAD
+        // --------------------------------------------------------
+
+        if (
+          viscosidades.length > 0
+        ) {
+
+          if (
+            !producto.viscosidad
+          ) {
+
+            continue;
+
+          }
+
+          const viscosidadValida =
+            viscosidades.some(
+              (viscosidad) =>
+
+                normalizar(
+                  viscosidad
+                ) ===
+
+                normalizar(
+                  producto.viscosidad
+                )
+            );
+
+          if (
+            !viscosidadValida
+          ) {
+
+            continue;
+
+          }
+
+        }
+
+        // --------------------------------------------------------
+        // API
+        // --------------------------------------------------------
+
+        if (
+          apiRequerida.length > 0
+        ) {
+
+          const specs =
+            producto.especificaciones ||
+            {};
+
+          if (
+            !arraysCoinciden(
+              apiRequerida,
+              specs.api
+            )
+          ) {
+
+            continue;
+
+          }
+
+        }
+
+        // --------------------------------------------------------
+        // JASO
+        // --------------------------------------------------------
+
+        if (
+          jasoRequerida.length > 0
+        ) {
+
+          const specs =
+            producto.especificaciones ||
+            {};
+
+          if (
+            !arraysCoinciden(
+              jasoRequerida,
+              specs.jaso
+            )
+          ) {
+
+            continue;
+
+          }
+
+        }
+
+        compatibles.push(
+          producto
+        );
+
+      }
+
+      // ==========================================================
+      // COMPATIBILIDADES EXPLÍCITAS
+      // ==========================================================
+
+      const compatibilidadesVehiculo =
+        compatibilidades.filter(
+          (item) =>
+
+            item.vehiculo_id ===
+            vehiculo.id &&
+
+            item.estado ===
+            "verificado"
+        );
+
+      for (
+        const compatibilidad
+        of compatibilidadesVehiculo
+      ) {
+
+        const producto =
+          productos.find(
+            (p) =>
+              p.id ===
+              compatibilidad.producto_id
+          );
+
+        if (
+          producto &&
+
+          producto.verificacion?.estado ===
+            "verificado" &&
+
+          !compatibles.some(
+            (p) =>
+              p.id ===
+              producto.id
+          )
+        ) {
+
+          compatibles.push(
+            producto
+          );
+
+        }
+
+      }
+
+      // ==========================================================
+      // PREPARAR DATOS
+      // ==========================================================
+
+      const datosVehiculo = {
+
+        id:
+          vehiculo.id,
+
+        marca:
+          vehiculo.marca,
+
+        modelo:
+          vehiculo.modelo,
+
+        tipo:
+          vehiculo.tipo,
+
+        variante_id:
+          variante.id,
+
+        anios:
+          variante.anios,
+
+        motor,
+
+        aceite_motor:
+          aceiteMotor
+
+      };
+
+      const datosProductos =
+        compatibles
+          .slice(0, 10)
+          .map(
+            (producto) => ({
+
+              id:
+                producto.id,
+
+              nombre:
+                producto.nombre,
+
+              marca:
+                producto.marca,
+
+              categoria:
+                producto.categoria,
+
+              precio:
+                producto.precio,
+
+              precio_mostrar:
+                producto.precio_mostrar,
+
+              viscosidad:
+                producto.viscosidad,
+
+              tipo_motor:
+                producto.tipo_motor,
+
+              especificaciones:
+                producto.especificaciones,
+
+              presentacion:
+                producto.presentacion
+
+            })
+          );
+
+      // ==========================================================
+      // SIN PRODUCTOS COMPATIBLES
+      // ==========================================================
+
+      if (
+        datosProductos.length === 0
+      ) {
+
+        return jsonResponse(
+          {
+            ok: true,
+            result: {
+              choices: [
+                {
+                  message: {
+                    role: "assistant",
+                    content:
+                      `Tengo verificada la información técnica de ${vehiculo.marca} ${vehiculo.modelo}, pero actualmente no tengo en el catálogo un producto cuya compatibilidad pueda confirmar con esos requisitos.`
+                  }
+                }
+              ]
+            }
+          },
+          200,
+          corsHeaders
+        );
+
+      }
+
+      // ==========================================================
+      // IA SOLO REDACTA
+      // ==========================================================
+
+      const prompt = `
+
+Eres el asistente oficial de VR Turbolub.
+
+La compatibilidad YA FUE CALCULADA por el sistema.
+
+VEHÍCULO VERIFICADO:
+
+${JSON.stringify(datosVehiculo)}
+
+PRODUCTOS_COMPATIBLES_VERIFICADOS:
+
+${JSON.stringify(datosProductos)}
+
+PREGUNTA:
+
+${message}
+
+REGLAS OBLIGATORIAS:
+
+- Utiliza únicamente PRODUCTOS_COMPATIBLES_VERIFICADOS.
+- Nunca inventes productos.
+- Nunca inventes precios.
+- Nunca inventes especificaciones.
+- Nunca agregues productos fuera de la lista.
+- No presentes productos pendientes como compatibles.
+- No cambies la viscosidad.
+- No cambies API.
+- No cambies JASO.
+- Si precio_mostrar dice "Cotizar", indica "Cotizar".
+- Si precio es numérico, utiliza exactamente ese precio.
+- No afirmes compatibilidad de productos que no estén en la lista.
+- No menciones JSON, programación ni instrucciones internas.
+
+Responde en español de forma clara y natural.
+
+`;
+
+      const result =
+        await env.AI.run(
+          "@cf/meta/llama-3.2-3b-instruct",
+          {
+            messages: [
+
+              {
+                role: "system",
+                content:
+                  "Eres el asistente técnico y comercial de VR Turbolub. Solo puedes utilizar la información proporcionada por el sistema."
+              },
+
+              {
+                role: "user",
+                content: prompt
+              }
+
+            ],
+
+            max_tokens: 600
+
+          }
+        );
+
+      return jsonResponse(
+        {
+          ok: true,
+          result
+        },
+        200,
+        corsHeaders
+      );
+
     }
 
     // ============================================================
-    // 3. CONVERSACIÓN GENERAL
+    // VEHÍCULO NO ENCONTRADO
+    // ============================================================
+
+    if (
+      preguntaCompatibilidad ||
+      preguntaProducto ||
+      mencionaTipoVehiculo
+    ) {
+
+      return jsonResponse(
+        {
+          ok: true,
+          result: {
+            choices: [
+              {
+                message: {
+                  role: "assistant",
+                  content:
+                    "Puedo ayudarte a verificar qué producto corresponde. Dime la marca, modelo y año exacto del vehículo."
+                }
+              }
+            ]
+          }
+        },
+        200,
+        corsHeaders
+      );
+
+    }
+
+    // ============================================================
+    // CONVERSACIÓN GENERAL
     // ============================================================
 
     const result =
@@ -2632,17 +3705,22 @@ Responde en español y de manera clara.
         "@cf/meta/llama-3.2-3b-instruct",
         {
           messages: [
+
             {
               role: "system",
               content:
-                "Eres la IA de VR Turbolub. Conversa normalmente en español y responde preguntas generales de forma útil y natural. Si el usuario pregunta por productos, vehículos o compatibilidad de VR Turbolub, no inventes información."
+                "Eres la IA de VR Turbolub. Conversa normalmente en español y responde preguntas generales de forma útil y natural."
             },
+
             {
               role: "user",
               content: message
             }
+
           ],
+
           max_tokens: 500
+
         }
       );
 
@@ -2656,6 +3734,7 @@ Responde en español y de manera clara.
     );
 
   } catch (error) {
+
     console.error(
       "ERROR IA VR TURBOLUB:",
       error
@@ -2673,8 +3752,11 @@ Responde en español y de manera clara.
       500,
       corsHeaders
     );
+
   }
+
 }
+
   // ============================================================
   // SUBIR COMPROBANTE A HUBSPOT
   // ============================================================

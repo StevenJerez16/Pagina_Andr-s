@@ -1,12 +1,16 @@
 {
-  "version": 1,
+  "version": 2,
   "fuente_principal": "manuales y documentación de fabricante",
+  "nota": "La identificación del vehículo puede usar marca, modelo, familia y alias. Las recomendaciones técnicas solo deben realizarse cuando las especificaciones del vehículo estén verificadas.",
   "vehiculos": [
+
     {
       "id": "yamaha-ybr-125",
       "tipo": "moto",
       "marca": "Yamaha",
       "modelo": "YBR 125",
+      "familia": "YBR",
+      "alias": ["ybr", "ybr125"],
       "variantes": [
         {
           "id": "yamaha-ybr-125-generica",
@@ -17,20 +21,9 @@
             "combustible": "gasolina"
           },
           "aceite_motor": {
-            "viscosidades": [
-              "10W-30",
-              "10W-40",
-              "10W-50",
-              "15W-40",
-              "20W-40",
-              "20W-50"
-            ],
-            "api": [
-              "SG"
-            ],
-            "jaso": [
-              "MA"
-            ],
+            "viscosidades": ["10W-30", "10W-40", "10W-50", "15W-40", "20W-40", "20W-50"],
+            "api": ["SG"],
+            "jaso": ["MA"],
             "capacidad_servicio_litros": 1.0
           },
           "transmision": {
@@ -59,27 +52,21 @@
       "tipo": "moto",
       "marca": "AKT",
       "modelo": "NKD 125",
+      "familia": "NKD",
+      "alias": ["nkd", "nkd125", "nkd 125"],
       "variantes": [
         {
           "id": "akt-nkd-125-2025",
-          "anios": [
-            2025
-          ],
+          "anios": [2025],
           "motor": {
             "cilindraje_cc": 125,
             "tipo": "4T",
             "combustible": "gasolina"
           },
           "aceite_motor": {
-            "viscosidades": [
-              "20W-50"
-            ],
-            "api": [
-              "SN"
-            ],
-            "jaso": [
-              "MA2"
-            ],
+            "viscosidades": ["20W-50"],
+            "api": ["SN"],
+            "jaso": ["MA2"],
             "capacidad_servicio_litros": null
           },
           "transmision": {
@@ -112,28 +99,21 @@
       "tipo": "moto",
       "marca": "Bajaj",
       "modelo": "Boxer CT100",
+      "familia": "Boxer",
+      "alias": ["boxer", "boxer ct", "ct100", "boxer ct100"],
       "variantes": [
         {
           "id": "bajaj-boxer-ct100-2026",
-          "anios": [
-            2026
-          ],
+          "anios": [2026],
           "motor": {
             "cilindraje_cc": 99.27,
             "tipo": "4T",
             "combustible": "gasolina"
           },
           "aceite_motor": {
-            "viscosidades": [
-              "20W-50",
-              "10W-30"
-            ],
-            "api": [
-              "SN"
-            ],
-            "jaso": [
-              "MA2"
-            ],
+            "viscosidades": ["20W-50", "10W-30"],
+            "api": ["SN"],
+            "jaso": ["MA2"],
             "capacidad_servicio_litros": 1.0
           },
           "transmision": {
@@ -158,32 +138,154 @@
     },
 
     {
+      "id": "bajaj-pulsar-ns125",
+      "tipo": "moto",
+      "marca": "Bajaj",
+      "modelo": "Pulsar NS125",
+      "familia": "Pulsar NS",
+      "alias": ["ns", "ns125", "pulsar ns", "pulsar ns125", "pulsar ns 125"],
+      "variantes": [
+        {
+          "id": "bajaj-pulsar-ns125-actual",
+          "anios": [],
+          "motor": {
+            "cilindraje_cc": 124.45,
+            "tipo": "4T",
+            "combustible": "gasolina"
+          },
+          "aceite_motor": {
+            "viscosidades": [],
+            "api": [],
+            "jaso": [],
+            "capacidad_servicio_litros": null
+          },
+          "transmision": {
+            "tipo": "manual",
+            "especificacion": null
+          },
+          "refrigerante": {
+            "especificacion": null
+          },
+          "liquido_frenos": {
+            "dot": null
+          },
+          "fuentes": [
+            {
+              "tipo": "fabricante",
+              "url": "https://www.bajajauto.com/es-co/bikes/nueva-pulsar-ns125"
+            }
+          ],
+          "estado_verificacion": "pendiente"
+        }
+      ]
+    },
+
+    {
+      "id": "bajaj-pulsar-n160",
+      "tipo": "moto",
+      "marca": "Bajaj",
+      "modelo": "Pulsar N160",
+      "familia": "Pulsar N",
+      "alias": ["n160", "pulsar n160"],
+      "variantes": [
+        {
+          "id": "bajaj-pulsar-n160-actual",
+          "anios": [],
+          "motor": {
+            "cilindraje_cc": 164.82,
+            "tipo": "4T",
+            "combustible": "gasolina"
+          },
+          "aceite_motor": {
+            "viscosidades": [],
+            "api": [],
+            "jaso": [],
+            "capacidad_servicio_litros": null
+          },
+          "transmision": {
+            "tipo": "manual",
+            "especificacion": null
+          },
+          "refrigerante": {
+            "especificacion": null
+          },
+          "liquido_frenos": {
+            "dot": null
+          },
+          "fuentes": [
+            {
+              "tipo": "fabricante",
+              "url": "https://www.bajajauto.com/es-co/bikes/pulsar-n160"
+            }
+          ],
+          "estado_verificacion": "pendiente"
+        }
+      ]
+    },
+
+    {
+      "id": "bajaj-pulsar-ns160",
+      "tipo": "moto",
+      "marca": "Bajaj",
+      "modelo": "Pulsar NS160",
+      "familia": "Pulsar NS",
+      "alias": ["ns", "ns160", "pulsar ns", "pulsar ns160", "pulsar ns 160"],
+      "variantes": [
+        {
+          "id": "bajaj-pulsar-ns160-actual",
+          "anios": [],
+          "motor": {
+            "cilindraje_cc": 160.3,
+            "tipo": "4T",
+            "combustible": "gasolina"
+          },
+          "aceite_motor": {
+            "viscosidades": [],
+            "api": [],
+            "jaso": [],
+            "capacidad_servicio_litros": null
+          },
+          "transmision": {
+            "tipo": "manual",
+            "especificacion": null
+          },
+          "refrigerante": {
+            "especificacion": null
+          },
+          "liquido_frenos": {
+            "dot": null
+          },
+          "fuentes": [
+            {
+              "tipo": "fabricante",
+              "url": "https://www.bajajauto.com/es-co/bikes/pulsar-ns160-fi-abs"
+            }
+          ],
+          "estado_verificacion": "pendiente"
+        }
+      ]
+    },
+
+    {
       "id": "bajaj-pulsar-ns200",
       "tipo": "moto",
       "marca": "Bajaj",
       "modelo": "Pulsar NS200",
+      "familia": "Pulsar NS",
+      "alias": ["ns", "ns200", "ns 200", "pulsar ns", "pulsar ns200", "pulsar ns 200"],
       "variantes": [
         {
           "id": "bajaj-pulsar-ns200-2026",
-          "anios": [
-            2026
-          ],
+          "anios": [2026],
           "motor": {
             "cilindraje_cc": 199.5,
             "tipo": "4T",
             "combustible": "gasolina"
           },
           "aceite_motor": {
-            "viscosidades": [
-              "20W-50",
-              "10W-50"
-            ],
-            "api": [
-              "SN"
-            ],
-            "jaso": [
-              "MA2"
-            ],
+            "viscosidades": ["20W-50", "10W-50"],
+            "api": ["SN"],
+            "jaso": ["MA2"],
             "capacidad_servicio_litros": 1.2
           },
           "transmision": {
@@ -208,31 +310,25 @@
     },
 
     {
-      "id": "yamaha-fz-150",
+      "id": "bajaj-pulsar-rs200",
       "tipo": "moto",
-      "marca": "Yamaha",
-      "modelo": "FZ 150",
+      "marca": "Bajaj",
+      "modelo": "Pulsar RS200",
+      "familia": "Pulsar RS",
+      "alias": ["rs200", "rs 200", "pulsar rs200"],
       "variantes": [
         {
-          "id": "yamaha-fz-150-2019",
-          "anios": [
-            2019
-          ],
+          "id": "bajaj-pulsar-rs200-actual",
+          "anios": [],
           "motor": {
-            "cilindraje_cc": 149,
+            "cilindraje_cc": null,
             "tipo": "4T",
             "combustible": "gasolina"
           },
           "aceite_motor": {
-            "viscosidades": [
-              "10W-40"
-            ],
-            "api": [
-              "SG"
-            ],
-            "jaso": [
-              "MA"
-            ],
+            "viscosidades": [],
+            "api": [],
+            "jaso": [],
             "capacidad_servicio_litros": null
           },
           "transmision": {
@@ -247,11 +343,140 @@
           },
           "fuentes": [
             {
-              "tipo": "manual_propietario",
-              "url": "https://www.manualslib.es/manual/723911/Yamaha-Fz-S-Fi-2019.html"
+              "tipo": "fabricante",
+              "url": "https://www.bajajauto.com/es-co/bikes"
             }
           ],
-          "estado_verificacion": "parcial"
+          "estado_verificacion": "pendiente"
+        }
+      ]
+    },
+
+    {
+      "id": "bajaj-pulsar-n250",
+      "tipo": "moto",
+      "marca": "Bajaj",
+      "modelo": "Pulsar N250",
+      "familia": "Pulsar N",
+      "alias": ["n250", "n 250", "pulsar n250"],
+      "variantes": [
+        {
+          "id": "bajaj-pulsar-n250-actual",
+          "anios": [],
+          "motor": {
+            "cilindraje_cc": 249.07,
+            "tipo": "4T",
+            "combustible": "gasolina"
+          },
+          "aceite_motor": {
+            "viscosidades": [],
+            "api": [],
+            "jaso": [],
+            "capacidad_servicio_litros": null
+          },
+          "transmision": {
+            "tipo": "manual",
+            "especificacion": null
+          },
+          "refrigerante": {
+            "especificacion": null
+          },
+          "liquido_frenos": {
+            "dot": null
+          },
+          "fuentes": [
+            {
+              "tipo": "fabricante",
+              "url": "https://www.bajajauto.com/es-co/bikes"
+            }
+          ],
+          "estado_verificacion": "pendiente"
+        }
+      ]
+    },
+
+    {
+      "id": "bajaj-pulsar-ns400-z",
+      "tipo": "moto",
+      "marca": "Bajaj",
+      "modelo": "Pulsar NS400 Z",
+      "familia": "Pulsar NS",
+      "alias": ["ns", "ns400", "ns400z", "ns 400", "pulsar ns", "pulsar ns400", "pulsar ns400 z"],
+      "variantes": [
+        {
+          "id": "bajaj-pulsar-ns400-z-actual",
+          "anios": [],
+          "motor": {
+            "cilindraje_cc": 373.3,
+            "tipo": "4T",
+            "combustible": "gasolina"
+          },
+          "aceite_motor": {
+            "viscosidades": [],
+            "api": [],
+            "jaso": [],
+            "capacidad_servicio_litros": null
+          },
+          "transmision": {
+            "tipo": "manual",
+            "especificacion": null
+          },
+          "refrigerante": {
+            "especificacion": null
+          },
+          "liquido_frenos": {
+            "dot": null
+          },
+          "fuentes": [
+            {
+              "tipo": "fabricante",
+              "url": "https://www.bajajauto.com/es-co/bikes"
+            }
+          ],
+          "estado_verificacion": "pendiente"
+        }
+      ]
+    },
+
+    {
+      "id": "bajaj-boxer-s",
+      "tipo": "moto",
+      "marca": "Bajaj",
+      "modelo": "Boxer S",
+      "familia": "Boxer",
+      "alias": ["boxer", "boxer s"],
+      "variantes": [
+        {
+          "id": "bajaj-boxer-s-actual",
+          "anios": [],
+          "motor": {
+            "cilindraje_cc": 102,
+            "tipo": "4T",
+            "combustible": "gasolina"
+          },
+          "aceite_motor": {
+            "viscosidades": [],
+            "api": [],
+            "jaso": [],
+            "capacidad_servicio_litros": null
+          },
+          "transmision": {
+            "tipo": "manual",
+            "especificacion": null
+          },
+          "refrigerante": {
+            "especificacion": null
+          },
+          "liquido_frenos": {
+            "dot": null
+          },
+          "fuentes": [
+            {
+              "tipo": "fabricante",
+              "url": "https://www.bajajauto.com/es-co/bikes"
+            }
+          ],
+          "estado_verificacion": "pendiente"
         }
       ]
     },
@@ -261,6 +486,8 @@
       "tipo": "moto",
       "marca": "Suzuki",
       "modelo": "Gixxer 150",
+      "familia": "Gixxer",
+      "alias": ["gixxer", "gixxer 150", "gixxer fi 150", "gixxer 150 fi", "gixxer fi"],
       "variantes": [
         {
           "id": "suzuki-gixxer-150-generica",
@@ -271,15 +498,9 @@
             "combustible": "gasolina"
           },
           "aceite_motor": {
-            "viscosidades": [
-              "10W-40"
-            ],
-            "api": [
-              "SL"
-            ],
-            "jaso": [
-              "MA2"
-            ],
+            "viscosidades": ["10W-40"],
+            "api": ["SL"],
+            "jaso": ["MA2"],
             "capacidad_servicio_litros": null
           },
           "transmision": {
@@ -308,10 +529,184 @@
     },
 
     {
+      "id": "suzuki-gixxer-sf-150",
+      "tipo": "moto",
+      "marca": "Suzuki",
+      "modelo": "Gixxer SF 150",
+      "familia": "Gixxer",
+      "alias": ["gixxer", "gixxer sf", "gixxer sf 150", "gixxer sf fi 150", "gixxer sf 150 fi"],
+      "variantes": [
+        {
+          "id": "suzuki-gixxer-sf-150-actual",
+          "anios": [],
+          "motor": {
+            "cilindraje_cc": 150,
+            "tipo": "4T",
+            "combustible": "gasolina"
+          },
+          "aceite_motor": {
+            "viscosidades": [],
+            "api": [],
+            "jaso": [],
+            "capacidad_servicio_litros": null
+          },
+          "transmision": {
+            "tipo": "manual",
+            "especificacion": null
+          },
+          "refrigerante": {
+            "especificacion": null
+          },
+          "liquido_frenos": {
+            "dot": null
+          },
+          "fuentes": [
+            {
+              "tipo": "sitio_fabricante",
+              "url": "https://www.suzuki.com.co/motocicletas/categoria/sport"
+            }
+          ],
+          "estado_verificacion": "pendiente"
+        }
+      ]
+    },
+
+    {
+      "id": "suzuki-gixxer-250",
+      "tipo": "moto",
+      "marca": "Suzuki",
+      "modelo": "Gixxer 250",
+      "familia": "Gixxer",
+      "alias": ["gixxer", "gixxer 250", "gixxer250"],
+      "variantes": [
+        {
+          "id": "suzuki-gixxer-250-2027",
+          "anios": [2027],
+          "motor": {
+            "cilindraje_cc": 249,
+            "tipo": "4T",
+            "combustible": "gasolina"
+          },
+          "aceite_motor": {
+            "viscosidades": [],
+            "api": [],
+            "jaso": [],
+            "capacidad_servicio_litros": null
+          },
+          "transmision": {
+            "tipo": "manual",
+            "especificacion": null
+          },
+          "refrigerante": {
+            "especificacion": null
+          },
+          "liquido_frenos": {
+            "dot": null
+          },
+          "fuentes": [
+            {
+              "tipo": "fabricante",
+              "url": "https://www.suzuki.com.co/promociones/gixxer-sf-250"
+            }
+          ],
+          "estado_verificacion": "pendiente"
+        }
+      ]
+    },
+
+    {
+      "id": "suzuki-gixxer-sf-250",
+      "tipo": "moto",
+      "marca": "Suzuki",
+      "modelo": "Gixxer SF 250",
+      "familia": "Gixxer",
+      "alias": ["gixxer", "gixxer sf 250", "gixxer sf250", "gixxer 250 sf"],
+      "variantes": [
+        {
+          "id": "suzuki-gixxer-sf-250-2027",
+          "anios": [2027],
+          "motor": {
+            "cilindraje_cc": 249,
+            "tipo": "4T",
+            "combustible": "gasolina"
+          },
+          "aceite_motor": {
+            "viscosidades": [],
+            "api": [],
+            "jaso": [],
+            "capacidad_servicio_litros": null
+          },
+          "transmision": {
+            "tipo": "manual",
+            "especificacion": null
+          },
+          "refrigerante": {
+            "especificacion": null
+          },
+          "liquido_frenos": {
+            "dot": null
+          },
+          "fuentes": [
+            {
+              "tipo": "sitio_fabricante",
+              "url": "https://www.suzuki.com.co/motocicletas/sport/gixxer-sf-250"
+            }
+          ],
+          "estado_verificacion": "pendiente"
+        }
+      ]
+    },
+
+    {
+      "id": "yamaha-fz-150",
+      "tipo": "moto",
+      "marca": "Yamaha",
+      "modelo": "FZ 150",
+      "familia": "FZ",
+      "alias": ["fz", "fz150", "fz 150"],
+      "variantes": [
+        {
+          "id": "yamaha-fz-150-2019",
+          "anios": [2019],
+          "motor": {
+            "cilindraje_cc": 149,
+            "tipo": "4T",
+            "combustible": "gasolina"
+          },
+          "aceite_motor": {
+            "viscosidades": ["10W-40"],
+            "api": ["SG"],
+            "jaso": ["MA"],
+            "capacidad_servicio_litros": null
+          },
+          "transmision": {
+            "tipo": "manual",
+            "especificacion": null
+          },
+          "refrigerante": {
+            "especificacion": null
+          },
+          "liquido_frenos": {
+            "dot": null
+          },
+          "fuentes": [
+            {
+              "tipo": "manual_propietario",
+              "url": "https://www.manualslib.es/manual/723911/Yamaha-Fz-S-Fi-2019.html"
+            }
+          ],
+          "estado_verificacion": "parcial"
+        }
+      ]
+    },
+
+    {
       "id": "honda-cb190r",
       "tipo": "moto",
       "marca": "Honda",
       "modelo": "CB190R",
+      "familia": "CB",
+      "alias": ["cb190", "cb190r", "honda cb190r"],
       "variantes": [
         {
           "id": "honda-cb190r-manual-anterior",
@@ -322,15 +717,9 @@
             "combustible": "gasolina"
           },
           "aceite_motor": {
-            "viscosidades": [
-              "10W-30"
-            ],
-            "api": [
-              "SG"
-            ],
-            "jaso": [
-              "MA"
-            ],
+            "viscosidades": ["10W-30"],
+            "api": ["SG"],
+            "jaso": ["MA"],
             "capacidad_servicio_litros": 1.0
           },
           "transmision": {
@@ -341,10 +730,7 @@
             "especificacion": null
           },
           "liquido_frenos": {
-            "dot": [
-              "DOT 3",
-              "DOT 4"
-            ]
+            "dot": ["DOT 3", "DOT 4"]
           },
           "fuentes": [
             {
@@ -370,6 +756,8 @@
       "tipo": "moto",
       "marca": "Honda",
       "modelo": "XR150L",
+      "familia": "XR",
+      "alias": ["xr150", "xr150l", "honda xr150l"],
       "variantes": [
         {
           "id": "honda-xr150l-manual-anterior",
@@ -380,15 +768,9 @@
             "combustible": "gasolina"
           },
           "aceite_motor": {
-            "viscosidades": [
-              "10W-30"
-            ],
-            "api": [
-              "SL"
-            ],
-            "jaso": [
-              "MA2"
-            ],
+            "viscosidades": ["10W-30"],
+            "api": ["SL"],
+            "jaso": ["MA2"],
             "capacidad_servicio_litros": null
           },
           "transmision": {
@@ -414,6 +796,910 @@
           "estado_verificacion": "parcial"
         }
       ]
+    },
+
+    {
+      "id": "toyota-corolla",
+      "tipo": "carro",
+      "marca": "Toyota",
+      "modelo": "Corolla",
+      "familia": "Corolla",
+      "alias": ["corolla", "toyota corolla"],
+      "variantes": [
+        {
+          "id": "toyota-corolla-generico",
+          "anios": [],
+          "motor": {
+            "cilindraje_cc": null,
+            "tipo": null,
+            "combustible": null
+          },
+          "aceite_motor": {
+            "viscosidades": [],
+            "api": [],
+            "acea": [],
+            "oem": [],
+            "capacidad_servicio_litros": null
+          },
+          "transmision": {
+            "tipo": null,
+            "especificacion": null
+          },
+          "refrigerante": {
+            "especificacion": null
+          },
+          "liquido_frenos": {
+            "dot": []
+          },
+          "fuentes": [
+            {
+              "tipo": "fabricante",
+              "url": "https://www.toyota.com.co/vehiculos/hibridos/corolla"
+            }
+          ],
+          "estado_verificacion": "pendiente"
+        }
+      ]
+    },
+
+    {
+      "id": "toyota-corolla-cross",
+      "tipo": "carro",
+      "marca": "Toyota",
+      "modelo": "Corolla Cross",
+      "familia": "Corolla",
+      "alias": ["corolla cross", "corolla-cross", "toyota corolla cross"],
+      "variantes": [
+        {
+          "id": "toyota-corolla-cross-generico",
+          "anios": [],
+          "motor": {
+            "cilindraje_cc": null,
+            "tipo": null,
+            "combustible": null
+          },
+          "aceite_motor": {
+            "viscosidades": [],
+            "api": [],
+            "acea": [],
+            "oem": [],
+            "capacidad_servicio_litros": null
+          },
+          "transmision": {
+            "tipo": null,
+            "especificacion": null
+          },
+          "refrigerante": {
+            "especificacion": null
+          },
+          "liquido_frenos": {
+            "dot": []
+          },
+          "fuentes": [
+            {
+              "tipo": "fabricante",
+              "url": "https://www.toyota.com.co/"
+            }
+          ],
+          "estado_verificacion": "pendiente"
+        }
+      ]
+    },
+
+    {
+      "id": "toyota-hilux",
+      "tipo": "camioneta",
+      "marca": "Toyota",
+      "modelo": "Hilux",
+      "familia": "Hilux",
+      "alias": ["hilux", "toyota hilux"],
+      "variantes": [
+        {
+          "id": "toyota-hilux-generica",
+          "anios": [],
+          "motor": {
+            "cilindraje_cc": null,
+            "tipo": null,
+            "combustible": null
+          },
+          "aceite_motor": {
+            "viscosidades": [],
+            "api": [],
+            "acea": [],
+            "oem": [],
+            "capacidad_servicio_litros": null
+          },
+          "transmision": {
+            "tipo": null,
+            "especificacion": null
+          },
+          "refrigerante": {
+            "especificacion": null
+          },
+          "liquido_frenos": {
+            "dot": []
+          },
+          "fuentes": [
+            {
+              "tipo": "fabricante",
+              "url": "https://www.toyota.com.co/"
+            }
+          ],
+          "estado_verificacion": "pendiente"
+        }
+      ]
+    },
+
+    {
+      "id": "renault-duster",
+      "tipo": "carro",
+      "marca": "Renault",
+      "modelo": "Duster",
+      "familia": "Duster",
+      "alias": ["duster", "renault duster"],
+      "variantes": [
+        {
+          "id": "renault-duster-generica",
+          "anios": [],
+          "motor": {
+            "cilindraje_cc": null,
+            "tipo": null,
+            "combustible": null
+          },
+          "aceite_motor": {
+            "viscosidades": [],
+            "api": [],
+            "acea": [],
+            "oem": [],
+            "capacidad_servicio_litros": null
+          },
+          "transmision": {
+            "tipo": null,
+            "especificacion": null
+          },
+          "refrigerante": {
+            "especificacion": null
+          },
+          "liquido_frenos": {
+            "dot": []
+          },
+          "fuentes": [
+            {
+              "tipo": "fabricante",
+              "url": "https://www.renault.com.co/servicios/manuales.html"
+            }
+          ],
+          "estado_verificacion": "pendiente"
+        }
+      ]
+    },
+
+    {
+      "id": "renault-logan",
+      "tipo": "carro",
+      "marca": "Renault",
+      "modelo": "Logan",
+      "familia": "Logan",
+      "alias": ["logan", "renault logan"],
+      "variantes": [
+        {
+          "id": "renault-logan-generico",
+          "anios": [],
+          "motor": {
+            "cilindraje_cc": null,
+            "tipo": null,
+            "combustible": null
+          },
+          "aceite_motor": {
+            "viscosidades": [],
+            "api": [],
+            "acea": [],
+            "oem": [],
+            "capacidad_servicio_litros": null
+          },
+          "transmision": {
+            "tipo": null,
+            "especificacion": null
+          },
+          "refrigerante": {
+            "especificacion": null
+          },
+          "liquido_frenos": {
+            "dot": []
+          },
+          "fuentes": [
+            {
+              "tipo": "fabricante",
+              "url": "https://www.renault.com.co/servicios/manuales.html"
+            }
+          ],
+          "estado_verificacion": "pendiente"
+        }
+      ]
+    },
+
+    {
+      "id": "chevrolet-onix",
+      "tipo": "carro",
+      "marca": "Chevrolet",
+      "modelo": "Onix",
+      "familia": "Onix",
+      "alias": ["onix", "chevrolet onix"],
+      "variantes": [
+        {
+          "id": "chevrolet-onix-generico",
+          "anios": [],
+          "motor": {
+            "cilindraje_cc": null,
+            "tipo": null,
+            "combustible": null
+          },
+          "aceite_motor": {
+            "viscosidades": [],
+            "api": [],
+            "acea": [],
+            "oem": [],
+            "capacidad_servicio_litros": null
+          },
+          "transmision": {
+            "tipo": null,
+            "especificacion": null
+          },
+          "refrigerante": {
+            "especificacion": null
+          },
+          "liquido_frenos": {
+            "dot": []
+          },
+          "fuentes": [
+            {
+              "tipo": "fabricante",
+              "url": "https://www.chevrolet.com.co/"
+            }
+          ],
+          "estado_verificacion": "pendiente"
+        }
+      ]
+    },
+
+    {
+      "id": "chevrolet-tracker",
+      "tipo": "carro",
+      "marca": "Chevrolet",
+      "modelo": "Tracker",
+      "familia": "Tracker",
+      "alias": ["tracker", "chevrolet tracker"],
+      "variantes": [
+        {
+          "id": "chevrolet-tracker-generica",
+          "anios": [],
+          "motor": {
+            "cilindraje_cc": null,
+            "tipo": null,
+            "combustible": null
+          },
+          "aceite_motor": {
+            "viscosidades": [],
+            "api": [],
+            "acea": [],
+            "oem": [],
+            "capacidad_servicio_litros": null
+          },
+          "transmision": {
+            "tipo": null,
+            "especificacion": null
+          },
+          "refrigerante": {
+            "especificacion": null
+          },
+          "liquido_frenos": {
+            "dot": []
+          },
+          "fuentes": [
+            {
+              "tipo": "fabricante",
+              "url": "https://www.chevrolet.com.co/"
+            }
+          ],
+          "estado_verificacion": "pendiente"
+        }
+      ]
+    },
+
+    {
+      "id": "mazda-cx-30",
+      "tipo": "carro",
+      "marca": "Mazda",
+      "modelo": "CX-30",
+      "familia": "CX",
+      "alias": ["cx30", "cx-30", "mazda cx30", "mazda cx-30"],
+      "variantes": [
+        {
+          "id": "mazda-cx-30-generica",
+          "anios": [],
+          "motor": {
+            "cilindraje_cc": null,
+            "tipo": null,
+            "combustible": null
+          },
+          "aceite_motor": {
+            "viscosidades": [],
+            "api": [],
+            "acea": [],
+            "oem": [],
+            "capacidad_servicio_litros": null
+          },
+          "transmision": {
+            "tipo": null,
+            "especificacion": null
+          },
+          "refrigerante": {
+            "especificacion": null
+          },
+          "liquido_frenos": {
+            "dot": []
+          },
+          "fuentes": [
+            {
+              "tipo": "manual_fabricante",
+              "url": "https://www.mazda.com.co/globalassets/cars/mazda-cx-30/img-manulaes/cx-30-manual-2020.pdf"
+            }
+          ],
+          "estado_verificacion": "pendiente"
+        }
+      ]
+    },
+
+    {
+      "id": "mazda-cx-5",
+      "tipo": "carro",
+      "marca": "Mazda",
+      "modelo": "CX-5",
+      "familia": "CX",
+      "alias": ["cx5", "cx-5", "mazda cx5", "mazda cx-5"],
+      "variantes": [
+        {
+          "id": "mazda-cx-5-generica",
+          "anios": [],
+          "motor": {
+            "cilindraje_cc": null,
+            "tipo": null,
+            "combustible": null
+          },
+          "aceite_motor": {
+            "viscosidades": [],
+            "api": [],
+            "acea": [],
+            "oem": [],
+            "capacidad_servicio_litros": null
+          },
+          "transmision": {
+            "tipo": null,
+            "especificacion": null
+          },
+          "refrigerante": {
+            "especificacion": null
+          },
+          "liquido_frenos": {
+            "dot": []
+          },
+          "fuentes": [
+            {
+              "tipo": "fabricante",
+              "url": "https://www.mazda.com.co/"
+            }
+          ],
+          "estado_verificacion": "pendiente"
+        }
+      ]
+    },
+
+    {
+      "id": "kia-k3",
+      "tipo": "carro",
+      "marca": "Kia",
+      "modelo": "K3",
+      "familia": "K3",
+      "alias": ["k3", "kia k3"],
+      "variantes": [
+        {
+          "id": "kia-k3-generico",
+          "anios": [],
+          "motor": {
+            "cilindraje_cc": null,
+            "tipo": null,
+            "combustible": null
+          },
+          "aceite_motor": {
+            "viscosidades": [],
+            "api": [],
+            "acea": [],
+            "oem": [],
+            "capacidad_servicio_litros": null
+          },
+          "transmision": {
+            "tipo": null,
+            "especificacion": null
+          },
+          "refrigerante": {
+            "especificacion": null
+          },
+          "liquido_frenos": {
+            "dot": []
+          },
+          "fuentes": [],
+          "estado_verificacion": "pendiente"
+        }
+      ]
+    },
+
+    {
+      "id": "kia-picanto",
+      "tipo": "carro",
+      "marca": "Kia",
+      "modelo": "Picanto",
+      "familia": "Picanto",
+      "alias": ["picanto", "kia picanto"],
+      "variantes": [
+        {
+          "id": "kia-picanto-generico",
+          "anios": [],
+          "motor": {
+            "cilindraje_cc": null,
+            "tipo": null,
+            "combustible": null
+          },
+          "aceite_motor": {
+            "viscosidades": [],
+            "api": [],
+            "acea": [],
+            "oem": [],
+            "capacidad_servicio_litros": null
+          },
+          "transmision": {
+            "tipo": null,
+            "especificacion": null
+          },
+          "refrigerante": {
+            "especificacion": null
+          },
+          "liquido_frenos": {
+            "dot": []
+          },
+          "fuentes": [],
+          "estado_verificacion": "pendiente"
+        }
+      ]
+    },
+
+    {
+      "id": "kia-sportage",
+      "tipo": "carro",
+      "marca": "Kia",
+      "modelo": "Sportage",
+      "familia": "Sportage",
+      "alias": ["sportage", "kia sportage"],
+      "variantes": [
+        {
+          "id": "kia-sportage-generica",
+          "anios": [],
+          "motor": {
+            "cilindraje_cc": null,
+            "tipo": null,
+            "combustible": null
+          },
+          "aceite_motor": {
+            "viscosidades": [],
+            "api": [],
+            "acea": [],
+            "oem": [],
+            "capacidad_servicio_litros": null
+          },
+          "transmision": {
+            "tipo": null,
+            "especificacion": null
+          },
+          "refrigerante": {
+            "especificacion": null
+          },
+          "liquido_frenos": {
+            "dot": []
+          },
+          "fuentes": [],
+          "estado_verificacion": "pendiente"
+        }
+      ]
+    },
+
+    {
+      "id": "hyundai-tucson",
+      "tipo": "carro",
+      "marca": "Hyundai",
+      "modelo": "Tucson",
+      "familia": "Tucson",
+      "alias": ["tucson", "hyundai tucson"],
+      "variantes": [
+        {
+          "id": "hyundai-tucson-generica",
+          "anios": [],
+          "motor": {
+            "cilindraje_cc": null,
+            "tipo": null,
+            "combustible": null
+          },
+          "aceite_motor": {
+            "viscosidades": [],
+            "api": [],
+            "acea": [],
+            "oem": [],
+            "capacidad_servicio_litros": null
+          },
+          "transmision": {
+            "tipo": null,
+            "especificacion": null
+          },
+          "refrigerante": {
+            "especificacion": null
+          },
+          "liquido_frenos": {
+            "dot": []
+          },
+          "fuentes": [],
+          "estado_verificacion": "pendiente"
+        }
+      ]
+    },
+
+    {
+      "id": "hino-serie-300",
+      "tipo": "camion",
+      "marca": "Hino",
+      "modelo": "Serie 300",
+      "familia": "Serie 300",
+      "alias": ["hino 300", "serie 300", "hino serie 300"],
+      "variantes": [
+        {
+          "id": "hino-serie-300-generica",
+          "anios": [],
+          "motor": {
+            "cilindraje_cc": null,
+            "tipo": "diesel",
+            "combustible": "diesel"
+          },
+          "aceite_motor": {
+            "viscosidades": [],
+            "api": [],
+            "acea": [],
+            "oem": [],
+            "capacidad_servicio_litros": null
+          },
+          "transmision": {
+            "tipo": null,
+            "especificacion": null
+          },
+          "refrigerante": {
+            "especificacion": null
+          },
+          "liquido_frenos": {
+            "dot": []
+          },
+          "fuentes": [],
+          "estado_verificacion": "pendiente"
+        }
+      ]
+    },
+
+    {
+      "id": "hino-serie-500",
+      "tipo": "camion",
+      "marca": "Hino",
+      "modelo": "Serie 500",
+      "familia": "Serie 500",
+      "alias": ["hino 500", "serie 500", "hino serie 500"],
+      "variantes": [
+        {
+          "id": "hino-serie-500-generica",
+          "anios": [],
+          "motor": {
+            "cilindraje_cc": null,
+            "tipo": "diesel",
+            "combustible": "diesel"
+          },
+          "aceite_motor": {
+            "viscosidades": [],
+            "api": [],
+            "acea": [],
+            "oem": [],
+            "capacidad_servicio_litros": null
+          },
+          "transmision": {
+            "tipo": null,
+            "especificacion": null
+          },
+          "refrigerante": {
+            "especificacion": null
+          },
+          "liquido_frenos": {
+            "dot": []
+          },
+          "fuentes": [],
+          "estado_verificacion": "pendiente"
+        }
+      ]
+    },
+
+    {
+      "id": "isuzu-npr",
+      "tipo": "camion",
+      "marca": "Isuzu",
+      "modelo": "NPR",
+      "familia": "N",
+      "alias": ["npr", "isuzu npr"],
+      "variantes": [
+        {
+          "id": "isuzu-npr-generico",
+          "anios": [],
+          "motor": {
+            "cilindraje_cc": null,
+            "tipo": "diesel",
+            "combustible": "diesel"
+          },
+          "aceite_motor": {
+            "viscosidades": [],
+            "api": [],
+            "acea": [],
+            "oem": [],
+            "capacidad_servicio_litros": null
+          },
+          "transmision": {
+            "tipo": null,
+            "especificacion": null
+          },
+          "refrigerante": {
+            "especificacion": null
+          },
+          "liquido_frenos": {
+            "dot": []
+          },
+          "fuentes": [],
+          "estado_verificacion": "pendiente"
+        }
+      ]
+    },
+
+    {
+      "id": "isuzu-nqr",
+      "tipo": "camion",
+      "marca": "Isuzu",
+      "modelo": "NQR",
+      "familia": "N",
+      "alias": ["nqr", "isuzu nqr"],
+      "variantes": [
+        {
+          "id": "isuzu-nqr-generico",
+          "anios": [],
+          "motor": {
+            "cilindraje_cc": null,
+            "tipo": "diesel",
+            "combustible": "diesel"
+          },
+          "aceite_motor": {
+            "viscosidades": [],
+            "api": [],
+            "acea": [],
+            "oem": [],
+            "capacidad_servicio_litros": null
+          },
+          "transmision": {
+            "tipo": null,
+            "especificacion": null
+          },
+          "refrigerante": {
+            "especificacion": null
+          },
+          "liquido_frenos": {
+            "dot": []
+          },
+          "fuentes": [],
+          "estado_verificacion": "pendiente"
+        }
+      ]
+    },
+
+    {
+      "id": "foton-aumark",
+      "tipo": "camion",
+      "marca": "Foton",
+      "modelo": "Aumark",
+      "familia": "Aumark",
+      "alias": ["aumark", "foton aumark"],
+      "variantes": [
+        {
+          "id": "foton-aumark-generico",
+          "anios": [],
+          "motor": {
+            "cilindraje_cc": null,
+            "tipo": "diesel",
+            "combustible": "diesel"
+          },
+          "aceite_motor": {
+            "viscosidades": [],
+            "api": [],
+            "acea": [],
+            "oem": [],
+            "capacidad_servicio_litros": null
+          },
+          "transmision": {
+            "tipo": null,
+            "especificacion": null
+          },
+          "refrigerante": {
+            "especificacion": null
+          },
+          "liquido_frenos": {
+            "dot": []
+          },
+          "fuentes": [],
+          "estado_verificacion": "pendiente"
+        }
+      ]
+    },
+
+    {
+      "id": "jac-jpr",
+      "tipo": "camion",
+      "marca": "JAC",
+      "modelo": "JPR",
+      "familia": "JPR",
+      "alias": ["jpr", "jac jpr"],
+      "variantes": [
+        {
+          "id": "jac-jpr-generico",
+          "anios": [],
+          "motor": {
+            "cilindraje_cc": null,
+            "tipo": "diesel",
+            "combustible": "diesel"
+          },
+          "aceite_motor": {
+            "viscosidades": [],
+            "api": [],
+            "acea": [],
+            "oem": [],
+            "capacidad_servicio_litros": null
+          },
+          "transmision": {
+            "tipo": null,
+            "especificacion": null
+          },
+          "refrigerante": {
+            "especificacion": null
+          },
+          "liquido_frenos": {
+            "dot": []
+          },
+          "fuentes": [],
+          "estado_verificacion": "pendiente"
+        }
+      ]
+    },
+
+    {
+      "id": "mercedes-benz-atego",
+      "tipo": "camion",
+      "marca": "Mercedes-Benz",
+      "modelo": "Atego",
+      "familia": "Atego",
+      "alias": ["atego", "mercedes atego", "mercedes-benz atego"],
+      "variantes": [
+        {
+          "id": "mercedes-benz-atego-generico",
+          "anios": [],
+          "motor": {
+            "cilindraje_cc": null,
+            "tipo": "diesel",
+            "combustible": "diesel"
+          },
+          "aceite_motor": {
+            "viscosidades": [],
+            "api": [],
+            "acea": [],
+            "oem": [],
+            "capacidad_servicio_litros": null
+          },
+          "transmision": {
+            "tipo": null,
+            "especificacion": null
+          },
+          "refrigerante": {
+            "especificacion": null
+          },
+          "liquido_frenos": {
+            "dot": []
+          },
+          "fuentes": [],
+          "estado_verificacion": "pendiente"
+        }
+      ]
+    },
+
+    {
+      "id": "volkswagen-delivery",
+      "tipo": "camion",
+      "marca": "Volkswagen",
+      "modelo": "Delivery",
+      "familia": "Delivery",
+      "alias": ["delivery", "vw delivery", "volkswagen delivery"],
+      "variantes": [
+        {
+          "id": "volkswagen-delivery-generico",
+          "anios": [],
+          "motor": {
+            "cilindraje_cc": null,
+            "tipo": "diesel",
+            "combustible": "diesel"
+          },
+          "aceite_motor": {
+            "viscosidades": [],
+            "api": [],
+            "acea": [],
+            "oem": [],
+            "capacidad_servicio_litros": null
+          },
+          "transmision": {
+            "tipo": null,
+            "especificacion": null
+          },
+          "refrigerante": {
+            "especificacion": null
+          },
+          "liquido_frenos": {
+            "dot": []
+          },
+          "fuentes": [],
+          "estado_verificacion": "pendiente"
+        }
+      ]
+    },
+
+    {
+      "id": "freightliner-m2",
+      "tipo": "camion",
+      "marca": "Freightliner",
+      "modelo": "M2",
+      "familia": "M2",
+      "alias": ["m2", "freightliner m2"],
+      "variantes": [
+        {
+          "id": "freightliner-m2-generico",
+          "anios": [],
+          "motor": {
+            "cilindraje_cc": null,
+            "tipo": "diesel",
+            "combustible": "diesel"
+          },
+          "aceite_motor": {
+            "viscosidades": [],
+            "api": [],
+            "acea": [],
+            "oem": [],
+            "capacidad_servicio_litros": null
+          },
+          "transmision": {
+            "tipo": null,
+            "especificacion": null
+          },
+          "refrigerante": {
+            "especificacion": null
+          },
+          "liquido_frenos": {
+            "dot": []
+          },
+          "fuentes": [],
+          "estado_verificacion": "pendiente"
+        }
+      ]
     }
+
   ]
 }
