@@ -25,7 +25,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const input = document.getElementById("vrIaInput");
   const sendButton = document.getElementById("vrIaSend");
   const messages = document.getElementById("vrIaMessages");
-
   const quickButtons = document.querySelectorAll(
     ".vr-ia-options button"
   );
@@ -112,7 +111,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (!messages) return;
 
-    const message = document.createElement("div");
+    const message =
+      document.createElement("div");
 
     message.classList.add(
       "vr-message",
@@ -153,6 +153,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     messages.scrollTop =
       messages.scrollHeight;
+
   }
 
 
@@ -206,6 +207,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     miniMessages.scrollTop =
       miniMessages.scrollHeight;
+
   }
 
 
@@ -233,6 +235,7 @@ document.addEventListener("DOMContentLoaded", () => {
         /\n/g,
         "<br>"
       );
+
   }
 
 
@@ -248,6 +251,7 @@ document.addEventListener("DOMContentLoaded", () => {
     div.textContent = text;
 
     return div.innerHTML;
+
   }
 
 
@@ -281,13 +285,11 @@ document.addEventListener("DOMContentLoaded", () => {
       </div>
 
       <div class="vr-message-content">
-
         <div class="vr-typing">
           <span></span>
           <span></span>
           <span></span>
         </div>
-
       </div>
     `;
 
@@ -298,7 +300,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
       messages.scrollTop =
         messages.scrollHeight;
+
     }
+
   }
 
 
@@ -332,13 +336,11 @@ document.addEventListener("DOMContentLoaded", () => {
       </div>
 
       <div class="vr-message-content">
-
         <div class="vr-typing">
           <span></span>
           <span></span>
           <span></span>
         </div>
-
       </div>
     `;
 
@@ -349,7 +351,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
       miniMessages.scrollTop =
         miniMessages.scrollHeight;
+
     }
+
   }
 
 
@@ -375,22 +379,26 @@ document.addEventListener("DOMContentLoaded", () => {
     if (miniTyping) {
       miniTyping.remove();
     }
+
   }
 
 
   /* =====================================================
      CONEXIÓN CON LA IA
   ===================================================== */
+
   async function askAI(userQuestion) {
 
     const response = await fetch(
       "https://vrturbolub.vrturbolubmiappworkersdev.workers.dev/ia",
       {
         method: "POST",
+
         headers: {
           "Content-Type":
             "application/json"
         },
+
         body: JSON.stringify({
           message: userQuestion,
           history:
@@ -399,13 +407,16 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     );
 
+
     const data =
       await response.json();
+
 
     if (
       !response.ok ||
       data.ok === false
     ) {
+
       console.error(
         "Error de VR Turbolub IA:",
         data
@@ -414,21 +425,27 @@ document.addEventListener("DOMContentLoaded", () => {
       throw new Error(
         "La IA respondió con error."
       );
+
     }
+
 
     /*
       Cloudflare Workers AI actualmente responde:
+
       data.result.choices[0].message.content
 
       Se mantienen response/respuesta como
       compatibilidad con respuestas anteriores.
     */
+
     const answer =
       data?.result?.choices?.[0]?.message?.content ||
       data?.response ||
       data?.respuesta;
 
+
     if (!answer) {
+
       console.error(
         "Respuesta inesperada de la IA:",
         data
@@ -437,10 +454,15 @@ document.addEventListener("DOMContentLoaded", () => {
       throw new Error(
         "La IA no devolvió respuesta."
       );
+
     }
 
+
     return answer;
+
   }
+
+
   /* =====================================================
      ENVIAR PREGUNTA - IA GRANDE
   ===================================================== */
@@ -471,11 +493,8 @@ document.addEventListener("DOMContentLoaded", () => {
     /* Historial */
 
     conversationHistory.push({
-
       role: "user",
-
       content: userQuestion
-
     });
 
 
@@ -505,11 +524,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
       conversationHistory.push({
-
         role: "assistant",
-
         content: answer
-
       });
 
 
@@ -528,13 +544,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
       addMessage(
-
         "No pude conectarme con el asistente 🤖. Inténtalo nuevamente en unos segundos.",
-
         "ai"
-
       );
+
     }
+
   }
 
 
@@ -568,11 +583,8 @@ document.addEventListener("DOMContentLoaded", () => {
     /* Guardar historial */
 
     conversationHistory.push({
-
       role: "user",
-
       content: userQuestion
-
     });
 
 
@@ -602,11 +614,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
       conversationHistory.push({
-
         role: "assistant",
-
         content: answer
-
       });
 
 
@@ -625,13 +634,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
       addMiniMessage(
-
         "No pude conectarme con el asistente 🤖. Inténtalo nuevamente en unos segundos.",
-
         "ai"
-
       );
+
     }
+
   }
 
 
@@ -644,11 +652,10 @@ document.addEventListener("DOMContentLoaded", () => {
     sendButton.addEventListener(
       "click",
       () => {
-
         sendQuestion();
-
       }
     );
+
   }
 
 
@@ -672,6 +679,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       }
     );
+
   }
 
 
@@ -714,11 +722,10 @@ document.addEventListener("DOMContentLoaded", () => {
     miniSend.addEventListener(
       "click",
       () => {
-
         sendMiniQuestion();
-
       }
     );
+
   }
 
 
@@ -742,6 +749,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       }
     );
+
   }
 
 
@@ -775,7 +783,6 @@ document.addEventListener("DOMContentLoaded", () => {
   );
 
 });
-
 
 
 /* =====================================================
@@ -828,7 +835,6 @@ document.addEventListener(
 
 
     let currentIndex = 0;
-
     let autoScrollInterval;
 
 
@@ -857,6 +863,7 @@ document.addEventListener(
 
       marqueeContent.style.transform =
         `translateX(-${currentIndex * 100}%)`;
+
     }
 
 
@@ -876,6 +883,7 @@ document.addEventListener(
           },
           5000
         );
+
     }
 
 
@@ -932,8 +940,10 @@ document.addEventListener(
           /* Bajando */
 
           if (topBar) {
+
             topBar.style.top =
               "-40px";
+
           }
 
 
@@ -977,3 +987,846 @@ document.addEventListener(
 
   }
 );
+
+
+/* =====================================================
+   PROCESO — CARRUSEL INFINITO
+===================================================== */
+
+(() => {
+
+  "use strict";
+
+
+  function initProcessCarousel() {
+
+    const grid =
+      document.querySelector(
+        ".process-grid"
+      );
+
+
+    if (!grid) {
+
+      console.log(
+        "VR TURBOLUB: process-grid no encontrado"
+      );
+
+      return;
+
+    }
+
+
+    if (
+      grid.dataset.carouselReady ===
+      "true"
+    ) {
+
+      return;
+
+    }
+
+
+    const originalSteps =
+      Array.from(
+        grid.querySelectorAll(
+          ":scope > .process-step"
+        )
+      );
+
+
+    if (
+      originalSteps.length !== 4
+    ) {
+
+      console.log(
+        "VR TURBOLUB: se esperaban 4 pasos y se encontraron",
+        originalSteps.length
+      );
+
+      return;
+
+    }
+
+
+    /* =========================================
+       CREAR PISTA
+    ========================================= */
+
+    const track =
+      document.createElement("div");
+
+    track.className =
+      "process-track";
+
+
+    /*
+      Guardamos los pasos originales.
+    */
+
+    originalSteps.forEach(
+      step => {
+
+        step.classList.remove(
+          "vr-reveal"
+        );
+
+        step.classList.remove(
+          "vr-visible"
+        );
+
+        step.style.transitionDelay =
+          "0ms";
+
+        track.appendChild(step);
+
+      }
+    );
+
+
+    /*
+      DUPLICAMOS LOS 4 PASOS
+
+      01 02 03 04
+      01 02 03 04
+    */
+
+    originalSteps.forEach(
+      step => {
+
+        const clone =
+          step.cloneNode(true);
+
+
+        clone.classList.remove(
+          "vr-reveal"
+        );
+
+        clone.classList.remove(
+          "vr-visible"
+        );
+
+        clone.style.transitionDelay =
+          "0ms";
+
+
+        track.appendChild(clone);
+
+      }
+    );
+
+
+    /*
+      Limpiar grid.
+    */
+
+    grid.innerHTML = "";
+
+    grid.appendChild(track);
+
+    grid.dataset.carouselReady =
+      "true";
+
+
+    /* =========================================
+       VARIABLES
+    ========================================= */
+
+    let position = 0;
+    let groupWidth = 0;
+    let lastTime =
+      performance.now();
+
+    let paused = false;
+
+
+    /*
+      Velocidad.
+
+      45 = rápida
+      35 = media
+      25 = lenta
+    */
+
+    const SPEED = 45;
+
+
+    /* =========================================
+       CALCULAR EL ANCHO EXACTO
+    ========================================= */
+
+    function calculateWidth() {
+
+      groupWidth = 0;
+
+
+      const firstFour =
+        Array.from(
+          track.children
+        ).slice(0, 4);
+
+
+      firstFour.forEach(
+        step => {
+
+          groupWidth +=
+            step.getBoundingClientRect().width;
+
+        }
+      );
+
+
+      console.log(
+        "VR TURBOLUB: ancho del grupo:",
+        groupWidth
+      );
+
+    }
+
+
+    calculateWidth();
+
+
+    window.addEventListener(
+      "resize",
+      calculateWidth
+    );
+
+
+    /* =========================================
+       PAUSA AL PASAR EL MOUSE
+    ========================================= */
+
+    grid.addEventListener(
+      "mouseenter",
+      () => {
+
+        paused = true;
+
+      }
+    );
+
+
+    grid.addEventListener(
+      "mouseleave",
+      () => {
+
+        paused = false;
+
+        lastTime =
+          performance.now();
+
+      }
+    );
+
+
+    /* =========================================
+       ANIMACIÓN CONTINUA
+    ========================================= */
+
+    function animate(currentTime) {
+
+      const delta =
+        Math.min(
+          currentTime - lastTime,
+          50
+        );
+
+
+      lastTime =
+        currentTime;
+
+
+      if (
+        !paused &&
+        groupWidth > 0
+      ) {
+
+        /*
+          Movimiento continuo.
+        */
+
+        position -=
+          SPEED *
+          (delta / 1000);
+
+
+        /*
+          Cuando terminamos los 4 pasos,
+          volvemos exactamente al comienzo.
+        */
+
+        if (
+          Math.abs(position) >=
+          groupWidth
+        ) {
+
+          position +=
+            groupWidth;
+
+        }
+
+
+        track.style.transform =
+          `translate3d(${position}px, 0, 0)`;
+
+      }
+
+
+      requestAnimationFrame(
+        animate
+      );
+
+    }
+
+
+    /*
+      ARRANCAR
+    */
+
+    requestAnimationFrame(
+      animate
+    );
+
+
+    console.log(
+      "VR TURBOLUB: 🚀 carrusel continuo funcionando"
+    );
+
+  }
+
+
+  /*
+    Como este script está al final del body,
+    podemos iniciarlo directamente.
+  */
+
+  initProcessCarousel();
+
+})();
+
+
+/* =====================================================
+   BENEFICIOS — CARRUSEL INFINITO
+===================================================== */
+
+(function () {
+
+  const container =
+    document.querySelector(
+      ".benefits-container"
+    );
+
+
+  const cards =
+    [
+      ...document.querySelectorAll(
+        ".benefits-container > .benefit"
+      )
+    ];
+
+
+  if (
+    !container ||
+    cards.length === 0
+  ) {
+
+    console.warn(
+      "VR TURBOLUB: no se encontraron beneficios"
+    );
+
+    return;
+
+  }
+
+
+  /* Crear track */
+
+  const track =
+    document.createElement("div");
+
+  track.className =
+    "benefits-track";
+
+
+  /* Mover las tarjetas originales al track */
+
+  cards.forEach(
+    card => {
+
+      card.classList.remove(
+        "vr-reveal"
+      );
+
+      card.classList.remove(
+        "vr-visible"
+      );
+
+      track.appendChild(card);
+
+    }
+  );
+
+
+  container.appendChild(track);
+
+
+  /* Clonar el grupo completo */
+
+  cards.forEach(
+    card => {
+
+      const clone =
+        card.cloneNode(true);
+
+
+      clone.classList.remove(
+        "vr-reveal"
+      );
+
+      clone.classList.remove(
+        "vr-visible"
+      );
+
+
+      track.appendChild(clone);
+
+    }
+  );
+
+
+  /* =========================
+     CALCULAR ANCHO EXACTO
+  ========================= */
+
+  const firstGroup =
+    cards;
+
+
+  let groupWidth = 0;
+
+
+  firstGroup.forEach(
+    card => {
+
+      groupWidth +=
+        card.getBoundingClientRect().width;
+
+    }
+  );
+
+
+  console.log(
+    "VR TURBOLUB: beneficios encontrados:",
+    cards.length
+  );
+
+
+  console.log(
+    "VR TURBOLUB: ancho del grupo:",
+    groupWidth
+  );
+
+
+  /* =========================
+     MOVIMIENTO
+  ========================= */
+
+  let position = 0;
+
+  const speed = 35;
+
+  let lastTime =
+    performance.now();
+
+
+  function animate(currentTime) {
+
+    const delta =
+      (currentTime - lastTime) /
+      1000;
+
+
+    lastTime =
+      currentTime;
+
+
+    position -=
+      speed *
+      delta;
+
+
+    /*
+      Cuando el primer grupo desaparece,
+      volvemos exactamente al inicio del
+      segundo grupo.
+    */
+
+    if (
+      Math.abs(position) >=
+      groupWidth
+    ) {
+
+      position +=
+        groupWidth;
+
+    }
+
+
+    track.style.transform =
+      `translate3d(${position}px, 0, 0)`;
+
+
+    requestAnimationFrame(
+      animate
+    );
+
+  }
+
+
+  requestAnimationFrame(
+    animate
+  );
+
+
+  console.log(
+    "VR TURBOLUB: 🚀 carrusel de beneficios funcionando"
+  );
+
+})();
+
+
+ /* =====================================================
+    HERO — CARRUSEL DE VIDEOS + PROGRESO
+ ===================================================== */
+
+document.addEventListener("DOMContentLoaded", () => {
+
+  const video1 = document.getElementById("heroVideo1");
+  const video2 = document.getElementById("heroVideo2");
+  const progressBar = document.getElementById("heroProgressBar");
+
+  if (!video1 || !video2 || !progressBar) {
+    console.error("VR TURBOLUB: faltan elementos del Hero");
+    return;
+  }
+
+
+  /* =========================================
+     VIDEOS
+  ========================================= */
+
+  const videos = [
+    "img/inicio.mp4",
+    "img/reparandocarro.mp4",
+    "img/cambioaceite.mp4",
+  ];
+
+
+  /* =========================================
+     CONFIGURACIÓN
+  ========================================= */
+
+  const DISPLAY_TIME = 7000;
+  const FADE_TIME = 1200;
+
+
+  let currentIndex = 0;
+
+  let visibleVideo = video1;
+  let hiddenVideo = video2;
+
+  let timer = null;
+  let progressTimer = null;
+  let changing = false;
+
+
+function startProgress() {
+
+  clearTimeout(progressTimer);
+
+  /* Reiniciar completamente */
+  progressBar.style.setProperty(
+    "width",
+    "0%",
+    "important"
+  );
+
+  progressBar.style.setProperty(
+    "transition",
+    "none",
+    "important"
+  );
+
+  /* Forzar render */
+  void progressBar.offsetWidth;
+
+  /* Animar */
+  progressBar.style.setProperty(
+    "transition",
+    `width ${DISPLAY_TIME}ms linear`,
+    "important"
+  );
+
+  progressBar.style.setProperty(
+    "width",
+    "100%",
+    "important"
+  );
+}
+ 
+
+
+
+  /* =========================================
+     CARGAR VIDEO
+  ========================================= */
+
+  function loadVideo(video, index) {
+
+    video.pause();
+
+    video.src = videos[index];
+
+    video.load();
+
+  }
+
+
+  /* =========================================
+     REPRODUCIR
+  ========================================= */
+
+  function play(video) {
+
+    video.currentTime = 0;
+
+    const promise = video.play();
+
+    if (promise) {
+      promise.catch(error => {
+        console.warn(
+          "VR TURBOLUB: no se pudo reproducir video",
+          error
+        );
+      });
+    }
+
+  }
+
+
+  /* =========================================
+     CAMBIO DE VIDEO
+  ========================================= */
+
+  function changeVideo() {
+
+    if (changing) return;
+
+    changing = true;
+
+
+    const nextIndex =
+      (currentIndex + 1) % videos.length;
+
+
+    /*
+      Preparar siguiente video
+    */
+
+    loadVideo(
+      hiddenVideo,
+      nextIndex
+    );
+
+
+    const showNext = () => {
+
+      /*
+        Evitar ejecutar dos veces
+      */
+
+      if (!changing) return;
+
+
+      play(hiddenVideo);
+
+
+      /*
+        Mostrar siguiente
+      */
+
+      hiddenVideo.style.opacity = "1";
+      visibleVideo.style.opacity = "0";
+
+
+      /*
+        Reiniciar barra EXACTAMENTE
+        cuando comienza el nuevo video.
+      */
+
+      startProgress();
+
+
+      setTimeout(() => {
+
+        visibleVideo.pause();
+
+        /*
+          Intercambiar referencias
+        */
+
+        const oldVideo =
+          visibleVideo;
+
+        visibleVideo =
+          hiddenVideo;
+
+        hiddenVideo =
+          oldVideo;
+
+
+        currentIndex =
+          nextIndex;
+
+
+        hiddenVideo.style.opacity =
+          "0";
+
+
+        changing = false;
+
+
+        /*
+          Programar siguiente
+        */
+
+        scheduleNext();
+
+      }, FADE_TIME);
+
+    };
+
+
+    /*
+      Si ya está listo
+    */
+
+    if (hiddenVideo.readyState >= 3) {
+
+      showNext();
+
+    } else {
+
+      hiddenVideo.addEventListener(
+        "canplay",
+        showNext,
+        {
+          once: true
+        }
+      );
+
+    }
+
+  }
+
+
+  /* =========================================
+     TEMPORIZADOR
+  ========================================= */
+
+  function scheduleNext() {
+
+    clearTimeout(timer);
+
+    timer = setTimeout(
+      changeVideo,
+      DISPLAY_TIME
+    );
+
+  }
+
+
+  /* =========================================
+     INICIALIZAR
+  ========================================= */
+
+  video1.style.opacity = "1";
+  video2.style.opacity = "0";
+
+
+  loadVideo(
+    video1,
+    0
+  );
+
+
+  play(video1);
+
+
+  /*
+    Arrancar barra
+  */
+
+  startProgress();
+
+
+  /*
+    Programar primer cambio
+  */
+
+  scheduleNext();
+
+
+  console.log(
+    "VR TURBOLUB: 🎬 Hero + barra funcionando"
+  );
+
+});
+
+
+
+/* =====================================================
+   ANIMACIÓN SOLUCIONES AL HACER SCROLL
+===================================================== */
+
+document.addEventListener("DOMContentLoaded", () => {
+
+  const solutionCards =
+    document.querySelectorAll(".solution-card");
+
+  if (!solutionCards.length) return;
+
+  const observer =
+    new IntersectionObserver((entries) => {
+
+      entries.forEach(entry => {
+
+        if (entry.isIntersecting) {
+
+          entry.target.classList.add("visible");
+
+        } else {
+
+          /*
+           * Se quita para que la animación
+           * vuelva a ejecutarse al subir.
+           */
+
+          entry.target.classList.remove("visible");
+
+        }
+
+      });
+
+    }, {
+      threshold: 0.18
+    });
+
+
+  solutionCards.forEach(card => {
+    observer.observe(card);
+  });
+
+});
+

@@ -364,7 +364,66 @@ video {
 
   font-size: 0.83rem;
 }
+/* =========================
+   BENEFICIOS — CARRUSEL
+========================= */
 
+.benefits {
+  overflow: hidden;
+}
+
+.benefits-container {
+  width: min(1200px, 92%);
+  margin: auto;
+
+  display: block;
+
+  overflow: hidden;
+  position: relative;
+}
+
+.benefits-track {
+  display: flex;
+  width: max-content;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+}
+
+.benefits-track .benefit {
+  flex: 0 0 400px;
+  width: 400px;
+  box-sizing: border-box;
+
+  transform: none !important;
+  opacity: 1 !important;
+
+  transition: none !important;
+}
+
+/* Evita que el sistema de scroll interfiera */
+.benefits-track .benefit.vr-reveal,
+.benefits-track .benefit.vr-visible {
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+
+/* =========================
+   MÓVIL
+========================= */
+
+@media (max-width: 768px) {
+
+  .benefits-container {
+    width: 100%;
+  }
+
+  .benefits-track .benefit {
+    flex: 0 0 320px;
+    width: 320px;
+  }
+
+}
 
 /* =========================
    INTRO
@@ -625,59 +684,214 @@ video {
 
 .process-section {
   padding: 120px 24px;
-
   background: #070707;
+  overflow: hidden;
 }
 
+/* Ventana */
 .process-grid {
   width: min(1200px, 92%);
   margin: auto;
 
-  display: grid;
-
-  grid-template-columns: repeat(4, 1fr);
+  overflow: hidden;
 
   border-top: 1px solid var(--borde);
 }
 
+/* Pista creada por JS */
+.process-track {
+  display: flex;
+  width: max-content;
+
+  animation: process-marquee 18s linear infinite;
+
+  will-change: transform;
+}
+
+/* Tarjetas */
 .process-step {
+  flex: 0 0 300px;
+  width: 300px;
+
   padding: 35px 25px;
+
+  box-sizing: border-box;
 
   border-right: 1px solid var(--borde);
 }
 
-.process-step:last-child {
-  border-right: none;
-}
-
+/* Número */
 .process-step > span {
   display: block;
 
   color: var(--naranja);
 
   font-family: 'Montserrat', sans-serif;
-
   font-size: 0.8rem;
   font-weight: 800;
 
   margin-bottom: 50px;
 }
 
+/* Título */
 .process-step h3 {
   font-family: 'Montserrat', sans-serif;
-
   font-size: 1.05rem;
 
   margin-bottom: 12px;
 }
 
+/* Texto */
 .process-step p {
   color: var(--gris);
-
   font-size: 0.85rem;
 }
 
 
+/* =========================
+   MOVIMIENTO CONTINUO
+========================= */
+
+@keyframes process-marquee {
+
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-50%);
+  }
+
+}
+
+
+/* =========================
+   PAUSA
+========================= */
+
+.process-grid:hover .process-track {
+  animation-play-state: paused;
+}
+
+
+/* =========================
+   TABLET
+========================= */
+
+@media (max-width: 900px) {
+
+  .process-step {
+    flex: 0 0 320px;
+    width: 320px;
+  }
+
+}
+
+
+/* =========================
+   MÓVIL
+========================= */
+
+@media (max-width: 600px) {
+
+  .process-section {
+    padding: 80px 20px;
+  }
+
+  .process-grid {
+    width: 100%;
+  }
+
+  .process-step {
+    flex: 0 0 290px;
+    width: 290px;
+
+    padding: 35px 25px 45px;
+  }
+
+}
+/* =========================================================
+   VR TURBOLUB — PROCESO / CARRUSEL CONTINUO
+========================================================= */
+
+.process-section {
+  overflow: hidden;
+}
+
+.process-grid {
+  position: relative;
+  overflow: hidden;
+  width: min(1200px, 92%);
+  margin: auto;
+  border-top: 1px solid var(--borde);
+}
+
+/* La pista que moveremos */
+.process-track {
+  display: flex;
+  width: max-content;
+  flex-wrap: nowrap;
+
+  will-change: transform;
+}
+
+/* Tarjetas */
+.process-track .process-step {
+  flex: 0 0 300px;
+  width: 300px;
+  min-width: 300px;
+
+  box-sizing: border-box;
+
+  padding: 35px 25px;
+
+  border-right: 1px solid var(--borde);
+
+  /* IMPORTANTE:
+     anulamos el transform del sistema
+     de animaciones de scroll */
+  opacity: 1;
+  transform: none !important;
+
+  transition:
+    box-shadow .35s ease,
+    border-color .35s ease;
+}
+
+/* El hover ya no mueve la tarjeta */
+.process-track .process-step:hover {
+  transform: none !important;
+}
+
+
+/* =========================
+   TABLET
+========================= */
+
+@media (max-width: 900px) {
+
+  .process-track .process-step {
+    flex: 0 0 320px;
+    width: 320px;
+    min-width: 320px;
+  }
+
+}
+
+
+/* =========================
+   MÓVIL
+========================= */
+
+@media (max-width: 600px) {
+
+  .process-track .process-step {
+    flex: 0 0 290px;
+    width: 290px;
+    min-width: 290px;
+  }
+
+}
 /* =========================
    VIDEOS
 ========================= */
@@ -2532,3 +2746,3461 @@ footer {
 .social-bar.closed .toggle-btn {
     right: 0; /* Posiciona el botón de alternar en el borde derecho cuando la barra está cerrada */
 }
+
+
+/* =========================================================
+   VR TURBOLUB — MOTION DESIGN / ANIMACIONES DINÁMICAS
+   Capa visual adicional: no requiere cambios en HTML ni JS.
+   ========================================================= */
+
+:root {
+  --motion-orange: rgba(255, 102, 0, .55);
+  --motion-blue: rgba(22, 60, 97, .55);
+  --motion-speed: 1;
+}
+
+/* ---------- KEYFRAMES ---------- */
+
+@keyframes vrFadeUp {
+  from { opacity: 0; transform: translate3d(0, 35px, 0); }
+  to   { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+@keyframes vrFadeRight {
+  from { opacity: 0; transform: translate3d(-35px, 0, 0); }
+  to   { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+@keyframes vrFadeScale {
+  from { opacity: 0; transform: scale(.94); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes vrFloat {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(0, -10px, 0); }
+}
+
+@keyframes vrGlowPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 rgba(255,102,0,0), 0 0 18px rgba(255,102,0,.10);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(255,102,0,.20), 0 0 55px rgba(255,102,0,.08);
+  }
+}
+
+@keyframes vrOrangeSweep {
+  0% { transform: translateX(-130%) skewX(-18deg); opacity: 0; }
+  20% { opacity: .8; }
+  55% { opacity: .25; }
+  100% { transform: translateX(220%) skewX(-18deg); opacity: 0; }
+}
+
+@keyframes vrGradientMove {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@keyframes vrOrbit {
+  from { transform: rotate(0deg) translateX(12px) rotate(0deg); }
+  to   { transform: rotate(360deg) translateX(12px) rotate(-360deg); }
+}
+
+@keyframes vrStatusPulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.45); opacity: .65; }
+}
+
+@keyframes vrSocialIn {
+  from { opacity: 0; transform: translateX(25px) scale(.8); }
+  to { opacity: 1; transform: translateX(0) scale(1); }
+}
+
+@keyframes vrBorderGlow {
+  0%, 100% { border-color: rgba(255,102,0,.18); }
+  50% { border-color: rgba(255,102,0,.55); }
+}
+
+/* ---------- HEADER ---------- */
+
+.main-header {
+  animation: vrHeaderIn .8s ease both;
+}
+
+@keyframes vrHeaderIn {
+  from { opacity: 0; transform: translateY(-18px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.logo {
+  transition: transform .35s ease, text-shadow .35s ease;
+}
+
+.logo:hover {
+  transform: translateX(3px);
+  text-shadow: 0 0 22px rgba(255,102,0,.25);
+}
+
+.main-nav a {
+  transition: color .3s ease, transform .3s ease;
+}
+
+.main-nav a:hover {
+  transform: translateY(-2px);
+}
+
+.main-nav a::before {
+  content: "";
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  left: 50%;
+  bottom: -11px;
+  border-radius: 50%;
+  background: var(--naranja);
+  transform: translateX(-50%) scale(0);
+  box-shadow: 0 0 12px var(--naranja);
+  transition: transform .3s ease;
+}
+
+.main-nav a:hover::before,
+.main-nav a.active::before {
+  transform: translateX(-50%) scale(1);
+}
+
+.header-btn,
+.btn-primary {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.header-btn::before,
+.btn-primary::before {
+  content: "";
+  position: absolute;
+  inset: -20% auto -20% -40%;
+  width: 35%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.45), transparent);
+  transform: skewX(-18deg);
+  animation: vrOrangeSweep 3.8s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.header-btn > *,
+.btn-primary > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ---------- HERO ---------- */
+
+.hero-new::before {
+  content: "";
+  position: absolute;
+  width: 520px;
+  height: 520px;
+  right: -160px;
+  top: 10%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,102,0,.17), rgba(255,102,0,.04) 35%, transparent 70%);
+  filter: blur(4px);
+  animation: vrFloat 6s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.hero-new::after {
+  animation: vrGradientMove 10s ease-in-out infinite;
+  background-size: 180% 180%;
+}
+
+.hero-text {
+  animation: vrFadeRight .9s .15s ease both;
+}
+
+.hero-tag {
+  animation: vrFadeUp .7s .25s ease both, vrGlowPulse 3.5s 1.2s ease-in-out infinite;
+}
+
+.hero-text h1 {
+  animation: vrFadeUp .8s .35s ease both;
+}
+
+.hero-text p {
+  animation: vrFadeUp .8s .48s ease both;
+}
+
+.hero-buttons {
+  animation: vrFadeUp .8s .6s ease both;
+}
+
+.btn-primary,
+.btn-secondary {
+  will-change: transform;
+}
+
+.btn-primary:hover,
+.btn-secondary:hover {
+  transform: translateY(-5px) scale(1.015);
+}
+
+.btn-secondary:hover {
+  box-shadow: 0 10px 30px rgba(255,102,0,.10), inset 0 0 20px rgba(255,102,0,.04);
+}
+
+/* ---------- BENEFITS ---------- */
+
+.benefit {
+  position: relative;
+  overflow: hidden;
+  transition: background .4s ease, transform .4s ease;
+}
+
+.benefit::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 3px;
+  height: 100%;
+  background: linear-gradient(180deg, transparent, var(--naranja), transparent);
+  transform: scaleY(0);
+  transform-origin: center;
+  transition: transform .45s ease;
+}
+
+.benefit:hover {
+  background: rgba(13,37,63,.22);
+  transform: translateY(-4px);
+}
+
+.benefit:hover::before {
+  transform: scaleY(1);
+}
+
+.benefit-number {
+  transition: transform .35s ease, text-shadow .35s ease;
+}
+
+.benefit:hover .benefit-number {
+  transform: translateX(5px);
+  text-shadow: 0 0 15px rgba(255,102,0,.55);
+}
+
+/* ---------- INTRO / SECTION HEADERS ---------- */
+
+.intro-container,
+.section-header,
+.cta-container {
+  animation: vrFadeUp .9s ease both;
+}
+
+.intro-label,
+.section-header span,
+.value-text > span,
+.final-cta span {
+  position: relative;
+}
+
+.intro-label::after,
+.section-header span::after,
+.value-text > span::after,
+.final-cta span::after {
+  content: "";
+  display: inline-block;
+  width: 34px;
+  height: 2px;
+  margin-left: 10px;
+  vertical-align: middle;
+  background: var(--naranja);
+  box-shadow: 0 0 12px rgba(255,102,0,.6);
+  animation: vrBorderGlow 2.5s ease-in-out infinite;
+}
+
+/* ---------- SOLUTION CARDS ---------- */
+
+.solution-card {
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.solution-card::before {
+  content: "";
+  position: absolute;
+  width: 220px;
+  height: 220px;
+  right: -120px;
+  bottom: -130px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,102,0,.20), transparent 68%);
+  opacity: 0;
+  transition: opacity .45s ease, transform .45s ease;
+  z-index: -1;
+}
+
+.solution-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border: 1px solid transparent;
+  background: linear-gradient(120deg, transparent 35%, rgba(255,102,0,.28), transparent 65%) border-box;
+  mask: linear-gradient(#000 0 0) padding-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  opacity: 0;
+  transform: translateX(-100%);
+  transition: opacity .4s ease, transform .65s ease;
+  pointer-events: none;
+}
+
+.solution-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 22px 50px rgba(0,0,0,.32);
+}
+
+.solution-card:hover::before {
+  opacity: 1;
+  transform: scale(1.25);
+}
+
+.solution-card:hover::after {
+  opacity: 1;
+  transform: translateX(100%);
+}
+
+.solution-number {
+  transition: transform .4s ease, letter-spacing .4s ease;
+}
+
+.solution-card:hover .solution-number {
+  transform: translateX(7px);
+  letter-spacing: 2px;
+}
+
+.solution-card h3 {
+  transition: color .3s ease, transform .3s ease;
+}
+
+.solution-card:hover h3 {
+  color: #fff;
+  transform: translateX(4px);
+}
+
+.solution-card a {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  transition: gap .3s ease, text-shadow .3s ease;
+}
+
+.solution-card a::after {
+  content: "→";
+  transition: transform .3s ease;
+}
+
+.solution-card a:hover {
+  gap: 12px;
+  text-shadow: 0 0 12px rgba(255,102,0,.5);
+}
+
+.solution-card a:hover::after {
+  transform: translateX(4px);
+}
+
+/* ---------- VALUE LIST ---------- */
+
+.value-list > div {
+  position: relative;
+  transition: padding-left .35s ease, background .35s ease;
+}
+
+.value-list > div::before {
+  content: "";
+  position: absolute;
+  left: -1px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--naranja);
+  transform: scaleY(0);
+  transition: transform .35s ease;
+}
+
+.value-list > div:hover {
+  padding-left: 12px;
+  background: linear-gradient(90deg, rgba(255,102,0,.06), transparent);
+}
+
+.value-list > div:hover::before {
+  transform: scaleY(1);
+}
+
+/* ---------- PROCESS ---------- */
+
+.process-step {
+  position: relative;
+  overflow: hidden;
+  transition: background .4s ease, transform .4s ease;
+}
+
+.process-step::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--naranja), transparent);
+  transform: translateX(-100%);
+  transition: transform .6s ease;
+}
+
+.process-step:hover {
+  background: rgba(13,37,63,.18);
+  transform: translateY(-5px);
+}
+
+.process-step:hover::after {
+  transform: translateX(100%);
+}
+
+.process-step > span {
+  transition: transform .35s ease, text-shadow .35s ease;
+}
+
+.process-step:hover > span {
+  transform: translateX(5px);
+  text-shadow: 0 0 16px rgba(255,102,0,.55);
+}
+
+/* ---------- VIDEOS ---------- */
+
+.video-card {
+  position: relative;
+  transform: translateZ(0);
+  transition: transform .45s ease, border-color .45s ease, box-shadow .45s ease;
+}
+
+.video-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg, transparent 20%, rgba(255,255,255,.08) 45%, transparent 70%);
+  transform: translateX(-120%);
+  transition: transform .8s ease;
+  pointer-events: none;
+}
+
+.video-card:hover {
+  transform: translateY(-8px) scale(1.012);
+  border-color: rgba(255,102,0,.45);
+  box-shadow: 0 25px 55px rgba(0,0,0,.45), 0 0 25px rgba(255,102,0,.08);
+}
+
+.video-card:hover::after {
+  transform: translateX(120%);
+}
+
+.video-card video {
+  transition: transform .7s cubic-bezier(.2,.7,.2,1), filter .5s ease;
+}
+
+.video-card:hover video {
+  transform: scale(1.045);
+  filter: saturate(1.12) contrast(1.04);
+}
+
+/* ---------- FINAL CTA ---------- */
+
+.final-cta {
+  position: relative;
+  overflow: hidden;
+}
+
+.final-cta::before,
+.final-cta::after {
+  content: "";
+  position: absolute;
+  width: 280px;
+  height: 280px;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.final-cta::before {
+  left: -120px;
+  top: 15%;
+  background: radial-gradient(circle, rgba(255,102,0,.14), transparent 70%);
+  animation: vrFloat 7s ease-in-out infinite;
+}
+
+.final-cta::after {
+  right: -120px;
+  bottom: -30%;
+  background: radial-gradient(circle, rgba(13,37,63,.45), transparent 70%);
+  animation: vrFloat 8s 1s ease-in-out infinite reverse;
+}
+
+.final-cta h2 strong {
+  text-shadow: 0 0 35px rgba(255,102,0,.16);
+}
+
+/* ---------- FOOTER ---------- */
+
+.footer-links a,
+.footer-contact a {
+  position: relative;
+  width: fit-content;
+  transition: color .3s ease, transform .3s ease;
+}
+
+.footer-links a::after,
+.footer-contact a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -3px;
+  width: 0;
+  height: 1px;
+  background: var(--naranja);
+  transition: width .3s ease;
+}
+
+.footer-links a:hover,
+.footer-contact a:hover {
+  transform: translateX(4px);
+}
+
+.footer-links a:hover::after,
+.footer-contact a:hover::after {
+  width: 100%;
+}
+
+/* ---------- WHATSAPP ---------- */
+
+.whatsapp {
+  animation: vrGlowPulse 3s ease-in-out infinite;
+}
+
+.whatsapp::before {
+  content: "";
+  position: absolute;
+  inset: -7px;
+  border: 1px solid rgba(37,211,102,.35);
+  border-radius: 50%;
+  animation: vrStatusPulse 2s ease-in-out infinite;
+}
+
+/* ---------- IA PRINCIPAL ---------- */
+
+.vr-ia-container {
+  position: relative;
+  animation: vrFadeScale .8s ease both, vrBorderGlow 4s ease-in-out infinite;
+}
+
+.vr-ia-container::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: conic-gradient(from 0deg, transparent, rgba(255,102,0,.35), transparent 25%, rgba(22,60,97,.35), transparent 55%);
+  filter: blur(10px);
+  opacity: .45;
+  z-index: -1;
+  animation: vrOrbit 9s linear infinite;
+}
+
+.vr-ia-logo {
+  animation: vrGlowPulse 3.5s ease-in-out infinite;
+}
+
+.vr-status {
+  animation: vrStatusPulse 1.8s ease-in-out infinite;
+}
+
+.vr-message {
+  animation: vrFadeUp .45s ease both;
+}
+
+.vr-message-content {
+  transition: transform .3s ease, box-shadow .3s ease;
+}
+
+.vr-message:hover .vr-message-content {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,.22);
+}
+
+.vr-ia-options button,
+.vr-ia-mini-options button {
+  position: relative;
+  overflow: hidden;
+}
+
+.vr-ia-options button::before,
+.vr-ia-mini-options button::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg, transparent, rgba(255,255,255,.12), transparent);
+  transform: translateX(-120%);
+  transition: transform .55s ease;
+}
+
+.vr-ia-options button:hover::before,
+.vr-ia-mini-options button:hover::before {
+  transform: translateX(120%);
+}
+
+.vr-ia-input-area button,
+.vr-ia-mini-input button {
+  position: relative;
+  overflow: hidden;
+}
+
+.vr-ia-input-area button::after,
+.vr-ia-mini-input button::after {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  left: -100%;
+  top: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.3), transparent);
+  transition: left .45s ease;
+}
+
+.vr-ia-input-area button:hover::after,
+.vr-ia-mini-input button:hover::after {
+  left: 100%;
+}
+
+/* ---------- IA FLOTANTE ---------- */
+
+.vr-ia-floating {
+  animation: vrFloat 4s ease-in-out infinite, vrGlowPulse 3s ease-in-out infinite;
+}
+
+.vr-ia-floating:hover {
+  animation-play-state: paused;
+}
+
+.vr-ia-mini.active {
+  animation: vrFadeScale .3s ease both;
+}
+
+.vr-ia-mini-logo {
+  animation: vrGlowPulse 3s ease-in-out infinite;
+}
+
+/* ---------- TOP BAR ---------- */
+
+.top-bar {
+  box-shadow: 0 2px 18px rgba(0,0,0,.35);
+}
+
+.marquee-item {
+  text-shadow: 0 0 10px rgba(255,255,255,.05);
+}
+
+.marque button {
+  transition: opacity .2s ease, background .2s ease, transform .2s ease;
+}
+
+.marque button:hover {
+  transform: scale(1.12);
+}
+
+/* ---------- SOCIAL BAR ---------- */
+
+.social-bar a {
+  animation: vrSocialIn .5s ease both;
+}
+
+.social-bar a:nth-child(2) { animation-delay: .08s; }
+.social-bar a:nth-child(3) { animation-delay: .16s; }
+.social-bar a:nth-child(4) { animation-delay: .24s; }
+
+.social-bar img {
+  transition: transform .35s cubic-bezier(.2,.8,.2,1), filter .35s ease;
+}
+
+.social-bar img:hover {
+  transform: scale(1.22) rotate(5deg);
+  filter: drop-shadow(0 0 10px rgba(255,102,0,.45));
+}
+
+/* ---------- MOBILE: animações mais suaves para desempenho ---------- */
+
+@media (max-width: 700px) {
+  .hero-new::before {
+    width: 330px;
+    height: 330px;
+    right: -120px;
+  }
+
+  .solution-card:hover,
+  .process-step:hover,
+  .video-card:hover {
+    transform: translateY(-4px);
+  }
+
+  .vr-ia-container::before {
+    animation-duration: 12s;
+  }
+}
+
+/* ---------- ACESSIBILIDADE ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: .01ms !important;
+  }
+}
+
+
+/* =========================================================
+   VR TURBOLUB — CINEMATIC SCROLL / CREATIVE MOTION LAYER
+   ========================================================= */
+
+html { scroll-behavior: smooth; }
+
+body {
+  overflow-x: hidden;
+}
+
+/* Línea de progreso del recorrido */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  z-index: 99999;
+  pointer-events: none;
+  background: linear-gradient(90deg, var(--naranja), #ff9d4d, var(--naranja));
+  transform-origin: left center;
+  transform: scaleX(0);
+  animation: vrScrollProgress linear;
+  animation-timeline: scroll(root);
+  box-shadow: 0 0 12px rgba(255,102,0,.7);
+}
+
+@keyframes vrScrollProgress {
+  to { transform: scaleX(1); }
+}
+
+/* Ambiente general: manchas de luz que acompañan el recorrido */
+body::after {
+  content: "";
+  position: fixed;
+  width: 42vw;
+  height: 42vw;
+  right: -22vw;
+  top: 32vh;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,102,0,.09), rgba(255,102,0,0) 68%);
+  filter: blur(12px);
+  pointer-events: none;
+  z-index: -1;
+  animation: vrAmbientFloat 10s ease-in-out infinite alternate;
+}
+
+@keyframes vrAmbientFloat {
+  from { transform: translate3d(0,-35px,0) scale(.85); }
+  to { transform: translate3d(-90px,90px,0) scale(1.15); }
+}
+
+/* Separadores visuales entre secciones */
+.hero-new,
+.benefits,
+.intro,
+.solutions,
+.value,
+.process,
+.videos,
+.final-cta,
+footer {
+  position: relative;
+}
+
+.hero-new::before,
+.benefits::before,
+.intro::before,
+.solutions::before,
+.value::before,
+.process::before,
+.videos::before,
+.final-cta::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: min(72vw, 900px);
+  height: 1px;
+  transform: translateX(-50%) scaleX(.15);
+  transform-origin: center;
+  background: linear-gradient(90deg, transparent, rgba(255,102,0,.65), transparent);
+  opacity: .35;
+  animation: vrDividerReveal linear both;
+  animation-timeline: view(block 0% 80%);
+  animation-range: entry 0% cover 28%;
+}
+
+@keyframes vrDividerReveal {
+  to { transform: translateX(-50%) scaleX(1); opacity: 1; }
+}
+
+/* Títulos: entrada dramática */
+section h2,
+.section-title,
+.intro h2,
+.solutions h2,
+.value h2,
+.process h2,
+.videos h2 {
+  position: relative;
+  isolation: isolate;
+}
+
+section h2::after,
+.section-title::after,
+.intro h2::after,
+.solutions h2::after,
+.value h2::after,
+.process h2::after,
+.videos h2::after {
+  content: "";
+  display: block;
+  width: 76px;
+  height: 3px;
+  margin: 14px auto 0;
+  border-radius: 99px;
+  background: linear-gradient(90deg, var(--naranja), #ffb36d, var(--naranja));
+  box-shadow: 0 0 18px rgba(255,102,0,.5);
+  transform-origin: left;
+  animation: vrTitleLine linear both;
+  animation-timeline: view(block 0% 80%);
+  animation-range: entry 0% cover 25%;
+}
+
+@keyframes vrTitleLine {
+  from { transform: scaleX(0); opacity: 0; }
+  to { transform: scaleX(1); opacity: 1; }
+}
+
+/* Tarjetas principales: aparecen al entrar en pantalla */
+.benefit-card,
+.solution-card,
+.value-item,
+.process-step,
+.video-card {
+  animation: vrCardEntrance linear both;
+  animation-timeline: view(block 0% 85%);
+  animation-range: entry 0% cover 30%;
+}
+
+@keyframes vrCardEntrance {
+  from {
+    opacity: 0;
+    transform: translateY(70px) scale(.94) rotateX(5deg);
+    filter: blur(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotateX(0);
+    filter: blur(0);
+  }
+}
+
+/* Entrada escalonada: cada bloque llega en distinto momento */
+.benefit-card:nth-child(2),
+.solution-card:nth-child(2),
+.process-step:nth-child(2),
+.video-card:nth-child(2) { animation-delay: 80ms; }
+
+.benefit-card:nth-child(3),
+.solution-card:nth-child(3),
+.process-step:nth-child(3),
+.video-card:nth-child(3) { animation-delay: 160ms; }
+
+.benefit-card:nth-child(4),
+.solution-card:nth-child(4),
+.process-step:nth-child(4),
+.video-card:nth-child(4) { animation-delay: 240ms; }
+
+/* Beneficios: pequeño movimiento permanente */
+.benefit-card {
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.benefit-card:hover {
+  transform: translateY(-12px) rotateX(2deg) rotateY(-2deg) scale(1.025);
+}
+
+.benefit-card::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: conic-gradient(from 0deg, transparent, rgba(255,102,0,.65), transparent 22%, transparent 72%, rgba(255,255,255,.15), transparent);
+  opacity: 0;
+  z-index: -1;
+  animation: vrCardOrbit 5s linear infinite;
+  transition: opacity .4s ease;
+}
+
+.benefit-card:hover::before { opacity: 1; }
+
+@keyframes vrCardOrbit {
+  to { transform: rotate(360deg); }
+}
+
+/* Soluciones: sensación de panel tecnológico */
+.solution-card {
+  overflow: hidden;
+  transform-style: preserve-3d;
+}
+
+.solution-card::before {
+  content: "";
+  position: absolute;
+  width: 180px;
+  height: 180px;
+  right: -80px;
+  top: -80px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,102,0,.20), transparent 68%);
+  transition: transform .7s cubic-bezier(.2,.8,.2,1), opacity .5s ease;
+  opacity: .45;
+}
+
+.solution-card:hover::before {
+  transform: scale(2.1) translate(-25px,25px);
+  opacity: .85;
+}
+
+.solution-card .solution-number,
+.solution-card .number {
+  transition: transform .6s cubic-bezier(.2,.8,.2,1), text-shadow .4s ease;
+}
+
+.solution-card:hover .solution-number,
+.solution-card:hover .number {
+  transform: translateX(8px) scale(1.08);
+  text-shadow: 0 0 22px rgba(255,102,0,.45);
+}
+
+/* Proceso: línea que se activa mientras aparece */
+.process-step {
+  position: relative;
+}
+
+.process-step::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 2px;
+  width: 0;
+  background: linear-gradient(90deg, var(--naranja), transparent);
+  box-shadow: 0 0 12px rgba(255,102,0,.55);
+  animation: vrStepLine linear both;
+  animation-timeline: view(block 0% 75%);
+  animation-range: entry 10% cover 30%;
+}
+
+@keyframes vrStepLine {
+  to { width: 100%; }
+}
+
+/* Imágenes/videos: zoom suave ligado al scroll */
+.video-card img,
+.video-card video,
+.video-card iframe {
+  transform: scale(1.04);
+  transition: transform .9s cubic-bezier(.2,.8,.2,1), filter .7s ease;
+}
+
+.video-card:hover img,
+.video-card:hover video,
+.video-card:hover iframe {
+  transform: scale(1.11);
+  filter: saturate(1.12) contrast(1.05);
+}
+
+/* CTA final: energía acumulada */
+.final-cta {
+  overflow: hidden;
+}
+
+.final-cta::after {
+  content: "";
+  position: absolute;
+  width: 320px;
+  height: 320px;
+  left: -120px;
+  bottom: -180px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,102,0,.18), transparent 70%);
+  animation: vrCtaPulse 4s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+
+@keyframes vrCtaPulse {
+  from { transform: scale(.75); opacity: .45; }
+  to { transform: scale(1.25); opacity: .9; }
+}
+
+/* Footer: aparece como cierre del recorrido */
+footer {
+  animation: vrFooterReveal linear both;
+  animation-timeline: view(block 0% 95%);
+  animation-range: entry 0% cover 35%;
+}
+
+@keyframes vrFooterReveal {
+  from { opacity: .3; transform: translateY(45px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Botón WhatsApp: no queda estático */
+.whatsapp {
+  animation: vrWhatsappFloat 3.2s ease-in-out infinite;
+}
+
+@keyframes vrWhatsappFloat {
+  0%,100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-5px) scale(1.025); }
+}
+
+/* IA: panel vivo, como producto tecnológico */
+.vr-ia-container {
+  transform-style: preserve-3d;
+  overflow: hidden;
+}
+
+.vr-ia-container::after {
+  content: "";
+  position: absolute;
+  width: 260px;
+  height: 260px;
+  top: -130px;
+  right: -100px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,102,0,.15), transparent 68%);
+  animation: vrAiOrb 6s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+
+@keyframes vrAiOrb {
+  from { transform: translate3d(0,0,0) scale(.8); }
+  to { transform: translate3d(-80px,100px,0) scale(1.4); }
+}
+
+.vr-ia-message {
+  animation: vrMessageIn .45s cubic-bezier(.2,.8,.2,1) both;
+}
+
+@keyframes vrMessageIn {
+  from { opacity: 0; transform: translateY(15px) scale(.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Elementos decorativos con movimiento continuo */
+.hero-new .hero-content,
+.hero-new .hero-image,
+.hero-new .hero-card {
+  will-change: transform;
+}
+
+.hero-new .hero-image {
+  animation: vrHeroFloat 6s ease-in-out infinite alternate;
+}
+
+@keyframes vrHeroFloat {
+  from { transform: translate3d(0,0,0) rotate(0deg); }
+  to { transform: translate3d(0,-12px,0) rotate(.6deg); }
+}
+
+/* Efecto de brillo que cruza elementos importantes */
+.btn-primary,
+.header-btn,
+.solution-card a,
+.vr-ia-send,
+.vr-ia-option {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary::after,
+.header-btn::after,
+.solution-card a::after,
+.vr-ia-send::after,
+.vr-ia-option::after {
+  content: "";
+  position: absolute;
+  top: -120%;
+  left: -45%;
+  width: 32%;
+  height: 340%;
+  transform: rotate(25deg);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.38), transparent);
+  animation: vrShineSweep 4.5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes vrShineSweep {
+  0%, 62% { left: -45%; opacity: 0; }
+  68% { opacity: 1; }
+  78%, 100% { left: 135%; opacity: 0; }
+}
+
+/* Selección de texto más de marca */
+::selection {
+  background: var(--naranja);
+  color: #fff;
+}
+
+/* Navegadores que no soporten scroll-driven animations: mantienen todo visible */
+@supports not (animation-timeline: view()) {
+  body::before,
+  .hero-new::before,
+  .benefits::before,
+  .intro::before,
+  .solutions::before,
+  .value::before,
+  .process::before,
+  .videos::before,
+  .final-cta::before,
+  section h2::after,
+  .section-title::after,
+  .benefit-card,
+  .solution-card,
+  .value-item,
+  .process-step,
+  .video-card,
+  footer {
+    animation: none;
+  }
+}
+
+/* Accesibilidad: respetar usuarios que reducen movimiento */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Mobile: movimiento más ligero para conservar fluidez */
+@media (max-width: 768px) {
+  body::after {
+    width: 75vw;
+    height: 75vw;
+    right: -42vw;
+  }
+
+  .hero-new .hero-image {
+    animation-duration: 7s;
+  }
+
+  .benefit-card,
+  .solution-card,
+  .value-item,
+  .process-step,
+  .video-card {
+    animation-range: entry 0% cover 20%;
+  }
+}
+
+/* =========================================================
+   VR TURBOLUB — READABILITY / SCROLL SAFETY PATCH
+   Evita que las tarjetas desaparezcan o se desenfoquen al
+   volver hacia arriba. El movimiento queda, la información no.
+   ========================================================= */
+
+/* Nunca ocultar contenido importante durante el scroll */
+.benefit-card,
+.solution-card,
+.value-item,
+.process-step,
+.video-card,
+footer {
+  opacity: 1;
+  filter: none;
+}
+
+/* La entrada conserva movimiento, pero la tarjeta permanece legible
+   incluso cuando el usuario invierte la dirección del scroll. */
+.benefit-card,
+.solution-card,
+.value-item,
+.process-step,
+.video-card {
+  animation-name: vrCardSafeEntrance;
+  animation-timeline: view(block 0% 85%);
+  animation-range: entry 0% cover 30%;
+}
+
+@keyframes vrCardSafeEntrance {
+  from {
+    opacity: 1;
+    transform: translateY(34px) scale(.985);
+    filter: blur(0);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+/* Los títulos también permanecen visibles al regresar hacia arriba */
+section h2::after,
+.section-title::after,
+.intro h2::after,
+.solutions h2::after,
+.value h2::after,
+.process h2::after,
+.videos h2::after {
+  animation-name: vrTitleLineSafe;
+  animation-timeline: view(block 0% 80%);
+  animation-range: entry 0% cover 25%;
+  opacity: 1;
+}
+
+@keyframes vrTitleLineSafe {
+  from { transform: scaleX(.25); opacity: 1; }
+  to { transform: scaleX(1); opacity: 1; }
+}
+
+/* Separadores sin desaparecer al subir */
+.hero-new::before,
+.benefits::before,
+.intro::before,
+.solutions::before,
+.value::before,
+.process::before,
+.videos::before,
+.final-cta::before {
+  opacity: .65;
+  animation-name: vrDividerSafe;
+  animation-timeline: view(block 0% 80%);
+  animation-range: entry 0% cover 28%;
+}
+
+@keyframes vrDividerSafe {
+  from { transform: translateX(-50%) scaleX(.35); opacity: .65; }
+  to { transform: translateX(-50%) scaleX(1); opacity: 1; }
+}
+
+/* Más espacio vertical entre bloques para que cada tarjeta tenga
+   una zona clara de lectura durante el recorrido. */
+@media (min-width: 769px) {
+  .benefit-card,
+  .solution-card,
+  .value-item,
+  .process-step,
+  .video-card {
+    backface-visibility: hidden;
+  }
+}
+
+/* En móvil: todavía más estable y sin efectos que comprometan lectura */
+@media (max-width: 768px) {
+  .benefit-card,
+  .solution-card,
+  .value-item,
+  .process-step,
+  .video-card {
+    animation-name: vrCardSafeEntrance;
+    animation-range: entry 0% cover 20%;
+  }
+
+  .benefit-card:hover,
+  .solution-card:hover,
+  .video-card:hover {
+    transform: translateY(-4px) scale(1.01);
+  }
+}
+
+
+/* =========================================================
+   VR TURBOLUB — SCROLL STABILITY V3
+   Regla principal: NUNCA animar la visibilidad del contenido.
+   Los efectos ligados al scroll viven en fondos/decoración.
+   ========================================================= */
+
+/* Desactivar por completo las animaciones scroll-driven de los
+   bloques de contenido. Así jamás desaparecen al subir. */
+.benefit-card,
+.solution-card,
+.value-item,
+.process-step,
+.video-card,
+footer {
+  animation: none !important;
+  animation-timeline: none !important;
+  animation-range: none !important;
+  opacity: 1 !important;
+  filter: none !important;
+  visibility: visible !important;
+}
+
+/* Los títulos también quedan siempre presentes. */
+section h2::after,
+.section-title::after,
+.intro h2::after,
+.solutions h2::after,
+.value h2::after,
+.process h2::after,
+.videos h2::after {
+  animation: none !important;
+  animation-timeline: none !important;
+  animation-range: none !important;
+  opacity: 1 !important;
+  transform: scaleX(1) !important;
+}
+
+/* Separadores: estáticos para no interferir con la lectura. */
+.hero-new::before,
+.benefits::before,
+.intro::before,
+.solutions::before,
+.value::before,
+.process::before,
+.videos::before,
+.final-cta::before {
+  animation: none !important;
+  animation-timeline: none !important;
+  animation-range: none !important;
+  opacity: .65 !important;
+  transform: translateX(-50%) scaleX(1) !important;
+}
+
+/* La línea superior puede seguir el scroll porque NO afecta contenido. */
+body::before {
+  animation: vrScrollProgress linear !important;
+  animation-timeline: scroll(root) !important;
+}
+
+/* =========================================================
+   MOVIMIENTO CREATIVO SIN OCULTAR INFORMACIÓN
+   ========================================================= */
+
+/* Las tarjetas reaccionan al cursor, no a la dirección del scroll. */
+.benefit-card,
+.solution-card,
+.value-item,
+.process-step,
+.video-card {
+  transition:
+    transform .55s cubic-bezier(.2,.8,.2,1),
+    box-shadow .55s ease,
+    border-color .45s ease;
+}
+
+.benefit-card:hover {
+  transform: translateY(-10px) rotateX(1deg) rotateY(-1deg) scale(1.018) !important;
+}
+
+.solution-card:hover {
+  transform: translateY(-10px) scale(1.018) !important;
+}
+
+.value-item:hover,
+.process-step:hover {
+  transform: translateX(8px) !important;
+}
+
+.video-card:hover {
+  transform: translateY(-8px) scale(1.012) !important;
+}
+
+/* Movimiento ambiental dentro de cada sección: el fondo se mueve,
+   pero el texto permanece totalmente estable y legible. */
+.benefits::after,
+.intro::after,
+.solutions::after,
+.value::after,
+.process::after,
+.videos::after,
+.final-cta::before {
+  pointer-events: none;
+}
+
+.benefits::after,
+.intro::after,
+.solutions::after,
+.value::after,
+.process::after,
+.videos::after {
+  content: "";
+  position: absolute;
+  width: 280px;
+  height: 280px;
+  border-radius: 50%;
+  right: -150px;
+  top: 20%;
+  background: radial-gradient(circle, rgba(255,102,0,.10), transparent 68%);
+  filter: blur(8px);
+  opacity: .7;
+  animation: vrSectionGlow 8s ease-in-out infinite alternate;
+}
+
+@keyframes vrSectionGlow {
+  from { transform: translate3d(0,-25px,0) scale(.8); }
+  to   { transform: translate3d(-120px,35px,0) scale(1.25); }
+}
+
+/* Cada sección conserva profundidad mediante una pequeña sombra ambiental. */
+.benefits,
+.intro,
+.solutions,
+.value,
+.process,
+.videos,
+.final-cta {
+  isolation: isolate;
+}
+
+/* Evitar que la animación de zoom de imágenes interfiera con el texto. */
+.video-card img,
+.video-card video,
+.video-card iframe {
+  transition: transform .8s cubic-bezier(.2,.8,.2,1), filter .7s ease !important;
+}
+
+/* En móvil: cero transformaciones agresivas al invertir el scroll. */
+@media (max-width: 768px) {
+  .benefit-card,
+  .solution-card,
+  .value-item,
+  .process-step,
+  .video-card,
+  footer {
+    animation: none !important;
+    animation-timeline: none !important;
+    animation-range: none !important;
+    opacity: 1 !important;
+    filter: none !important;
+    visibility: visible !important;
+    transform: none;
+  }
+
+  .benefits::after,
+  .intro::after,
+  .solutions::after,
+  .value::after,
+  .process::after,
+  .videos::after {
+    width: 180px;
+    height: 180px;
+    right: -100px;
+  }
+}
+
+/* Accesibilidad */
+@media (prefers-reduced-motion: reduce) {
+  body::before,
+  body::after,
+  .benefits::after,
+  .intro::after,
+  .solutions::after,
+  .value::after,
+  .process::after,
+  .videos::after,
+  .hero-new .hero-image,
+  .whatsapp {
+    animation: none !important;
+  }
+}
+
+/* =====================================================
+   HERO — VR TURBOLUB
+   VIDEO PROTAGONISTA + HEADER TRANSPARENTE
+===================================================== */
+
+.hero-new {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  height: 100svh;
+  min-height: 650px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  isolation: isolate;
+}
+
+/* =====================================================
+   VIDEO
+===================================================== */
+
+.hero-video {
+  position: absolute;
+  inset: 0;
+
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+  object-position: center center;
+
+  z-index: -3;
+  pointer-events: none;
+
+  /* MUY POCO ZOOM PARA VER MÁS VIDEO */
+  transform: scale(1.01);
+
+  animation: heroVideoZoom 24s ease-in-out infinite alternate;
+}
+
+@keyframes heroVideoZoom {
+
+  0% {
+    transform: scale(1.01);
+  }
+
+  100% {
+    transform: scale(1.035);
+  }
+
+}
+
+
+/* =====================================================
+   OVERLAY
+   MÁS TRANSPARENTE
+===================================================== */
+
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+
+  z-index: -2;
+  pointer-events: none;
+
+  background:
+    linear-gradient(
+      90deg,
+
+      rgba(0, 0, 0, .48) 0%,
+
+      rgba(0, 0, 0, .25) 38%,
+
+      rgba(0, 0, 0, .08) 72%,
+
+      rgba(0, 0, 0, .02) 100%
+    );
+}
+
+
+/* =====================================================
+   LUZ NARANJA
+===================================================== */
+
+.hero-new::after {
+
+  content: "";
+
+  position: absolute;
+
+  width: 520px;
+  height: 520px;
+
+  right: -220px;
+  bottom: -260px;
+
+  border-radius: 50%;
+
+  background: rgba(255, 102, 0, .07);
+
+  filter: blur(120px);
+
+  z-index: -1;
+
+  pointer-events: none;
+}
+
+
+/* =====================================================
+   TOP BAR
+===================================================== */
+
+.top-bar {
+
+  position: absolute;
+
+  top: 0;
+  left: 0;
+
+  width: 100%;
+
+  z-index: 100;
+
+  background: transparent !important;
+
+  border: none !important;
+}
+
+
+/* =====================================================
+   HEADER
+===================================================== */
+
+.main-header {
+
+  position: absolute;
+
+  top: 40px;
+  left: 0;
+
+  width: 100%;
+
+  z-index: 99;
+
+  /* TOTALMENTE TRANSPARENTE */
+  background: transparent !important;
+
+  border: none !important;
+
+  box-shadow: none !important;
+
+  backdrop-filter: none !important;
+}
+
+
+/* =====================================================
+   CONTENEDOR HEADER
+===================================================== */
+
+.main-header .header-container {
+
+  background: transparent !important;
+
+  border: none !important;
+
+  box-shadow: none !important;
+}
+
+
+/* =====================================================
+   LOGO
+===================================================== */
+
+.main-header .logo {
+
+  color: #fff !important;
+
+  text-shadow:
+    0 2px 12px rgba(0,0,0,.45);
+}
+
+
+/* =====================================================
+   MENU
+===================================================== */
+
+.main-header .main-nav a {
+
+  color: rgba(255,255,255,.92) !important;
+
+  text-shadow:
+    0 2px 10px rgba(0,0,0,.45);
+
+  transition:
+    color .3s ease,
+    transform .3s ease;
+}
+
+
+.main-header .main-nav a:hover {
+
+  color: var(--naranja) !important;
+
+  transform: translateY(-2px);
+}
+
+
+/* LINK ACTIVO */
+
+.main-header .main-nav a.active {
+
+  color: #fff !important;
+}
+
+
+/* =====================================================
+   BOTÓN HEADER
+===================================================== */
+
+.main-header .header-btn {
+
+  position: relative;
+
+  z-index: 2;
+
+  box-shadow:
+    0 8px 30px rgba(0,0,0,.25);
+}
+
+
+/* =====================================================
+   HERO CONTENT
+===================================================== */
+
+.hero-container {
+  position: relative;
+  z-index: 5;
+  width: min(1200px, 92%);
+  margin: 0 auto;
+
+  /* UN POQUITO MÁS ABAJO */
+  transform: translateY(15px);
+}
+
+
+.hero-text {
+
+  max-width: 780px;
+}
+
+@media (max-width: 768px) {
+
+  .hero-container {
+    width: 88%;
+    transform: translateY(10px);
+  }
+
+}
+
+/* =====================================================
+   TAG
+===================================================== */
+
+.hero-tag {
+
+  display: inline-block;
+
+  margin-bottom: 20px;
+
+  color: var(--naranja);
+
+  font-family: 'Montserrat', sans-serif;
+
+  font-size: .78rem;
+
+  font-weight: 800;
+
+  letter-spacing: .18em;
+
+  text-shadow:
+    0 2px 12px rgba(0,0,0,.55);
+}
+
+
+/* =====================================================
+   TÍTULO
+===================================================== */
+
+.hero-text h1 {
+
+  margin: 0;
+
+  color: #fff;
+
+  font-family: 'Montserrat', sans-serif;
+
+  font-size: clamp(3rem, 6vw, 6.2rem);
+
+  line-height: .96;
+
+  font-weight: 800;
+
+  letter-spacing: -.045em;
+
+  text-shadow:
+    0 4px 25px rgba(0,0,0,.45);
+}
+
+
+.hero-text h1 span {
+
+  display: block;
+
+  color: var(--naranja);
+}
+
+
+/* =====================================================
+   DESCRIPCIÓN
+===================================================== */
+
+.hero-text p {
+
+  max-width: 620px;
+
+  margin: 24px 0 0;
+
+  color: rgba(255,255,255,.88);
+
+  font-size: .96rem;
+
+  line-height: 1.65;
+
+  text-shadow:
+    0 2px 12px rgba(0,0,0,.55);
+}
+
+
+/* =====================================================
+   BOTONES
+===================================================== */
+
+.hero-buttons {
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 14px;
+
+  margin-top: 25px;
+
+  flex-wrap: wrap;
+}
+
+
+.hero-buttons a {
+
+  transition:
+    transform .35s cubic-bezier(.22,1,.36,1),
+    box-shadow .35s ease;
+}
+
+
+.hero-buttons a:hover {
+
+  transform: translateY(-5px);
+
+}
+
+
+/* =====================================================
+   SOCIAL BAR
+===================================================== */
+
+.social-bar {
+
+  position: fixed;
+
+  z-index: 200;
+}
+
+
+/* =====================================================
+   DESKTOP
+===================================================== */
+
+@media (min-width: 769px) {
+
+  .hero-text {
+
+    transform: translateY(-8px);
+
+  }
+
+}
+
+
+/* =====================================================
+   TABLET / MÓVIL
+===================================================== */
+
+@media (max-width: 768px) {
+
+  .hero-new {
+
+    width: 100%;
+
+    height: 100svh;
+
+    min-height: 650px;
+
+  }
+
+
+  .hero-video {
+
+    object-position: center center;
+
+    transform: scale(1.01);
+
+    animation:
+      heroVideoZoomMobile
+      24s
+      ease-in-out
+      infinite
+      alternate;
+
+  }
+
+
+  @keyframes heroVideoZoomMobile {
+
+    0% {
+      transform: scale(1.01);
+    }
+
+    100% {
+      transform: scale(1.035);
+    }
+
+  }
+
+
+  /* OVERLAY MÓVIL */
+
+  .hero-overlay {
+
+    background:
+      linear-gradient(
+        90deg,
+
+        rgba(0,0,0,.52) 0%,
+
+        rgba(0,0,0,.28) 55%,
+
+        rgba(0,0,0,.08) 100%
+      );
+
+  }
+
+
+  .main-header {
+
+    top: 38px;
+
+    background: transparent !important;
+
+  }
+
+
+  .hero-container {
+
+    width: 88%;
+
+    transform: translateY(-35px);
+
+  }
+
+
+  .hero-text {
+
+    max-width: 100%;
+
+  }
+
+
+  .hero-text h1 {
+
+    font-size: clamp(2.7rem, 12vw, 4.2rem);
+
+    line-height: .98;
+
+  }
+
+
+  .hero-text p {
+
+    margin-top: 18px;
+
+    font-size: .90rem;
+
+    line-height: 1.55;
+
+  }
+
+
+  .hero-buttons {
+
+    width: 100%;
+
+    margin-top: 22px;
+
+    gap: 10px;
+
+  }
+
+
+  .hero-buttons a {
+
+    width: 100%;
+
+    text-align: center;
+
+  }
+
+}
+
+/* =====================================================
+   HERO — CROSSFADE DE VIDEOS
+===================================================== */
+
+.hero-video {
+  position: absolute;
+  inset: 0;
+
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+  object-position: center center;
+
+  pointer-events: none;
+
+  z-index: -3;
+
+  transform: scale(1.01);
+
+  opacity: 0;
+
+  transition:
+    opacity 1.2s ease-in-out,
+    transform 12s ease-out;
+}
+
+
+/* =====================================================
+   VIDEOS DEL HERO
+===================================================== */
+
+.hero-video-1 {
+  opacity: 1;
+}
+
+.hero-video-2 {
+  opacity: 0;
+}
+
+
+/* =====================================================
+   ZOOM CINEMATOGRÁFICO
+===================================================== */
+
+.hero-video.active-video {
+  transform: scale(1.035);
+}
+
+
+/* =====================================================
+   VR TURBOLUB — HERO PROGRESS DEFINITIVO
+===================================================== */
+
+.hero-new {
+  position: relative;
+}
+
+/* Línea de fondo */
+.hero-new .hero-progress {
+  position: absolute !important;
+  left: 50% !important;
+  bottom: 32px !important;
+
+  width: min(420px, 42vw) !important;
+  height: 4px !important;
+
+  transform: translateX(-50%) !important;
+
+  display: block !important;
+
+  background: rgba(255, 255, 255, 0.30) !important;
+
+  border-radius: 999px !important;
+
+  overflow: hidden !important;
+
+  z-index: 999999 !important;
+
+  pointer-events: none !important;
+
+  /* IMPORTANTE */
+  animation: none !important;
+}
+
+
+/* Barra naranja */
+.hero-new .hero-progress-bar {
+  position: absolute !important;
+
+  left: 0 !important;
+  top: 0 !important;
+
+  width: 0%;
+  height: 100% !important;
+
+  display: block !important;
+
+  background: #FF6600 !important;
+
+  border-radius: 999px !important;
+
+  transform: none !important;
+
+  animation: none !important;
+
+  transition: none;
+
+  opacity: 1 !important;
+
+  visibility: visible !important;
+
+  box-shadow: 0 0 8px rgba(255, 102, 0, 0.7);
+
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+
+/* MOBILE */
+@media (max-width: 768px) {
+
+  .hero-new .hero-progress {
+    bottom: 22px !important;
+    width: 55vw !important;
+    height: 4px !important;
+  }
+
+}
+
+.hero-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  z-index: 0;
+}
+
+
+/* =====================================================
+   HERO — MÓVIL SIN BORDES NEGROS
+===================================================== */
+
+@media (max-width: 768px) {
+
+  .hero-new {
+    position: relative;
+    width: 100%;
+    min-height: 100svh;
+    overflow: hidden;
+  }
+
+  /* IMÁGENES */
+  .hero-image {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center center;
+    transform: scale(1.01);
+  }
+
+  /* VIDEOS */
+  .hero-video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center center;
+    transform: scale(1.01);
+  }
+
+  /* OVERLAY SIEMPRE ENCIMA DEL FONDO */
+  .hero-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+  }
+
+  /* CONTENIDO */
+  .hero-container {
+    position: relative;
+    z-index: 2;
+  }
+
+}
+
+
+
+/* =====================================================
+   SOLUCIONES — DISEÑO PREMIUM + ANIMACIONES
+===================================================== */
+
+.solutions {
+  position: relative;
+  overflow: hidden;
+}
+
+
+/* =====================================================
+   GRID
+===================================================== */
+
+.solutions-grid {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 22px;
+}
+
+
+/* =====================================================
+   TARJETAS
+===================================================== */
+
+.solution-card {
+  position: relative;
+  min-height: 300px;
+  padding: 38px;
+
+  background: #ffffff;
+  border: 1px solid rgba(13, 37, 63, 0.10);
+  border-radius: 18px;
+
+  overflow: hidden;
+
+  opacity: 0;
+  transform: translateY(70px);
+
+  transition:
+    transform 0.65s cubic-bezier(.2,.8,.2,1),
+    box-shadow 0.45s ease,
+    border-color 0.45s ease;
+}
+
+
+/* =====================================================
+   APARICIÓN
+===================================================== */
+
+.solution-card.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+
+/* ENTRADA ESCALONADA */
+
+.solution-card:nth-child(1) {
+  transition-delay: 0.05s;
+}
+
+.solution-card:nth-child(2) {
+  transition-delay: 0.15s;
+}
+
+.solution-card:nth-child(3) {
+  transition-delay: 0.25s;
+}
+
+.solution-card:nth-child(4) {
+  transition-delay: 0.35s;
+}
+
+
+/* =====================================================
+   HOVER
+===================================================== */
+
+.solution-card:hover {
+  transform: translateY(-10px);
+  border-color: rgba(255, 102, 0, 0.35);
+
+  box-shadow:
+    0 25px 55px rgba(13, 37, 63, 0.12);
+}
+
+
+/* =====================================================
+   NÚMERO
+===================================================== */
+
+.solution-number {
+  position: absolute;
+
+  top: 20px;
+  right: 28px;
+
+  font-family: 'Montserrat', sans-serif;
+  font-size: 72px;
+  font-weight: 800;
+
+  line-height: 1;
+
+  color: rgba(13, 37, 63, 0.055);
+
+  transition:
+    transform 0.6s ease,
+    color 0.45s ease;
+}
+
+
+/* MOVIMIENTO DEL NÚMERO */
+
+.solution-card:hover .solution-number {
+  transform: translateY(-8px) scale(1.08);
+
+  color: rgba(255, 102, 0, 0.12);
+}
+
+
+/* =====================================================
+   CONTENIDO
+===================================================== */
+
+.solution-content {
+  position: relative;
+  z-index: 2;
+
+  max-width: 430px;
+
+  padding-top: 55px;
+}
+
+
+.solution-card h3 {
+  margin: 0 0 18px;
+
+  font-family: 'Montserrat', sans-serif;
+
+  font-size: 24px;
+  line-height: 1.2;
+
+  color: #0d253f;
+
+  transition:
+    transform 0.45s ease,
+    color 0.45s ease;
+}
+
+
+.solution-card:hover h3 {
+  transform: translateX(5px);
+  color: #ff6600;
+}
+
+
+.solution-card p {
+  margin: 0 0 28px;
+
+  color: #5a5a5a;
+
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+
+/* =====================================================
+   LINK
+===================================================== */
+
+.solution-card a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  color: #0d253f;
+
+  font-family: 'Montserrat', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+
+  text-decoration: none;
+
+  transition:
+    color 0.35s ease,
+    gap 0.35s ease;
+}
+
+
+.solution-card a span {
+  font-size: 20px;
+
+  transition:
+    transform 0.35s ease;
+}
+
+
+.solution-card:hover a {
+  color: #ff6600;
+  gap: 13px;
+}
+
+
+.solution-card:hover a span {
+  transform: translateX(5px);
+}
+
+
+/* =====================================================
+   LÍNEA ANIMADA
+===================================================== */
+
+.solution-card::after {
+  content: "";
+
+  position: absolute;
+
+  left: 0;
+  bottom: 0;
+
+  width: 0;
+  height: 4px;
+
+  background: #ff6600;
+
+  transition: width 0.55s cubic-bezier(.2,.8,.2,1);
+}
+
+
+.solution-card:hover::after {
+  width: 100%;
+}
+
+
+/* =====================================================
+   BRILLO INTERNO
+===================================================== */
+
+.solution-card::before {
+  content: "";
+
+  position: absolute;
+
+  width: 180px;
+  height: 180px;
+
+  right: -100px;
+  bottom: -100px;
+
+  border-radius: 50%;
+
+  background: rgba(255, 102, 0, 0.08);
+
+  filter: blur(30px);
+
+  opacity: 0;
+
+  transition:
+    opacity 0.5s ease,
+    transform 0.7s ease;
+}
+
+
+.solution-card:hover::before {
+  opacity: 1;
+  transform: scale(1.5);
+}
+
+
+/* =====================================================
+   TARJETA DESTACADA
+===================================================== */
+
+.solution-card.featured {
+  background: #0d253f;
+
+  border-color: rgba(255, 102, 0, 0.25);
+}
+
+
+.solution-card.featured h3 {
+  color: #ffffff;
+}
+
+
+.solution-card.featured p {
+  color: rgba(255, 255, 255, 0.68);
+}
+
+
+.solution-card.featured a {
+  color: #ff6600;
+}
+
+
+.solution-card.featured .solution-number {
+  color: rgba(255, 255, 255, 0.08);
+}
+
+
+.solution-card.featured:hover {
+  border-color: rgba(255, 102, 0, 0.65);
+
+  box-shadow:
+    0 30px 70px rgba(13, 37, 63, 0.28),
+    0 0 35px rgba(255, 102, 0, 0.08);
+}
+
+
+.solution-card.featured:hover .solution-number {
+  color: rgba(255, 102, 0, 0.18);
+}
+
+
+/* =====================================================
+   ETIQUETA DESTACADA
+===================================================== */
+
+.featured-label {
+  display: inline-block;
+
+  margin-bottom: 16px;
+
+  color: #ff6600;
+
+  font-family: 'Montserrat', sans-serif;
+
+  font-size: 10px;
+  font-weight: 800;
+
+  letter-spacing: 2px;
+}
+
+
+/* =====================================================
+   GLOW
+===================================================== */
+
+.featured-glow {
+  position: absolute;
+
+  width: 260px;
+  height: 260px;
+
+  right: -120px;
+  bottom: -140px;
+
+  border-radius: 50%;
+
+  background: rgba(255, 102, 0, 0.13);
+
+  filter: blur(50px);
+
+  pointer-events: none;
+
+  transition:
+    transform 0.8s ease,
+    opacity 0.6s ease;
+}
+
+
+.solution-card.featured:hover .featured-glow {
+  transform: scale(1.35);
+}
+
+
+/* =====================================================
+   MOBILE
+===================================================== */
+
+@media (max-width: 768px) {
+
+  .solutions-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .solution-card {
+    min-height: 270px;
+    padding: 28px;
+  }
+
+  .solution-number {
+    font-size: 58px;
+    right: 20px;
+  }
+
+  .solution-content {
+    padding-top: 45px;
+  }
+
+  .solution-card h3 {
+    font-size: 21px;
+  }
+
+}
+
+
+/* =====================================================
+   REDUCIR MOVIMIENTO SI EL USUARIO LO PREFIERE
+===================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+
+  .solution-card {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+}
+
+/* =====================================================
+   VR TURBOLUB IA — PREMIUM
+===================================================== */
+
+.vr-ia-section {
+  position: relative;
+  padding: 120px 20px;
+  background: #050505;
+  overflow: hidden;
+}
+
+
+/* =====================================================
+   FONDO TÉCNICO
+===================================================== */
+
+.vr-ia-grid-bg {
+  position: absolute;
+  inset: 0;
+
+  background-image:
+    linear-gradient(
+      rgba(255,255,255,.025) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      90deg,
+      rgba(255,255,255,.025) 1px,
+      transparent 1px
+    );
+
+  background-size: 60px 60px;
+
+  mask-image:
+    linear-gradient(
+      to bottom,
+      transparent,
+      black 20%,
+      black 80%,
+      transparent
+    );
+
+  pointer-events: none;
+}
+
+
+/* GLOW CENTRAL */
+
+.vr-ia-section::before {
+  content: "";
+
+  position: absolute;
+
+  width: 600px;
+  height: 600px;
+
+  left: 50%;
+  top: 50%;
+
+  transform: translate(-50%, -50%);
+
+  background: rgba(255, 102, 0, .07);
+
+  filter: blur(120px);
+
+  border-radius: 50%;
+
+  pointer-events: none;
+}
+
+
+/* =====================================================
+   HEADER
+===================================================== */
+
+.vr-ia-header {
+  position: relative;
+  z-index: 2;
+
+  max-width: 800px;
+
+  margin: 0 auto 55px;
+
+  text-align: center;
+}
+
+
+.vr-ia-badge {
+  display: inline-flex;
+
+  align-items: center;
+  gap: 9px;
+
+  padding: 8px 14px;
+
+  border: 1px solid rgba(255,102,0,.35);
+
+  border-radius: 100px;
+
+  color: #ff6600;
+
+  font-family: 'Montserrat', sans-serif;
+
+  font-size: 10px;
+  font-weight: 800;
+
+  letter-spacing: 2px;
+
+  background: rgba(255,102,0,.05);
+}
+
+
+.vr-ai-dot {
+  width: 7px;
+  height: 7px;
+
+  border-radius: 50%;
+
+  background: #ff6600;
+
+  box-shadow:
+    0 0 10px rgba(255,102,0,.9);
+
+  animation: vrAiDot 1.8s infinite;
+}
+
+
+@keyframes vrAiDot {
+
+  0%,100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: .45;
+    transform: scale(.7);
+  }
+
+}
+
+
+.vr-ia-header h2 {
+  margin: 20px 0 15px;
+
+  color: #ffffff;
+
+  font-family: 'Montserrat', sans-serif;
+
+  font-size: clamp(38px, 5vw, 64px);
+
+  line-height: 1.05;
+
+  letter-spacing: -2px;
+}
+
+
+.vr-ia-header h2 span {
+  color: #ff6600;
+}
+
+
+.vr-ia-header p {
+  max-width: 620px;
+
+  margin: auto;
+
+  color: rgba(255,255,255,.58);
+
+  font-size: 16px;
+
+  line-height: 1.7;
+}
+
+
+/* =====================================================
+   CONTENEDOR
+===================================================== */
+
+.vr-ia-container {
+  position: relative;
+  z-index: 3;
+
+  max-width: 900px;
+
+  margin: auto;
+
+  overflow: hidden;
+
+  border: 1px solid rgba(255,255,255,.10);
+
+  border-radius: 22px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255,255,255,.065),
+      rgba(255,255,255,.025)
+    );
+
+  box-shadow:
+    0 40px 100px rgba(0,0,0,.55),
+    0 0 80px rgba(255,102,0,.04);
+
+  backdrop-filter: blur(20px);
+}
+
+
+/* =====================================================
+   SCAN
+===================================================== */
+
+.vr-ia-scan {
+  position: absolute;
+
+  top: 0;
+  left: -100%;
+
+  width: 35%;
+  height: 100%;
+
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      rgba(255,102,0,.04),
+      transparent
+    );
+
+  transform: skewX(-15deg);
+
+  animation: vrScan 7s linear infinite;
+
+  pointer-events: none;
+}
+
+
+@keyframes vrScan {
+
+  0% {
+    left: -50%;
+  }
+
+  100% {
+    left: 120%;
+  }
+
+}
+
+
+/* =====================================================
+   TOP
+===================================================== */
+
+.vr-ia-top {
+  position: relative;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  padding: 22px 26px;
+
+  border-bottom: 1px solid rgba(255,255,255,.08);
+
+  background: rgba(0,0,0,.22);
+}
+
+
+.vr-ia-brand {
+  display: flex;
+
+  align-items: center;
+
+  gap: 14px;
+}
+
+
+.vr-ia-logo {
+  position: relative;
+
+  width: 46px;
+  height: 46px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 12px;
+
+  background: #ff6600;
+
+  color: #ffffff;
+
+  font-family: 'Montserrat', sans-serif;
+
+  font-weight: 900;
+
+  box-shadow:
+    0 0 25px rgba(255,102,0,.25);
+}
+
+
+.vr-ia-logo span {
+  position: relative;
+  z-index: 2;
+}
+
+
+.vr-logo-pulse {
+  position: absolute;
+
+  inset: -5px;
+
+  border: 1px solid rgba(255,102,0,.5);
+
+  border-radius: 15px;
+
+  animation: vrLogoPulse 2.4s infinite;
+}
+
+
+@keyframes vrLogoPulse {
+
+  0% {
+    opacity: .8;
+    transform: scale(1);
+  }
+
+  70% {
+    opacity: 0;
+    transform: scale(1.25);
+  }
+
+  100% {
+    opacity: 0;
+  }
+
+}
+
+
+.vr-ia-title-row {
+  display: flex;
+
+  align-items: center;
+
+  gap: 9px;
+}
+
+
+.vr-ia-brand-info h3 {
+  margin: 0;
+
+  color: #ffffff;
+
+  font-family: 'Montserrat', sans-serif;
+
+  font-size: 14px;
+}
+
+
+.vr-ai-label {
+  padding: 3px 6px;
+
+  border-radius: 4px;
+
+  background: rgba(255,102,0,.12);
+
+  color: #ff6600;
+
+  font-size: 8px;
+
+  font-weight: 800;
+
+  letter-spacing: 1px;
+}
+
+
+.vr-ia-brand-info p {
+  margin: 4px 0 0;
+
+  color: rgba(255,255,255,.45);
+
+  font-size: 11px;
+}
+
+
+.vr-status {
+  display: inline-block;
+
+  width: 6px;
+  height: 6px;
+
+  margin-right: 5px;
+
+  border-radius: 50%;
+
+  background: #37d67a;
+
+  box-shadow:
+    0 0 8px rgba(55,214,122,.8);
+}
+
+
+.vr-ia-live {
+  display: flex;
+
+  align-items: center;
+
+  gap: 7px;
+
+  color: rgba(255,255,255,.4);
+
+  font-size: 9px;
+
+  font-weight: 800;
+
+  letter-spacing: 1.5px;
+}
+
+
+.vr-ia-live span {
+  width: 5px;
+  height: 5px;
+
+  border-radius: 50%;
+
+  background: #37d67a;
+}
+
+
+/* =====================================================
+   MENSAJES
+===================================================== */
+
+.vr-ia-messages {
+  min-height: 330px;
+
+  max-height: 480px;
+
+  overflow-y: auto;
+
+  padding: 32px 30px;
+
+  scrollbar-width: thin;
+}
+
+
+.vr-message {
+  display: flex;
+
+  gap: 13px;
+
+  max-width: 750px;
+
+  animation: vrMessageIn .5s ease both;
+}
+
+
+@keyframes vrMessageIn {
+
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+}
+
+
+.vr-message-icon {
+  flex-shrink: 0;
+
+  width: 34px;
+  height: 34px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 9px;
+
+  background: #ff6600;
+
+  color: #ffffff;
+
+  font-family: 'Montserrat', sans-serif;
+
+  font-size: 10px;
+
+  font-weight: 900;
+}
+
+
+.vr-message-content {
+  padding: 15px 18px;
+
+  border: 1px solid rgba(255,255,255,.07);
+
+  border-radius: 4px 15px 15px 15px;
+
+  background: rgba(255,255,255,.045);
+}
+
+
+.vr-message-name {
+  margin-bottom: 9px;
+
+  color: #ff6600;
+
+  font-size: 9px;
+
+  font-weight: 800;
+
+  letter-spacing: 1.5px;
+}
+
+
+.vr-message-content p {
+  margin: 0 0 10px;
+
+  color: rgba(255,255,255,.78);
+
+  font-size: 14px;
+
+  line-height: 1.7;
+}
+
+
+.vr-message-content p:last-of-type {
+  margin-bottom: 0;
+}
+
+
+.vr-ai-hint {
+  margin-top: 15px;
+
+  padding: 11px 13px;
+
+  border-left: 2px solid #ff6600;
+
+  background: rgba(255,102,0,.045);
+
+  color: rgba(255,255,255,.48);
+
+  font-size: 11px;
+
+  line-height: 1.5;
+}
+
+
+/* =====================================================
+   OPCIONES
+===================================================== */
+
+.vr-ia-options {
+  padding: 0 30px 20px;
+}
+
+
+.vr-options-title {
+  display: block;
+
+  margin-bottom: 10px;
+
+  color: rgba(255,255,255,.35);
+
+  font-size: 9px;
+
+  font-weight: 800;
+
+  letter-spacing: 1.5px;
+
+  text-transform: uppercase;
+}
+
+
+.vr-options-list {
+  display: flex;
+
+  flex-wrap: wrap;
+
+  gap: 8px;
+}
+
+
+.vr-ia-options button {
+  display: flex;
+
+  align-items: center;
+
+  gap: 7px;
+
+  padding: 9px 13px;
+
+  border: 1px solid rgba(255,255,255,.10);
+
+  border-radius: 100px;
+
+  background: rgba(255,255,255,.035);
+
+  color: rgba(255,255,255,.68);
+
+  font-size: 11px;
+
+  cursor: pointer;
+
+  transition:
+    transform .3s ease,
+    background .3s ease,
+    border-color .3s ease,
+    color .3s ease;
+}
+
+
+.vr-ia-options button:hover {
+  transform: translateY(-3px);
+
+  border-color: rgba(255,102,0,.5);
+
+  background: rgba(255,102,0,.08);
+
+  color: #ffffff;
+}
+
+
+.option-icon {
+  font-size: 14px;
+}
+
+
+/* =====================================================
+   INPUT
+===================================================== */
+
+.vr-ia-input-area {
+  display: flex;
+
+  align-items: center;
+
+  gap: 10px;
+
+  margin: 0 24px;
+
+  padding: 8px 9px 8px 14px;
+
+  border: 1px solid rgba(255,255,255,.10);
+
+  border-radius: 13px;
+
+  background: rgba(0,0,0,.35);
+
+  transition:
+    border-color .3s ease,
+    box-shadow .3s ease;
+}
+
+
+.vr-ia-input-area:focus-within {
+  border-color: rgba(255,102,0,.55);
+
+  box-shadow:
+    0 0 0 3px rgba(255,102,0,.06);
+}
+
+
+.vr-input-icon {
+  color: #ff6600;
+
+  font-family: 'Montserrat', sans-serif;
+
+  font-size: 10px;
+
+  font-weight: 900;
+}
+
+
+.vr-ia-input-area input {
+  flex: 1;
+
+  min-width: 0;
+
+  border: none;
+
+  outline: none;
+
+  background: transparent;
+
+  color: #ffffff;
+
+  font-size: 13px;
+}
+
+
+.vr-ia-input-area input::placeholder {
+  color: rgba(255,255,255,.30);
+}
+
+
+.vr-ia-input-area button {
+  width: 38px;
+  height: 38px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border: none;
+
+  border-radius: 9px;
+
+  background: #ff6600;
+
+  color: #ffffff;
+
+  cursor: pointer;
+
+  transition:
+    transform .3s ease,
+    box-shadow .3s ease;
+}
+
+
+.vr-ia-input-area button:hover {
+  transform: translateY(-2px) scale(1.04);
+
+  box-shadow:
+    0 8px 25px rgba(255,102,0,.25);
+}
+
+
+.vr-ia-input-area button span {
+  transition: transform .3s ease;
+}
+
+
+.vr-ia-input-area button:hover span {
+  transform: translateX(3px);
+}
+
+
+/* =====================================================
+   FOOTER
+===================================================== */
+
+.vr-ia-footer {
+  display: flex;
+
+  justify-content: center;
+
+  gap: 8px;
+
+  padding: 17px;
+
+  color: rgba(255,255,255,.25);
+
+  font-size: 9px;
+
+  letter-spacing: 1px;
+}
+
+
+.vr-footer-separator {
+  color: #ff6600;
+}
+
+
+/* =====================================================
+   MOBILE
+===================================================== */
+
+@media (max-width: 768px) {
+
+  .vr-ia-section {
+    padding: 80px 14px;
+  }
+
+  .vr-ia-header {
+    margin-bottom: 35px;
+  }
+
+  .vr-ia-header h2 {
+    font-size: 38px;
+  }
+
+  .vr-ia-header p {
+    font-size: 14px;
+  }
+
+  .vr-ia-container {
+    border-radius: 17px;
+  }
+
+  .vr-ia-top {
+    padding: 17px;
+  }
+
+  .vr-ia-live {
+    display: none;
+  }
+
+  .vr-ia-messages {
+    min-height: 300px;
+    padding: 24px 17px;
+  }
+
+  .vr-message-content p {
+    font-size: 13px;
+  }
+
+  .vr-ia-options {
+    padding: 0 17px 17px;
+  }
+
+  .vr-options-list {
+    gap: 6px;
+  }
+
+  .vr-ia-options button {
+    font-size: 10px;
+    padding: 8px 10px;
+  }
+
+  .vr-ia-input-area {
+    margin: 0 14px;
+  }
+
+  .vr-ia-footer {
+    font-size: 8px;
+  }
+
+}
+

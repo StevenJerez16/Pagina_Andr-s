@@ -17,6 +17,221 @@
   >
 
   <link rel="stylesheet" href="css/style.css">
+
+<style id="vr-turbolub-scroll-animations">
+/* =========================================================
+   VR TURBOLUB — SISTEMA DE ANIMACIONES DE SCROLL
+   Añadido sin reemplazar los estilos existentes.
+   ========================================================= */
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  overflow-x: clip;
+}
+
+/* Estado inicial controlado por JS */
+.vr-reveal {
+  opacity: 0;
+  transform: translate3d(0, 42px, 0);
+  transition:
+    opacity .72s cubic-bezier(.22, 1, .36, 1),
+    transform .72s cubic-bezier(.22, 1, .36, 1);
+  will-change: opacity, transform;
+}
+
+.vr-reveal.vr-reveal-left {
+  transform: translate3d(-48px, 0, 0);
+}
+
+.vr-reveal.vr-reveal-right {
+  transform: translate3d(48px, 0, 0);
+}
+
+.vr-reveal.vr-reveal-scale {
+  transform: translate3d(0, 24px, 0) scale(.965);
+}
+
+.vr-reveal.vr-visible {
+  opacity: 1;
+  transform: translate3d(0, 0, 0) scale(1);
+}
+
+.vr-stagger > .vr-reveal:nth-child(1) { transition-delay: 0ms; }
+.vr-stagger > .vr-reveal:nth-child(2) { transition-delay: 90ms; }
+.vr-stagger > .vr-reveal:nth-child(3) { transition-delay: 180ms; }
+.vr-stagger > .vr-reveal:nth-child(4) { transition-delay: 270ms; }
+
+/* Hero */
+.hero-new {
+  overflow: hidden;
+}
+
+.vr-hero-depth {
+  transition: transform .12s linear;
+  will-change: transform;
+}
+
+/* Tarjetas */
+.solution-card,
+.benefit,
+.process-step,
+.video-card {
+  transform: translateZ(0);
+  transition:
+    transform .45s cubic-bezier(.22, 1, .36, 1),
+    box-shadow .45s ease,
+    border-color .45s ease;
+}
+
+.solution-card:hover,
+.benefit:hover,
+.process-step:hover,
+.video-card:hover {
+  transform: translate3d(0, -7px, 0);
+}
+
+/* Números y flechas */
+.solution-number,
+.benefit-number,
+.process-step > span,
+.solution-card a {
+  transition:
+    transform .4s cubic-bezier(.22, 1, .36, 1),
+    color .3s ease;
+}
+
+.solution-card:hover .solution-number,
+.benefit:hover .benefit-number {
+  transform: translate3d(5px, 0, 0) scale(1.04);
+}
+
+.solution-card:hover a {
+  transform: translate3d(5px, 0, 0);
+}
+
+/* Sección de IA */
+.vr-ia-section {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.vr-ia-section::before {
+  content: "";
+  position: absolute;
+  width: 420px;
+  height: 420px;
+  left: 50%;
+  top: 42%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(255,102,0,.10) 0%,
+    rgba(255,102,0,.035) 34%,
+    transparent 70%
+  );
+  filter: blur(18px);
+  pointer-events: none;
+  z-index: -1;
+  animation: vrIaGlow 5s ease-in-out infinite alternate;
+}
+
+@keyframes vrIaGlow {
+  from { opacity: .55; transform: translate(-50%, -50%) scale(.92); }
+  to   { opacity: 1; transform: translate(-50%, -50%) scale(1.08); }
+}
+
+.vr-ia-container {
+  transform-origin: center;
+}
+
+.vr-status {
+  animation: vrStatusPulse 2s ease-in-out infinite;
+}
+
+@keyframes vrStatusPulse {
+  0%, 100% { opacity: .65; transform: scale(.9); }
+  50% { opacity: 1; transform: scale(1.12); }
+}
+
+/* Barra de progreso */
+.vr-scroll-progress {
+  position: fixed;
+  inset: 0 0 auto 0;
+  width: 0%;
+  height: 3px;
+  background: #FF6600;
+  z-index: 99999;
+  transform-origin: left center;
+  pointer-events: none;
+  box-shadow: 0 0 12px rgba(255,102,0,.45);
+}
+
+/* Header al desplazarse */
+.main-header.vr-header-scrolled {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 8px 30px rgba(0,0,0,.12);
+}
+
+/* Respeto a usuarios que reducen movimiento */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+
+  .vr-reveal,
+  .vr-reveal.vr-reveal-left,
+  .vr-reveal.vr-reveal-right,
+  .vr-reveal.vr-reveal-scale {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .vr-hero-depth {
+    transform: none !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .vr-reveal,
+  .vr-reveal.vr-reveal-left,
+  .vr-reveal.vr-reveal-right,
+  .vr-reveal.vr-reveal-scale {
+    transform: translate3d(0, 28px, 0);
+  }
+
+  .vr-reveal.vr-visible {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+
+  .solution-card:hover,
+  .benefit:hover,
+  .process-step:hover,
+  .video-card:hover {
+    transform: translate3d(0, -3px, 0);
+  }
+
+  .vr-ia-section::before {
+    width: 260px;
+    height: 260px;
+  }
+}
+
+</style>
+
 </head>
 
 <body>
@@ -83,11 +298,10 @@
         <a href="https://www.instagram.com/vr_turbolub?igsh=MWRhMGI0bXVzanBjYg%3D%3D/" target="_blank">
             <img src="img/instagramlogo.png" alt="Instagram" />
         </a>
-        </a>
-        <a href="https://www.tiktok.com/@andressvar01?_r=1&_t=ZS-93W4PYf8P1M" target="_blank" target="_blank">
-        <img src="img/tiktoklogo.png" alt="Instagram" />
-        </a>
-        </a>
+        <a href="https://www.tiktok.com/@andressvar01?_r=1&_t=ZS-93W4PYf8P1M"
+   target="_blank">
+  <img src="img/tiktoklogo.png" alt="TikTok">
+</a>
     </div>
 
 
@@ -128,8 +342,33 @@
 
 <section class="hero-new">
 
+  <video
+    class="hero-video hero-video-1"
+    id="heroVideo1"
+    autoplay
+    muted
+    playsinline
+    preload="auto"
+  >
+    <source src="img/inicio.mp4" type="video/mp4">
+  </video>
+
+  <video
+    class="hero-video hero-video-2"
+    id="heroVideo2"
+    muted
+    playsinline
+    preload="auto"
+  >
+    <source src="img/reparandocarro.mp4" type="video/mp4">
+  </video>
+
+
+  <!-- OSCURECIMIENTO -->
   <div class="hero-overlay"></div>
 
+
+  <!-- CONTENIDO -->
   <div class="hero-container">
 
     <div class="hero-text">
@@ -165,9 +404,16 @@
 
   </div>
 
+
+  <!-- PROGRESO -->
+  <div class="hero-progress">
+    <div
+      class="hero-progress-bar"
+      id="heroProgressBar">
+    </div>
+  </div>
+
 </section>
-
-
 <!-- =========================
      BENEFICIOS
 ========================= -->
@@ -261,12 +507,11 @@
 
 </section>
 
-
 <!-- =========================
      SOLUCIONES
 ========================= -->
 
-<section class="solutions">
+<section class="solutions" id="soluciones">
 
   <div class="section-header">
 
@@ -283,27 +528,40 @@
   <div class="solutions-grid">
 
 
+    <!-- =========================
+         SOLUCIÓN 01
+    ========================= -->
+
     <article class="solution-card">
 
       <div class="solution-number">
         01
       </div>
 
-      <h3>
-        Lubricantes automotrices
-      </h3>
+      <div class="solution-content">
 
-      <p>
-        Aceites y lubricantes para proteger
-        diferentes tipos de motores.
-      </p>
+        <h3>
+          Lubricantes automotrices
+        </h3>
 
-      <a href="productos2.html">
-        Explorar productos →
-      </a>
+        <p>
+          Aceites y lubricantes para proteger
+          diferentes tipos de motores.
+        </p>
+
+        <a href="productos2.html">
+          Explorar productos
+          <span>→</span>
+        </a>
+
+      </div>
 
     </article>
 
+
+    <!-- =========================
+         SOLUCIÓN 02
+    ========================= -->
 
     <article class="solution-card">
 
@@ -311,21 +569,30 @@
         02
       </div>
 
-      <h3>
-        Lubricantes industriales
-      </h3>
+      <div class="solution-content">
 
-      <p>
-        Soluciones enfocadas en eficiencia,
-        protección y durabilidad.
-      </p>
+        <h3>
+          Lubricantes industriales
+        </h3>
 
-      <a href="productos2.html">
-        Conocer soluciones →
-      </a>
+        <p>
+          Soluciones enfocadas en eficiencia,
+          protección y durabilidad.
+        </p>
+
+        <a href="productos2.html">
+          Conocer soluciones
+          <span>→</span>
+        </a>
+
+      </div>
 
     </article>
 
+
+    <!-- =========================
+         SOLUCIÓN 03
+    ========================= -->
 
     <article class="solution-card">
 
@@ -333,21 +600,30 @@
         03
       </div>
 
-      <h3>
-        Aditivos especializados
-      </h3>
+      <div class="solution-content">
 
-      <p>
-        Productos diseñados para complementar
-        el rendimiento y protección del motor.
-      </p>
+        <h3>
+          Aditivos especializados
+        </h3>
 
-      <a href="productos2.html">
-        Ver productos →
-      </a>
+        <p>
+          Productos diseñados para complementar
+          el rendimiento y protección del motor.
+        </p>
+
+        <a href="productos2.html">
+          Ver productos
+          <span>→</span>
+        </a>
+
+      </div>
 
     </article>
 
+
+    <!-- =========================
+         SOLUCIÓN 04
+    ========================= -->
 
     <article class="solution-card featured">
 
@@ -355,25 +631,36 @@
         04
       </div>
 
-      <h3>
-        Asesoría personalizada
-      </h3>
+      <div class="solution-content">
 
-      <p>
-        ¿No sabes qué producto necesitas?
-        Nosotros te ayudamos.
-      </p>
+        <span class="featured-label">
+          ASESORÍA VR TURBOLUB
+        </span>
 
-      <a href="contacto.html">
-        Hablar con un asesor →
-      </a>
+        <h3>
+          Asesoría personalizada
+        </h3>
+
+        <p>
+          ¿No sabes qué producto necesitas?
+          Nosotros te ayudamos.
+        </p>
+
+        <a href="contacto.html">
+          Hablar con un asesor
+          <span>→</span>
+        </a>
+
+      </div>
+
+      <div class="featured-glow"></div>
 
     </article>
+
 
   </div>
 
 </section>
-
 
 <!-- =========================
      PROPUESTA DE VALOR
@@ -538,44 +825,102 @@
   </div>
 
 </section>
+
 <!-- ============================= -->
 <!-- VR TURBOLUB IA -->
 <!-- ============================= -->
 
 <section class="vr-ia-section" id="vr-turbolub-ia">
 
-  <div class="vr-ia-header">
-    <span class="vr-ia-badge">INTELIGENCIA ARTIFICIAL</span>
+  <!-- DECORACIÓN -->
+  <div class="vr-ia-grid-bg"></div>
 
-    <h2>VR TURBOLUB <span>IA</span></h2>
+  <div class="vr-ia-header">
+
+    <div class="vr-ia-badge">
+      <span class="vr-ai-dot"></span>
+      INTELIGENCIA ARTIFICIAL
+    </div>
+
+    <h2>
+      Tu vehículo.
+      <span>Tu solución.</span>
+    </h2>
 
     <p>
-      Tu asistente inteligente para encontrar el lubricante,
-      producto o servicio adecuado para tu vehículo.
+      Consulta productos, lubricantes y servicios con
+      el asistente inteligente de VR Turbolub.
     </p>
+
   </div>
+
+
+  <!-- =========================
+       CONTENEDOR IA
+  ========================= -->
 
   <div class="vr-ia-container">
 
-    <!-- CABECERA DEL CHAT -->
+    <!-- ESCANEO DECORATIVO -->
+    <div class="vr-ia-scan"></div>
+
+
+    <!-- =========================
+         CABECERA
+    ========================= -->
+
     <div class="vr-ia-top">
 
-      <div class="vr-ia-logo">
-        <span>VR</span>
+      <div class="vr-ia-brand">
+
+        <div class="vr-ia-logo">
+
+          <span>VR</span>
+
+          <div class="vr-logo-pulse"></div>
+
+        </div>
+
+        <div class="vr-ia-brand-info">
+
+          <div class="vr-ia-title-row">
+
+            <h3>
+              Asistente VR Turbolub
+            </h3>
+
+            <span class="vr-ai-label">
+              IA
+            </span>
+
+          </div>
+
+          <p>
+            <span class="vr-status"></span>
+            Sistema operativo
+          </p>
+
+        </div>
+
       </div>
 
-      <div>
-        <h3>Asistente VR Turbolub</h3>
-        <p>
-          <span class="vr-status"></span>
-          Disponible ahora
-        </p>
+
+      <div class="vr-ia-live">
+        <span></span>
+        ONLINE
       </div>
 
     </div>
 
-    <!-- ÁREA DE MENSAJES -->
-    <div class="vr-ia-messages" id="vrIaMessages">
+
+    <!-- =========================
+         MENSAJES
+    ========================= -->
+
+    <div
+      class="vr-ia-messages"
+      id="vrIaMessages"
+    >
 
       <div class="vr-message vr-message-ai">
 
@@ -584,48 +929,97 @@
         </div>
 
         <div class="vr-message-content">
+
+          <div class="vr-message-name">
+            VR TURBOLUB IA
+          </div>
+
           <p>
-            ¡Hola! 👋 Soy el asistente virtual de VR Turbolub.
+            ¡Hola! 👋 Soy el asistente inteligente
+            de VR Turbolub.
           </p>
 
           <p>
-            Puedo ayudarte a encontrar productos, conocer nuestros
-            servicios o resolver preguntas sobre lubricantes.
+            Puedo ayudarte a encontrar el producto
+            adecuado para tu vehículo, consultar
+            soluciones o conocer nuestros servicios.
           </p>
+
+          <div class="vr-ai-hint">
+            💡 Puedes preguntarme directamente por
+            tu carro, moto, camión o producto.
+          </div>
+
         </div>
 
       </div>
 
     </div>
 
-    <!-- OPCIONES RÁPIDAS -->
+
+    <!-- =========================
+         OPCIONES
+    ========================= -->
+
     <div class="vr-ia-options">
 
-      <button type="button" data-question="Necesito recomendar un aceite para mi carro">
-        🚗 Aceite para carro
-      </button>
+      <span class="vr-options-title">
+        ¿Qué necesitas?
+      </span>
 
-      <button type="button" data-question="Necesito un aceite para mi moto">
-        🏍️ Aceite para moto
-      </button>
+      <div class="vr-options-list">
 
-      <button type="button" data-question="Quiero conocer los productos disponibles">
-        🛢️ Ver productos
-      </button>
+        <button
+          type="button"
+          data-question="Necesito recomendar un aceite para mi carro"
+        >
+          <span class="option-icon">🚗</span>
+          Aceite para carro
+        </button>
 
-      <button type="button" data-question="Quiero conocer los servicios">
-        🔧 Servicios
-      </button>
+        <button
+          type="button"
+          data-question="Necesito un aceite para mi moto"
+        >
+          <span class="option-icon">🏍️</span>
+          Aceite para moto
+        </button>
+
+        <button
+          type="button"
+          data-question="Quiero conocer los productos disponibles"
+        >
+          <span class="option-icon">🛢️</span>
+          Ver productos
+        </button>
+
+        <button
+          type="button"
+          data-question="Quiero conocer los servicios"
+        >
+          <span class="option-icon">🔧</span>
+          Servicios
+        </button>
+
+      </div>
 
     </div>
 
-    <!-- INPUT -->
+
+    <!-- =========================
+         INPUT
+    ========================= -->
+
     <div class="vr-ia-input-area">
+
+      <div class="vr-input-icon">
+        VR
+      </div>
 
       <input
         type="text"
         id="vrIaInput"
-        placeholder="Escribe tu pregunta..."
+        placeholder="Pregunta por tu vehículo o producto..."
         autocomplete="off"
       >
 
@@ -634,78 +1028,31 @@
         id="vrIaSend"
         aria-label="Enviar pregunta"
       >
-        ➤
+        <span>➤</span>
       </button>
 
     </div>
 
+
     <div class="vr-ia-footer">
-      VR Turbolub IA · Asistente virtual
+
+      <span>
+        VR TURBOLUB IA
+      </span>
+
+      <span class="vr-footer-separator">
+        •
+      </span>
+
+      <span>
+        Asistencia inteligente
+      </span>
+
     </div>
 
   </div>
 
 </section>
-
-<!-- =========================
-     VIDEOS / SERVICIOS
-========================= -->
-
-<section class="services-preview">
-
-  <div class="section-header">
-
-    <span>
-      CONOCE NUESTRO TRABAJO
-    </span>
-
-    <h2>
-      Soluciones y servicios
-      <strong>en acción.</strong>
-    </h2>
-
-  </div>
-
-
-  <div class="video-grid">
-
-    <div class="video-card">
-
-      <video
-        src="img/servicio.mp4"
-        autoplay
-        muted
-        loop
-        playsinline
-      ></video>
-
-    </div>
-
-
-    <div class="video-card">
-
-      <video
-        src="img/queesperas.mp4"
-        autoplay
-        muted
-        loop
-        playsinline
-      ></video>
-
-    </div>
-
-  </div>
-
-  <div class="center-button">
-
-    <a href="servicios.html" class="btn-secondary">
-      Ver todos los servicios
-    </a>
-
-  </div>
-
-</section>
-
 
 <!-- =========================
      CTA
@@ -738,13 +1085,16 @@
 </section>
 
 
-<!-- =========================
+<!-- =====================================================
      FOOTER
-========================= -->
+===================================================== -->
 
 <footer>
 
   <div class="footer-container">
+
+
+    <!-- EMPRESA -->
 
     <div>
 
@@ -753,28 +1103,56 @@
       </div>
 
       <p>
-        Lubricantes y soluciones automotrices.
+
+        Lubricantes y soluciones automotrices para proteger
+        y mejorar el rendimiento de tu vehículo.
+
       </p>
 
     </div>
 
 
+
+    <!-- ENLACES -->
+
     <div class="footer-links">
 
-      <a href="index.html">Inicio</a>
-      <a href="productos2.html">Productos</a>
-      <a href="servicios.html">Servicios</a>
-      <a href="nosotros.html">Nosotros</a>
-      <a href="contacto.html">Contacto</a>
+      <strong>
+        Explorar
+      </strong>
+
+      <a href="index.html">
+        Inicio
+      </a>
+
+      <a href="productos2.html">
+        Productos
+      </a>
+
+      <a href="servicios.html">
+        Servicios
+      </a>
+
+      <a href="nosotros.html">
+        Nosotros
+      </a>
 
     </div>
 
 
+
+    <!-- CONTACTO -->
+
     <div class="footer-contact">
+
+      <strong>
+        Contacto
+      </strong>
 
       <a
         href="https://wa.me/573125267295"
         target="_blank"
+        rel="noopener noreferrer"
       >
         WhatsApp
       </a>
@@ -782,13 +1160,21 @@
       <a
         href="https://www.instagram.com/vr_turbolub"
         target="_blank"
+        rel="noopener noreferrer"
       >
         Instagram
       </a>
 
+      <a href="contacto.html">
+        Solicitar asesoría
+      </a>
+
     </div>
 
+
   </div>
+
+
   <div class="footer-bottom">
 
     © 2026 VR Turbolub · Lubricantes y soluciones automotrices
@@ -796,7 +1182,6 @@
   </div>
 
 </footer>
-
 <!-- =========================
      VR TURBOLUB IA FLOTANTE
 ========================= -->
@@ -934,6 +1319,239 @@
 
 <script src="js/script.js"></script>
 
+
+
+<script id="vr-turbolub-scroll-animations-js">
+(() => {
+  "use strict";
+
+  /*
+   * Sistema independiente de animaciones.
+   * No reemplaza la lógica existente de script.js.
+   */
+
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  /* ---------------------------------------------------------
+     Barra de progreso
+     --------------------------------------------------------- */
+  const progress = document.createElement("div");
+  progress.className = "vr-scroll-progress";
+  progress.setAttribute("aria-hidden", "true");
+  document.body.appendChild(progress);
+
+  let progressTicking = false;
+
+  const updateProgress = () => {
+    const doc = document.documentElement;
+    const max = doc.scrollHeight - window.innerHeight;
+    const value = max > 0 ? (window.scrollY / max) * 100 : 0;
+    progress.style.width = `${Math.min(100, Math.max(0, value))}%`;
+    progressTicking = false;
+  };
+
+  window.addEventListener("scroll", () => {
+    if (!progressTicking) {
+      requestAnimationFrame(updateProgress);
+      progressTicking = true;
+    }
+  }, { passive: true });
+
+  updateProgress();
+
+  /* ---------------------------------------------------------
+     Header
+     --------------------------------------------------------- */
+  const header = document.querySelector(".main-header");
+
+  const updateHeader = () => {
+    if (!header) return;
+    header.classList.toggle("vr-header-scrolled", window.scrollY > 28);
+  };
+
+  window.addEventListener("scroll", updateHeader, { passive: true });
+  updateHeader();
+
+  /* ---------------------------------------------------------
+     Preparar elementos sin alterar el contenido.
+     --------------------------------------------------------- */
+  const addReveal = (selector, type = "", stagger = false) => {
+    const elements = [...document.querySelectorAll(selector)];
+    if (!elements.length) return [];
+
+    elements.forEach((el) => {
+      el.classList.add("vr-reveal");
+      if (type) el.classList.add(`vr-reveal-${type}`);
+      if (stagger) el.parentElement?.classList.add("vr-stagger");
+    });
+
+    return elements;
+  };
+
+  /* Hero */
+  const heroItems = addReveal(".hero-tag, .hero-text h1, .hero-text > p, .hero-buttons");
+  heroItems.forEach((el, i) => {
+    el.style.transitionDelay = `${i * 110}ms`;
+  });
+
+  /* Beneficios */
+  addReveal(".benefit", "", true);
+
+  /* Intro */
+  const introItems = addReveal(".intro-label, .intro-container h2, .intro-container > p");
+  introItems.forEach((el, i) => {
+    el.style.transitionDelay = `${i * 100}ms`;
+  });
+
+  /* Solutions */
+  const solutionCards = [...document.querySelectorAll(".solution-card")];
+  solutionCards.forEach((el, i) => {
+    el.classList.add("vr-reveal");
+    if (i === 0) el.classList.add("vr-reveal-left");
+    if (i === 1 || i === 2) el.classList.add("vr-reveal-scale");
+    if (i === 3) el.classList.add("vr-reveal-right");
+    el.style.transitionDelay = `${i * 85}ms`;
+  });
+
+  /* Value */
+  const valueText = document.querySelector(".value-text");
+  const valueList = document.querySelector(".value-list");
+
+  if (valueText) {
+    valueText.classList.add("vr-reveal", "vr-reveal-left");
+  }
+
+  if (valueList) {
+    valueList.classList.add("vr-reveal", "vr-reveal-right");
+  }
+
+  document.querySelectorAll(".value-list > div").forEach((el, i) => {
+    el.classList.add("vr-reveal");
+    el.style.transitionDelay = `${i * 110}ms`;
+  });
+
+  /* Process */
+  document.querySelectorAll(".process-step").forEach((el, i) => {
+    el.classList.add("vr-reveal");
+    el.style.transitionDelay = `${i * 100}ms`;
+  });
+
+  /* IA */
+  const iaHeader = document.querySelector(".vr-ia-header");
+  const iaContainer = document.querySelector(".vr-ia-container");
+
+  if (iaHeader) iaHeader.classList.add("vr-reveal");
+  if (iaContainer) iaContainer.classList.add("vr-reveal", "vr-reveal-scale");
+
+  /* Videos */
+  document.querySelectorAll(".video-card").forEach((el, i) => {
+    el.classList.add("vr-reveal");
+    el.classList.add(i === 0 ? "vr-reveal-left" : "vr-reveal-right");
+  });
+
+  /* CTA */
+  const ctaContainer = document.querySelector(".cta-container");
+  if (ctaContainer) {
+    [...ctaContainer.children].forEach((el, i) => {
+      el.classList.add("vr-reveal");
+      el.style.transitionDelay = `${i * 90}ms`;
+    });
+  }
+
+  /* Footer */
+  const footerContainer = document.querySelector(".footer-container");
+  if (footerContainer) footerContainer.classList.add("vr-reveal");
+
+  /* ---------------------------------------------------------
+     IntersectionObserver reversible.
+     IMPORTANTE: cuando un elemento sale del viewport vuelve a
+     su estado inicial, permitiendo que se anime nuevamente.
+     --------------------------------------------------------- */
+  const revealElements = [...document.querySelectorAll(".vr-reveal")];
+
+  if (reduceMotion) {
+    revealElements.forEach((el) => el.classList.add("vr-visible"));
+  } else if ("IntersectionObserver" in window) {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("vr-visible");
+        } else {
+          /*
+           * Pequeño margen para evitar parpadeos cuando el usuario
+           * cruza apenas el límite del viewport.
+           */
+          const rect = entry.boundingClientRect;
+          const viewportHeight = window.innerHeight;
+          const farOutside =
+            rect.bottom < -viewportHeight * 0.08 ||
+            rect.top > viewportHeight * 1.08;
+
+          if (farOutside) {
+            entry.target.classList.remove("vr-visible");
+          }
+        }
+      });
+    }, {
+      threshold: 0.12,
+      rootMargin: "0px 0px -8% 0px"
+    });
+
+    revealElements.forEach((el) => observer.observe(el));
+  } else {
+    revealElements.forEach((el) => el.classList.add("vr-visible"));
+  }
+
+  /* ---------------------------------------------------------
+     Parallax del Hero.
+     Muy limitado para no mover contenido crítico.
+     --------------------------------------------------------- */
+  const heroDepth = document.querySelector(".hero-text");
+  let parallaxTicking = false;
+
+  const updateHeroParallax = () => {
+    if (!heroDepth || reduceMotion || window.innerWidth < 769) {
+      if (heroDepth) heroDepth.style.transform = "";
+      parallaxTicking = false;
+      return;
+    }
+
+    const y = Math.min(window.scrollY, window.innerHeight);
+    heroDepth.style.transform = `translate3d(0, ${y * -0.045}px, 0)`;
+    parallaxTicking = false;
+  };
+
+  window.addEventListener("scroll", () => {
+    if (!parallaxTicking) {
+      requestAnimationFrame(updateHeroParallax);
+      parallaxTicking = true;
+    }
+  }, { passive: true });
+
+  updateHeroParallax();
+
+  /* ---------------------------------------------------------
+     Microinteracción suave de tarjetas.
+     --------------------------------------------------------- */
+  if (!reduceMotion && window.matchMedia("(hover: hover)").matches) {
+    document.querySelectorAll(".solution-card, .benefit, .process-step, .video-card")
+      .forEach((card) => {
+        card.addEventListener("pointermove", (event) => {
+          const rect = card.getBoundingClientRect();
+          const x = (event.clientX - rect.left) / rect.width - 0.5;
+          const y = (event.clientY - rect.top) / rect.height - 0.5;
+
+          card.style.transform =
+            `translate3d(0, -7px, 0) perspective(800px) rotateX(${y * -1.8}deg) rotateY(${x * 1.8}deg)`;
+        });
+
+        card.addEventListener("pointerleave", () => {
+          card.style.transform = "";
+        });
+      });
+  }
+})();
+</script>
 
 </body>
 </html>

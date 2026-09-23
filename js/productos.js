@@ -83,34 +83,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   }
 
-
-  /* =====================================================
-     MENÚ MÓVIL
-  ===================================================== */
-
-  const menuToggle =
-    document.querySelector(".menu-toggle");
-
-  const mainNav =
-    document.querySelector(".main-nav");
-
-
-  if (menuToggle && mainNav) {
-
-    menuToggle.addEventListener(
-      "click",
-      () => {
-
-        mainNav.classList.toggle(
-          "active"
-        );
-
-      }
-    );
-
-  }
-
-
   /* =====================================================
      CARRITO
   ===================================================== */
@@ -2741,20 +2713,6 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 /* =====================================================
-   MENÚ MOBILE
-===================================================== */
-
-const toggle = document.querySelector(".menu-toggle");
-const nav = document.querySelector("nav");
-
-if (toggle && nav) {
-  toggle.addEventListener("click", () => {
-    nav.classList.toggle("active");
-  });
-}
-
-
-/* =====================================================
    VR TURBOLUB IA
 ===================================================== */
 
@@ -3519,3 +3477,148 @@ document.addEventListener("DOMContentLoaded", () => {
   );
 
 });
+
+/* =====================================================
+   PRODUCTOS — ANIMACIÓN PREMIUM AL HACER SCROLL
+===================================================== */
+
+document.addEventListener("DOMContentLoaded", () => {
+
+  const catalog = document.querySelector(".catalog-section");
+
+  if (!catalog) return;
+
+  const header = catalog.querySelector(".section-header");
+  const filters = catalog.querySelector(".catalog-filters");
+  const products = catalog.querySelectorAll(".product-card");
+
+  /* -----------------------------------------
+     OBSERVADOR DEL CATÁLOGO
+  ----------------------------------------- */
+
+  const catalogObserver = new IntersectionObserver(
+    (entries) => {
+
+      entries.forEach(entry => {
+
+        if (!entry.isIntersecting) return;
+
+        catalog.classList.add("vr-catalog-visible");
+
+        catalogObserver.unobserve(entry.target);
+
+      });
+
+    },
+    {
+      threshold: 0.12
+    }
+  );
+
+  catalogObserver.observe(catalog);
+
+
+  /* -----------------------------------------
+     PRODUCTOS
+  ----------------------------------------- */
+
+  const productObserver = new IntersectionObserver(
+    (entries) => {
+
+      entries.forEach(entry => {
+
+        if (!entry.isIntersecting) return;
+
+        const card = entry.target;
+
+        const index = [...products].indexOf(card);
+
+        card.style.transitionDelay =
+          `${Math.min(index % 4, 3) * 90}ms`;
+
+        card.classList.add("vr-product-visible");
+
+        productObserver.unobserve(card);
+
+      });
+
+    },
+    {
+      threshold: 0.12,
+      rootMargin: "0px 0px -50px 0px"
+    }
+  );
+
+
+  products.forEach(card => {
+    productObserver.observe(card);
+  });
+
+});
+
+
+/* =====================================================
+   MENÚ MOBILE
+===================================================== */
+
+const mobileMenuButton = document.querySelector(".menu-toggle");
+const mobileNav = document.querySelector(".main-nav");
+
+if (mobileMenuButton && mobileNav) {
+
+  mobileMenuButton.setAttribute("aria-expanded", "false");
+
+  mobileMenuButton.addEventListener("click", (event) => {
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    mobileNav.classList.toggle("active");
+
+    const isOpen = mobileNav.classList.contains("active");
+
+    mobileMenuButton.setAttribute(
+      "aria-expanded",
+      String(isOpen)
+    );
+
+  });
+
+
+  /* CERRAR AL TOCAR UN ENLACE */
+
+  mobileNav.querySelectorAll("a").forEach(link => {
+
+    link.addEventListener("click", () => {
+
+      mobileNav.classList.remove("active");
+
+      mobileMenuButton.setAttribute(
+        "aria-expanded",
+        "false"
+      );
+
+    });
+
+  });
+
+
+  /* CERRAR AL VOLVER A ESCRITORIO */
+
+  window.addEventListener("resize", () => {
+
+    if (window.innerWidth > 768) {
+
+      mobileNav.classList.remove("active");
+
+      mobileMenuButton.setAttribute(
+        "aria-expanded",
+        "false"
+      );
+
+    }
+
+  });
+
+}
+
