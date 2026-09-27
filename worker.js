@@ -1218,12 +1218,37 @@ if (customerResponse.ok) {
 
   emailResult.customerResponse = {
     status: customerResponse.status,
-    data: customerData
+    data: customerData,
+    recipient: customerEmail,
+    from: "VR Turbolub <onboarding@resend.dev>",
+    subject: `Confirmación de pedido VR Turbolub #${order.id}`
   };
 
   console.log(
-    "Confirmación enviada al cliente:",
+    "=========================================="
+  );
+
+  console.log(
+    "VR TURBOLUB - EMAIL CLIENTE"
+  );
+
+  console.log(
+    "Destinatario:",
+    customerEmail
+  );
+
+  console.log(
+    "Resend HTTP:",
+    customerResponse.status
+  );
+
+  console.log(
+    "Resend respuesta:",
     customerData
+  );
+
+  console.log(
+    "=========================================="
   );
 
 } else {
@@ -1234,7 +1259,10 @@ if (customerResponse.ok) {
 
   emailResult.customerResponse = {
     status: customerResponse.status,
-    data: customerData
+    data: customerData,
+    recipient: customerEmail,
+    from: "VR Turbolub <onboarding@resend.dev>",
+    subject: `Confirmación de pedido VR Turbolub #${order.id}`
   };
 
   emailResult.warning =
@@ -1255,7 +1283,6 @@ if (customerResponse.ok) {
       emailResult.warning =
         "RESEND_API_KEY no está configurado.";
     }
-
 
     // ========================================================
     // 8. RESPUESTA FINAL
