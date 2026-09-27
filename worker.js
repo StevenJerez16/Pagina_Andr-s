@@ -1178,35 +1178,35 @@ Aceites y lubricantes
           `;
 
 
-          const customerResponse =
-            await fetch(
-              "https://api.resend.com/emails",
-              {
-                method: "POST",
+         const customerResponse =
+  await fetch(
+    "https://api.resend.com/emails",
+    {
+      method: "POST",
 
-                headers: {
-                  "Authorization":
-                    `Bearer ${env.RESEND_API_KEY}`,
+      headers: {
+        "Authorization":
+          `Bearer ${env.RESEND_API_KEY}`,
 
-                  "Content-Type":
-                    "application/json"
-                },
+        "Content-Type":
+          "application/json"
+      },
 
-                body: JSON.stringify({
-                  from:
-                    "VR Turbolub <onboarding@resend.dev>",
+      body: JSON.stringify({
+        from:
+          "VR Turbolub <onboarding@resend.dev>",
 
-                  to:
-                    [customerEmail],
+        to:
+          [customerEmail],
 
-                  subject:
-                    `Confirmación de pedido VR Turbolub #${order.id}`,
+        subject:
+          `Confirmación de pedido VR Turbolub #${order.id}`,
 
-                  html:
-                    customerHtml
-                })
-              }
-            );
+        html:
+          customerHtml
+      })
+    }
+  );
 
 
           const customerData =
