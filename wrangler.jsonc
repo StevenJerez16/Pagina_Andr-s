@@ -2,12 +2,23 @@
   "name": "vrturbolub",
   "main": "worker.js",
   "compatibility_date": "2026-09-09",
+
   "ai": {
     "binding": "AI",
     "remote": true
   },
+
   "assets": {
     "directory": ".",
     "binding": "ASSETS"
-  }
+  },
+
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "vrturbolub-db",
+      "database_id": "e8573076-50c3-462d-9cd3-d0d1336bd328",
+      "remote": true
+    }
+  ]
 }

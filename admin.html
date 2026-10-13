@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>VR Turbolub — Administración</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      font-family: Arial, Helvetica, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(255,255,255,.08), transparent 35%),
+        linear-gradient(135deg, #090909, #171717);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .login-container {
+      width: 100%;
+      max-width: 430px;
+    }
+
+    .login-card {
+      background: rgba(255, 255, 255, .97);
+      color: #111;
+      border-radius: 24px;
+      padding: 42px;
+      box-shadow: 0 30px 80px rgba(0, 0, 0, .35);
+    }
+
+    .logo {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .logo h1 {
+      font-size: 32px;
+      font-weight: 900;
+      letter-spacing: -1px;
+    }
+
+    .logo span {
+      color: #e21b23;
+    }
+
+    .logo p {
+      margin-top: 8px;
+      color: #777;
+      font-size: 14px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .form-group input {
+      width: 100%;
+      height: 52px;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      padding: 0 16px;
+      font-size: 15px;
+      outline: none;
+      transition: .25s ease;
+    }
+
+    .form-group input:focus {
+      border-color: #e21b23;
+      box-shadow: 0 0 0 4px rgba(226, 27, 35, .08);
+    }
+
+    .login-button {
+      width: 100%;
+      height: 54px;
+      border: 0;
+      border-radius: 12px;
+      background: #e21b23;
+      color: white;
+      font-size: 15px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: .25s ease;
+    }
+
+    .login-button:hover {
+      background: #c9141b;
+      transform: translateY(-2px);
+    }
+
+    .login-button:disabled {
+      opacity: .6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .message {
+      display: none;
+      margin-top: 18px;
+      padding: 13px 15px;
+      border-radius: 10px;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+
+    .message.error {
+      display: block;
+      background: #fff0f0;
+      color: #b3131b;
+      border: 1px solid #ffd0d2;
+    }
+
+    .message.success {
+      display: block;
+      background: #effaf1;
+      color: #19752a;
+      border: 1px solid #c9ebce;
+    }
+
+    .back-link {
+      display: block;
+      text-align: center;
+      margin-top: 22px;
+      color: #777;
+      text-decoration: none;
+      font-size: 13px;
+    }
+
+    .back-link:hover {
+      color: #e21b23;
+    }
+
+    @media (max-width: 500px) {
+      .login-card {
+        padding: 30px 24px;
+        border-radius: 20px;
+      }
+
+      .logo h1 {
+        font-size: 28px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <main class="login-container">
+
+    <section class="login-card">
+
+      <div class="logo">
+        <h1>
+          VR <span>Turbolub</span>
+        </h1>
+
+        <p>
+          Panel de administración
+        </p>
+      </div>
+
+      <form id="loginForm">
+
+        <div class="form-group">
+
+          <label for="password">
+            Contraseña de administrador
+          </label>
+
+          <input
+            type="password"
+            id="password"
+            name="password"
+            placeholder="Ingresa tu contraseña"
+            autocomplete="current-password"
+            required
+          >
+
+        </div>
+
+        <button
+          type="submit"
+          class="login-button"
+          id="loginButton"
+        >
+          INGRESAR
+        </button>
+
+      </form>
+
+      <div
+        id="message"
+        class="message"
+      ></div>
+
+      <a
+        href="/productos2.html"
+        class="back-link"
+      >
+        ← Volver al catálogo
+      </a>
+
+    </section>
+
+  </main>
+
+  <script>
+
+    const API_URL =
+      "https://vrturbolub.vrturbolubmiappworkersdev.workers.dev";
+
+    const loginForm =
+      document.getElementById("loginForm");
+
+    const passwordInput =
+      document.getElementById("password");
+
+    const loginButton =
+      document.getElementById("loginButton");
+
+    const message =
+      document.getElementById("message");
+
+
+    function showMessage(text, type) {
+
+      message.textContent = text;
+
+      message.className =
+        `message ${type}`;
+
+    }
+
+
+    loginForm.addEventListener(
+      "submit",
+      async function(event) {
+
+        event.preventDefault();
+
+        const password =
+          passwordInput.value.trim();
+
+        if (!password) {
+
+          showMessage(
+            "Ingresa la contraseña.",
+            "error"
+          );
+
+          return;
+
+        }
+
+        loginButton.disabled = true;
+
+        loginButton.textContent =
+          "VERIFICANDO...";
+
+        message.className =
+          "message";
+
+
+        try {
+
+          const response =
+            await fetch(
+              `${API_URL}/admin/login`,
+              {
+                method: "POST",
+
+                headers: {
+                  "Content-Type":
+                    "application/json"
+                },
+
+                body: JSON.stringify({
+                  password
+                })
+              }
+            );
+
+
+          const data =
+            await response.json();
+
+
+          if (!response.ok || !data.ok) {
+
+            throw new Error(
+              data.error ||
+              "Contraseña incorrecta."
+            );
+
+          }
+
+
+          localStorage.setItem(
+            "vr_admin_token",
+            data.token
+          );
+
+
+          showMessage(
+            "Acceso correcto. Entrando al panel...",
+            "success"
+          );
+
+
+          setTimeout(() => {
+
+            window.location.href =
+              "/admin-panel.html";
+
+          }, 700);
+
+
+        } catch (error) {
+
+          console.error(error);
+
+          showMessage(
+            error.message ||
+            "No se pudo iniciar sesión.",
+            "error"
+          );
+
+        } finally {
+
+          loginButton.disabled = false;
+
+          loginButton.textContent =
+            "INGRESAR";
+
+        }
+
+      }
+    );
+
+  </script>
+
+</body>
+
+</html>

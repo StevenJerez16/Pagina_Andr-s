@@ -1,0 +1,4464 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>VR Turbolub — Panel Admin</title>
+
+  <style>
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #f5f5f5;
+      color: #111;
+    }
+
+    /* =====================================================
+       HEADER
+    ===================================================== */
+
+    .admin-header {
+      height: 76px;
+      background: #111;
+      color: #fff;
+
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      padding: 0 40px;
+    }
+
+    .admin-logo {
+      font-size: 22px;
+      font-weight: 900;
+    }
+
+    .admin-logo span {
+      color: #e21b23;
+    }
+
+    .admin-header-right {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .admin-user {
+      font-size: 13px;
+      color: #bbb;
+    }
+
+    .logout-button {
+      border: 1px solid #444;
+      background: transparent;
+      color: #fff;
+
+      padding: 10px 16px;
+      border-radius: 9px;
+
+      font-size: 13px;
+      font-weight: 700;
+
+      cursor: pointer;
+
+      transition: .2s ease;
+    }
+
+    .logout-button:hover {
+      background: #e21b23;
+      border-color: #e21b23;
+    }
+
+    /* =====================================================
+       CONTENEDOR
+    ===================================================== */
+
+    .admin-container {
+      width: min(1400px, calc(100% - 40px));
+      margin: 40px auto;
+    }
+
+    /* =====================================================
+       TITULO
+    ===================================================== */
+
+    .page-heading {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      margin-bottom: 30px;
+    }
+
+    .page-heading h1 {
+      font-size: 32px;
+      font-weight: 900;
+      letter-spacing: -1px;
+    }
+
+    .page-heading p {
+      margin-top: 6px;
+      color: #777;
+      font-size: 14px;
+    }
+
+    .add-button {
+      border: none;
+      background: #e21b23;
+      color: #fff;
+
+      padding: 13px 20px;
+      border-radius: 10px;
+
+      font-size: 14px;
+      font-weight: 800;
+
+      cursor: pointer;
+    }
+
+    /* =====================================================
+       BUSCADOR
+    ===================================================== */
+
+    .toolbar {
+      background: #fff;
+      border: 1px solid #e5e5e5;
+
+      border-radius: 16px;
+
+      padding: 18px;
+
+      margin-bottom: 20px;
+
+      display: flex;
+      gap: 15px;
+    }
+
+    .search-input {
+      flex: 1;
+
+      height: 46px;
+
+      border: 1px solid #ddd;
+      border-radius: 10px;
+
+      padding: 0 15px;
+
+      font-size: 14px;
+
+      outline: none;
+    }
+
+    .search-input:focus {
+      border-color: #e21b23;
+    }
+
+    /* =====================================================
+       TABLA
+    ===================================================== */
+
+    .products-container {
+      background: #fff;
+
+      border: 1px solid #e5e5e5;
+
+      border-radius: 16px;
+
+      overflow: hidden;
+    }
+
+    .table-wrapper {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 900px;
+    }
+
+    thead {
+      background: #111;
+      color: #fff;
+    }
+
+    th {
+      padding: 15px;
+      text-align: left;
+
+      font-size: 12px;
+      text-transform: uppercase;
+
+      letter-spacing: .5px;
+    }
+
+    td {
+      padding: 15px;
+
+      border-bottom: 1px solid #eee;
+
+      font-size: 14px;
+
+      vertical-align: middle;
+    }
+
+    tbody tr:hover {
+      background: #fafafa;
+    }
+
+    /* =====================================================
+       PRODUCTO
+    ===================================================== */
+
+    .product-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .product-image {
+      width: 50px;
+      height: 50px;
+
+      object-fit: contain;
+
+      border: 1px solid #eee;
+      border-radius: 8px;
+
+      background: #fff;
+    }
+
+    .product-name {
+      font-weight: 800;
+    }
+
+    .product-brand {
+      color: #888;
+      font-size: 12px;
+      margin-top: 3px;
+    }
+
+    /* =====================================================
+       ESTADO
+    ===================================================== */
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+
+      padding: 6px 10px;
+
+      border-radius: 999px;
+
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .status.active {
+      background: #eaf8ed;
+      color: #218838;
+    }
+
+    .status.inactive {
+      background: #fff0f0;
+      color: #c82333;
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+
+      border-radius: 50%;
+
+      background: currentColor;
+    }
+
+    /* =====================================================
+       ACCIONES
+    ===================================================== */
+
+    .actions {
+      display: flex;
+      gap: 7px;
+    }
+
+    .action-button {
+      border: 1px solid #ddd;
+
+      background: #fff;
+
+      padding: 8px 11px;
+
+      border-radius: 8px;
+
+      font-size: 12px;
+      font-weight: 700;
+
+      cursor: pointer;
+
+      transition: .2s ease;
+    }
+
+    .action-button:hover {
+      border-color: #111;
+      background: #111;
+      color: #fff;
+    }
+
+    .action-button.delete:hover {
+      background: #e21b23;
+      border-color: #e21b23;
+    }
+
+    /* =====================================================
+       ESTADOS
+    ===================================================== */
+
+    .loading {
+      text-align: center;
+
+      padding: 60px 20px;
+
+      color: #777;
+
+      font-size: 14px;
+    }
+
+    .empty {
+      text-align: center;
+
+      padding: 60px 20px;
+
+      color: #777;
+    }
+
+    .error {
+      background: #fff0f0;
+
+      color: #b3131b;
+
+      border: 1px solid #ffd0d2;
+
+      border-radius: 12px;
+
+      padding: 15px;
+
+      margin-bottom: 20px;
+
+      display: none;
+    }
+
+    /* =====================================================
+       MOBILE
+    ===================================================== */
+
+    @media (max-width: 700px) {
+
+      .admin-header {
+        padding: 0 20px;
+      }
+
+      .admin-user {
+        display: none;
+      }
+
+      .admin-container {
+        width: min(100% - 24px, 1400px);
+        margin: 25px auto;
+      }
+
+      .page-heading {
+        align-items: flex-start;
+        gap: 15px;
+        flex-direction: column;
+      }
+
+      .page-heading h1 {
+        font-size: 26px;
+      }
+
+      .add-button {
+        width: 100%;
+      }
+
+    }
+    .admin-nav-inner {
+
+  width: 100%;
+
+  padding: 0 12px;
+
+}
+
+.admin-nav-button {
+
+  flex: 1;
+
+  padding: 16px 10px;
+
+}
+/* =====================================================
+   MODAL PRODUCTO
+===================================================== */
+
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, .65);
+
+  display: none;
+  align-items: center;
+  justify-content: center;
+
+  padding: 20px;
+
+  z-index: 9999;
+}
+
+.modal.show {
+  display: flex;
+}
+
+.modal-content {
+  width: min(900px, 100%);
+  max-height: 90vh;
+  overflow-y: auto;
+
+  background: #fff;
+  border-radius: 20px;
+
+  padding: 30px;
+
+  box-shadow: 0 30px 100px rgba(0,0,0,.35);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  margin-bottom: 25px;
+}
+
+.modal-header h2 {
+  font-size: 24px;
+  font-weight: 900;
+}
+
+.close-modal {
+  width: 38px;
+  height: 38px;
+
+  border: 0;
+  border-radius: 50%;
+
+  background: #f1f1f1;
+
+  font-size: 20px;
+
+  cursor: pointer;
+}
+
+.close-modal:hover {
+  background: #e21b23;
+  color: #fff;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px;
+}
+
+.form-group.full {
+  grid-column: 1 / -1;
+}
+
+.form-group label {
+  display: block;
+
+  margin-bottom: 7px;
+
+  font-size: 12px;
+  font-weight: 800;
+  color: #333;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+
+  border: 1px solid #ddd;
+  border-radius: 10px;
+
+  padding: 12px 13px;
+
+  font-family: inherit;
+  font-size: 14px;
+
+  outline: none;
+}
+
+.form-group input,
+.form-group select {
+  height: 45px;
+}
+
+.form-group textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  border-color: #e21b23;
+  box-shadow: 0 0 0 3px rgba(226,27,35,.08);
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+
+  margin-top: 25px;
+
+  padding-top: 20px;
+
+  border-top: 1px solid #eee;
+}
+
+.cancel-button,
+.save-button {
+  border: 0;
+
+  padding: 12px 20px;
+
+  border-radius: 10px;
+
+  font-size: 13px;
+  font-weight: 800;
+
+  cursor: pointer;
+}
+
+.cancel-button {
+  background: #eee;
+  color: #333;
+}
+
+.save-button {
+  background: #e21b23;
+  color: #fff;
+}
+
+.save-button:hover {
+  background: #c9141b;
+}
+
+@media (max-width: 650px) {
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .form-group.full {
+    grid-column: auto;
+  }
+
+  .modal-content {
+    padding: 22px;
+  }
+
+  .modal-actions {
+    flex-direction: column;
+  }
+
+  .cancel-button,
+  .save-button {
+    width: 100%;
+  }
+
+}
+
+/* =========================================================
+   SUBIR IMAGEN DEL PRODUCTO
+========================================================= */
+
+.image-upload-box {
+
+  width: 100%;
+  min-height: 150px;
+
+  border: 2px dashed #d8d8d8;
+  border-radius: 14px;
+
+  background: #fafafa;
+
+  display: flex;
+  flex-direction: column;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 8px;
+
+  cursor: pointer;
+
+  transition:
+    border-color .25s ease,
+    background .25s ease,
+    transform .25s ease;
+
+  box-sizing: border-box;
+}
+
+.image-upload-box:hover {
+
+  border-color: #e30613;
+
+  background: #fff;
+
+  transform: translateY(-2px);
+}
+
+.image-upload-icon {
+
+  font-size: 32px;
+}
+
+.image-upload-box strong {
+
+  font-size: 14px;
+  color: #111;
+}
+
+.image-upload-box span {
+
+  font-size: 12px;
+  color: #888;
+}
+
+
+/* =========================================================
+   VISTA PREVIA
+========================================================= */
+
+.image-preview {
+
+  display: none;
+
+  width: 100%;
+  height: 220px;
+
+  margin-top: 12px;
+
+  border-radius: 14px;
+
+  overflow: hidden;
+
+  border: 1px solid #e5e5e5;
+
+  background: #f7f7f7;
+
+}
+
+.image-preview.active {
+
+  display: block;
+
+}
+
+.image-preview img {
+
+  width: 100%;
+  height: 100%;
+
+  object-fit: contain;
+
+  display: block;
+
+}
+/* =====================================================
+   NAVEGACIÓN ADMIN
+===================================================== */
+
+.admin-nav {
+
+  background: #fff;
+
+  border-bottom: 1px solid #e5e5e5;
+
+  position: sticky;
+
+  top: 0;
+
+  z-index: 100;
+
+}
+
+.admin-nav-inner {
+
+  width: min(1400px, calc(100% - 40px));
+
+  margin: 0 auto;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+}
+
+.admin-nav-button {
+
+  position: relative;
+
+  border: 0;
+
+  background: transparent;
+
+  color: #777;
+
+  padding: 18px 20px;
+
+  font-size: 12px;
+
+  font-weight: 900;
+
+  letter-spacing: .5px;
+
+  cursor: pointer;
+
+  transition: .2s ease;
+
+}
+
+.admin-nav-button:hover {
+
+  color: #111;
+
+}
+
+.admin-nav-button.active {
+
+  color: #e21b23;
+
+}
+
+.admin-nav-button.active::after {
+
+  content: "";
+
+  position: absolute;
+
+  left: 15px;
+
+  right: 15px;
+
+  bottom: 0;
+
+  height: 3px;
+
+  background: #e21b23;
+
+  border-radius: 3px 3px 0 0;
+
+}
+
+.orders-count {
+
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  min-width: 20px;
+
+  height: 20px;
+
+  margin-left: 6px;
+
+  padding: 0 6px;
+
+  border-radius: 999px;
+
+  background: #111;
+
+  color: #fff;
+
+  font-size: 10px;
+
+  font-weight: 900;
+
+}
+/* =====================================================
+   PEDIDOS
+===================================================== */
+
+.orders-status-filter {
+
+  width: 220px;
+
+  height: 46px;
+
+  border: 1px solid #ddd;
+
+  border-radius: 10px;
+
+  padding: 0 14px;
+
+  background: #fff;
+
+  font-family: inherit;
+
+  font-size: 14px;
+
+  outline: none;
+
+}
+
+.orders-status-filter:focus {
+
+  border-color: #e21b23;
+
+}
+
+.order-id {
+
+  font-weight: 900;
+
+  color: #111;
+
+}
+
+.order-customer {
+
+  font-weight: 800;
+
+}
+
+.order-customer-small {
+
+  margin-top: 3px;
+
+  color: #888;
+
+  font-size: 12px;
+
+}
+
+.order-payment {
+
+  font-size: 13px;
+
+  font-weight: 700;
+
+}
+
+.order-date {
+
+  color: #777;
+
+  font-size: 12px;
+
+  white-space: nowrap;
+
+}
+
+.order-status {
+
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 6px;
+
+  padding: 6px 10px;
+
+  border-radius: 999px;
+
+  font-size: 11px;
+
+  font-weight: 800;
+
+  white-space: nowrap;
+
+}
+
+.order-status.pendiente {
+
+  background: #fff7df;
+
+  color: #9a6b00;
+
+}
+
+.order-status.confirmado {
+
+  background: #eaf8ed;
+
+  color: #218838;
+
+}
+
+.order-status.enviado {
+
+  background: #eaf3ff;
+
+  color: #1769aa;
+
+}
+
+.order-status.entregado {
+
+  background: #e7f8f0;
+
+  color: #087443;
+
+}
+
+.order-status.cancelado {
+
+  background: #fff0f0;
+
+  color: #c82333;
+
+}
+
+.order-status.unknown {
+
+  background: #f1f1f1;
+
+  color: #666;
+
+}
+
+.view-order-button {
+
+  border: 1px solid #ddd;
+
+  background: #fff;
+
+  color: #111;
+
+  padding: 8px 12px;
+
+  border-radius: 8px;
+
+  font-size: 12px;
+
+  font-weight: 800;
+
+  cursor: pointer;
+
+  transition: .2s ease;
+
+}
+
+.view-order-button:hover {
+
+  background: #111;
+
+  border-color: #111;
+
+  color: #fff;
+
+}
+
+@media (max-width: 700px) {
+
+  .toolbar {
+
+    flex-direction: column;
+
+  }
+
+  .orders-status-filter {
+
+    width: 100%;
+
+  }
+
+}
+/* =========================================================
+   MODAL DETALLE PEDIDO
+========================================================= */
+
+.order-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+}
+
+.order-modal-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, .55);
+  backdrop-filter: blur(6px);
+}
+
+.order-modal-content {
+  position: relative;
+  width: min(900px, calc(100% - 32px));
+  max-height: calc(100vh - 40px);
+  margin: 20px auto;
+  background: #fff;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, .25);
+  display: flex;
+  flex-direction: column;
+  animation: orderModalIn .25s ease;
+}
+
+@keyframes orderModalIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.order-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 28px;
+  border-bottom: 1px solid #eee;
+}
+
+.order-modal-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .12em;
+  color: #777;
+  margin-bottom: 5px;
+}
+
+.order-modal-header h2 {
+  margin: 0;
+  font-size: 24px;
+  color: #111;
+}
+
+.order-modal-close {
+  width: 42px;
+  height: 42px;
+  border: 0;
+  border-radius: 50%;
+  background: #f3f3f3;
+  color: #111;
+  font-size: 28px;
+  cursor: pointer;
+  transition: .2s ease;
+}
+
+.order-modal-close:hover {
+  background: #111;
+  color: #fff;
+}
+
+.order-modal-body {
+  padding: 28px;
+  overflow-y: auto;
+}
+
+.order-detail-section {
+  padding-bottom: 26px;
+  margin-bottom: 26px;
+  border-bottom: 1px solid #eee;
+}
+
+.order-detail-section:last-child {
+  border-bottom: 0;
+  margin-bottom: 0;
+}
+
+.order-detail-section-title {
+  margin-bottom: 18px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .12em;
+  color: #777;
+}
+
+.order-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.order-detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.order-detail-item span {
+  font-size: 12px;
+  color: #888;
+}
+
+.order-detail-item strong {
+  font-size: 14px;
+  color: #111;
+}
+
+.order-detail-full {
+  grid-column: 1 / -1;
+}
+
+.order-detail-products {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.order-product-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 20px;
+  align-items: center;
+  padding: 15px 16px;
+  background: #f8f8f8;
+  border-radius: 12px;
+}
+
+.order-product-info {
+  min-width: 0;
+}
+
+.order-product-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: #111;
+}
+
+.order-product-quantity {
+  margin-top: 4px;
+  font-size: 12px;
+  color: #777;
+}
+
+.order-product-price {
+  font-size: 13px;
+  color: #666;
+}
+
+.order-product-total {
+  font-size: 14px;
+  font-weight: 800;
+  color: #111;
+}
+
+.order-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.order-summary-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  font-size: 14px;
+  color: #666;
+}
+
+.order-summary-row strong {
+  color: #111;
+}
+
+.order-summary-total {
+  margin-top: 8px;
+  padding-top: 16px;
+  border-top: 1px solid #eee;
+  font-size: 18px;
+  color: #111;
+}
+
+.order-payment-box {
+  margin-top: 18px;
+  padding: 16px;
+  border-radius: 12px;
+  background: #f5f5f5;
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.order-payment-box span {
+  color: #777;
+  font-size: 13px;
+}
+
+.order-payment-box strong {
+  color: #111;
+}
+
+.order-detail-status {
+  width: 100%;
+  max-width: 300px;
+  padding: 13px 14px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  background: #fff;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.order-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 18px 28px;
+  border-top: 1px solid #eee;
+}
+
+.order-modal-secondary,
+.order-modal-primary {
+  border: 0;
+  border-radius: 10px;
+  padding: 12px 18px;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.order-modal-secondary {
+  background: #eee;
+  color: #222;
+}
+
+.order-modal-primary {
+  background: #111;
+  color: #fff;
+}
+
+.order-modal-secondary:hover,
+.order-modal-primary:hover {
+  transform: translateY(-1px);
+}
+
+@media (max-width: 700px) {
+
+  .order-modal-content {
+    width: calc(100% - 20px);
+    margin: 10px auto;
+    max-height: calc(100vh - 20px);
+  }
+
+  .order-modal-header,
+  .order-modal-body,
+  .order-modal-footer {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+
+  .order-detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .order-detail-full {
+    grid-column: auto;
+  }
+
+  .order-product-row {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .order-payment-box {
+    flex-direction: column;
+    gap: 6px;
+  }
+
+}
+
+.order-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 150px;
+}
+
+.view-receipt-button {
+  border: 1px solid #e21b23;
+  background: #fff;
+  color: #e21b23;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: .2s ease;
+}
+
+.view-receipt-button:hover {
+  background: #e21b23;
+  border-color: #e21b23;
+  color: #fff;
+}
+  </style>
+
+</head>
+
+<body>
+
+  <!-- =====================================================
+       HEADER
+  ====================================================== -->
+
+  <header class="admin-header">
+
+
+    <div class="admin-logo">
+      VR <span>Turbolub</span>
+    </div>
+
+    <div class="admin-header-right">
+
+      <div class="admin-user">
+        Administrador
+      </div>
+
+      <button
+        class="logout-button"
+        id="logoutButton"
+      >
+        CERRAR SESIÓN
+      </button>
+
+    </div>
+
+  </header>
+  <!-- =====================================================
+     NAVEGACIÓN ADMIN
+===================================================== -->
+
+<nav class="admin-nav">
+
+  <div class="admin-nav-inner">
+
+    <button
+      type="button"
+      class="admin-nav-button active"
+      id="navProducts"
+    >
+      PRODUCTOS
+    </button>
+
+    <button
+      type="button"
+      class="admin-nav-button"
+      id="navOrders"
+    >
+      PEDIDOS
+      <span
+        class="orders-count"
+        id="ordersCount"
+      >
+        0
+      </span>
+    </button>
+
+  </div>
+
+</nav>
+
+
+  <!-- =====================================================
+       CONTENIDO
+  ====================================================== -->
+
+  <main class="admin-container">
+
+    <div class="page-heading">
+
+      <div>
+
+        <h1>
+          Productos
+        </h1>
+
+        <p>
+          Administra el catálogo de VR Turbolub.
+        </p>
+
+      </div>
+
+      <button
+        class="add-button"
+        id="addButton"
+      >
+        + AGREGAR PRODUCTO
+      </button>
+
+    </div>
+
+
+    <div
+      class="error"
+      id="errorMessage"
+    ></div>
+
+
+    <div class="toolbar">
+
+      <input
+        type="search"
+        class="search-input"
+        id="searchInput"
+        placeholder="Buscar producto, marca o categoría..."
+      >
+
+    </div>
+
+
+    <section class="products-container">
+
+      <div class="table-wrapper">
+
+        <table>
+
+          <thead>
+
+            <tr>
+
+              <th>
+                Producto
+              </th>
+
+              <th>
+                Categoría
+              </th>
+
+              <th>
+                Vehículo
+              </th>
+
+              <th>
+                Precio
+              </th>
+
+              <th>
+                Estado
+              </th>
+
+              <th>
+                Acciones
+              </th>
+
+            </tr>
+
+          </thead>
+
+          <tbody id="productsTable">
+
+            <tr>
+
+              <td colspan="6">
+
+                <div class="loading">
+                  Cargando productos...
+                </div>
+
+              </td>
+
+            </tr>
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+    </section>
+
+    <!-- =====================================================
+     SECCIÓN PEDIDOS
+===================================================== -->
+
+<section
+  id="ordersSection"
+  style="display: none;"
+>
+
+  <div class="page-heading">
+
+    <div>
+
+      <h1>
+        Pedidos
+      </h1>
+
+      <p>
+        Administra y consulta los pedidos realizados.
+      </p>
+
+    </div>
+
+  </div>
+
+  <!-- ===================================================
+       HERRAMIENTAS PEDIDOS
+  ==================================================== -->
+
+  <div class="toolbar">
+
+    <input
+      type="search"
+      class="search-input"
+      id="ordersSearchInput"
+      placeholder="Buscar por pedido, cliente, teléfono o correo..."
+    >
+
+    <select
+      id="ordersStatusFilter"
+      class="orders-status-filter"
+    >
+
+      <option value="">
+        Todos los estados
+      </option>
+
+      <option value="pendiente">
+        Pendientes
+      </option>
+
+      <option value="confirmado">
+        Confirmados
+      </option>
+
+      <option value="enviado">
+        Enviados
+      </option>
+
+      <option value="entregado">
+        Entregados
+      </option>
+
+      <option value="cancelado">
+        Cancelados
+      </option>
+
+    </select>
+
+  </div>
+
+  <!-- ===================================================
+       TABLA PEDIDOS
+  ==================================================== -->
+
+  <section class="products-container">
+
+    <div class="table-wrapper">
+
+      <table>
+
+        <thead>
+
+          <tr>
+
+            <th>
+              Pedido
+            </th>
+
+            <th>
+              Cliente
+            </th>
+
+            <th>
+              Pago
+            </th>
+
+            <th>
+              Total
+            </th>
+
+            <th>
+              Estado
+            </th>
+
+            <th>
+              Fecha
+            </th>
+
+            <th>
+              Acciones
+            </th>
+
+          </tr>
+
+        </thead>
+
+        <tbody id="ordersTable">
+
+          <tr>
+
+            <td colspan="7">
+
+              <div class="loading">
+                Cargando pedidos...
+              </div>
+
+            </td>
+
+          </tr>
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  </section>
+
+</section>
+    <!-- =====================================================
+     MODAL AGREGAR PRODUCTO
+===================================================== -->
+
+<div
+  class="modal"
+  id="productModal"
+>
+
+  <div class="modal-content">
+
+    <div class="modal-header">
+
+      <h2>
+        Agregar producto
+      </h2>
+
+      <button
+        type="button"
+        class="close-modal"
+        id="closeModal"
+      >
+        ×
+      </button>
+
+    </div>
+
+
+    <form id="productForm">
+
+      <div class="form-grid">
+
+        <!-- NOMBRE -->
+
+        <div class="form-group full">
+
+          <label>
+            Nombre del producto *
+          </label>
+
+          <input
+            type="text"
+            name="name"
+            required
+            placeholder="Ej: Aceite 4T Motul 5100"
+          >
+
+        </div>
+
+
+        <!-- MARCA -->
+
+        <div class="form-group">
+
+          <label>
+            Marca
+          </label>
+
+          <input
+            type="text"
+            name="brand"
+            placeholder="Ej: Motul"
+          >
+
+        </div>
+
+
+        <!-- CATEGORÍA -->
+
+        <div class="form-group">
+
+          <label>
+            Categoría *
+          </label>
+
+          <select
+            name="category"
+            required
+          >
+
+            <option value="">
+              Seleccionar...
+            </option>
+
+            <option value="aceite">
+              Aceites
+            </option>
+
+            <option value="filtros">
+              Filtros
+            </option>
+
+            <option value="refrigerantes">
+              Refrigerantes
+            </option>
+
+            <option value="aditivos">
+              Aditivos
+            </option>
+
+            <option value="lubricantes">
+              Lubricantes
+            </option>
+
+            <option value="esenciales">
+              Esenciales
+            </option>
+
+            <option value="otros">
+              Otros
+            </option>
+
+          </select>
+
+        </div>
+
+
+<!-- VEHÍCULO -->
+
+<div class="form-group">
+
+  <label>
+    Vehículo *
+  </label>
+
+  <select
+    name="vehicle"
+    id="vehicleSelect"
+    required
+  >
+
+    <option value="">
+      Seleccionar...
+    </option>
+
+    <option value="car">
+      Carros
+    </option>
+
+    <option value="moto">
+      Motos
+    </option>
+
+    <option value="truck">
+      Camiones
+    </option>
+
+    <option value="universal">
+      Universal
+    </option>
+
+  </select>
+
+</div>
+
+
+        <!-- VISCOSIDAD -->
+
+        <div class="form-group">
+
+          <label>
+            Viscosidad
+          </label>
+
+          <input
+            type="text"
+            name="viscosity"
+            placeholder="Ej: 20W-50"
+          >
+
+        </div>
+
+
+        <!-- TIPO MOTOR -->
+
+<div class="form-group">
+
+  <label>
+    Tipo de motor
+  </label>
+
+  <select
+    name="engine_type"
+    id="engineTypeSelect"
+  >
+
+    <option value="">
+      Selecciona primero el vehículo...
+    </option>
+
+  </select>
+
+</div>
+
+        <!-- API -->
+
+        <div class="form-group">
+
+          <label>
+            API
+          </label>
+
+          <input
+            type="text"
+            name="api"
+            placeholder="Ej: API SL"
+          >
+
+        </div>
+
+
+        <!-- JASO -->
+
+        <div class="form-group">
+
+          <label>
+            JASO
+          </label>
+
+          <input
+            type="text"
+            name="jaso"
+            placeholder="Ej: JASO MA2"
+          >
+
+        </div>
+
+
+        <!-- PRESENTACIÓN -->
+
+        <div class="form-group">
+
+          <label>
+            Presentación
+          </label>
+
+          <input
+            type="text"
+            name="presentation"
+            placeholder="Ej: 1L"
+          >
+
+        </div>
+
+
+        <!-- PRECIO -->
+
+        <div class="form-group">
+
+          <label>
+            Precio
+          </label>
+
+          <input
+            type="number"
+            name="price"
+            min="0"
+            placeholder="Ej: 42000"
+          >
+
+        </div>
+
+
+        <!-- PRECIO MÍNIMO -->
+
+        <div class="form-group">
+
+          <label>
+            Precio mínimo
+          </label>
+
+          <input
+            type="number"
+            name="price_min"
+            min="0"
+            placeholder="Ej: 25000"
+          >
+
+        </div>
+
+
+        <!-- PRECIO MÁXIMO -->
+
+        <div class="form-group">
+
+          <label>
+            Precio máximo
+          </label>
+
+          <input
+            type="number"
+            name="price_max"
+            min="0"
+            placeholder="Ej: 30000"
+          >
+
+        </div>
+
+
+   <!-- IMAGEN -->
+
+<div class="form-group full">
+
+  <label>
+    Imagen del producto
+  </label>
+
+  <select
+    name="image"
+    id="productImage"
+  >
+
+    <option value="">
+      Seleccionar imagen...
+    </option>
+
+
+<option value="img/limpiadorcarburadorvalvulas.jpg">
+  Limpiador de Carburador y Válvulas
+</option>
+
+<option value="img/decol.jpg">
+  Decol
+</option>
+
+<option value="img/silicone.jpg">
+  Silicone
+</option>
+
+<option value="img/lubricantecadena.jpg">
+  Lubricante de Cadena
+</option>
+
+<option value="img/limpiadorinyeccion.jpg">
+  Limpiador de Inyección
+</option>
+
+<option value="img/lockmaster.jpg">
+  LOCK MASTER – Traba-Roscas
+</option>
+
+<option value="img/begax.jpg">
+  BEGAX (BEG®)
+</option>
+
+<option value="img/limpiadorfrenospiezas.jpg">
+  Limpiador de Frenos y Piezas
+</option>
+
+
+
+    <option value="img/motocelerity2t.webp">
+      Moto Celerity 2T
+    </option>
+
+    <option value="img/motocelerity4t.webp">
+      Moto Celerity 4T
+    </option>
+
+    <option value="img/motocelerity4T-15w.webp">
+      Moto Celerity 4T 15W
+    </option>
+
+    <option value="img/motul5000.webp">
+      Motul 5000
+    </option>
+
+    <option value="img/motul5100.webp">
+      Motul 5100
+    </option>
+
+    <option value="img/motul7100.webp">
+      Motul 7100
+    </option>
+
+    <option value="img/mobil4t.webp">
+      Mobil 4T
+    </option>
+
+    <option value="img/mobilsuper1000.webp">
+      Mobil Super 1000
+    </option>
+
+    <option value="img/mobilsuper2000.webp">
+      Mobil Super 2000
+    </option>
+
+    <option value="img/mobildelvac.webp">
+      Mobil Delvac
+    </option>
+
+    <option value="img/havoline20w-50.webp">
+      Havoline 20W-50
+    </option>
+
+    <option value="img/shellhelix.webp">
+      Shell Helix
+    </option>
+
+    <option value="img/shellhx7.webp">
+      Shell HX7
+    </option>
+
+    <option value="img/acdelco.webp">
+      ACDelco
+    </option>
+
+    <option value="img/terpel4tcarrito.webp">
+      Terpel 4T
+    </option>
+
+    <option value="img/terpeloiltec.webp">
+      Terpel Oiltec
+    </option>
+
+    <option value="img/terpeloiltec20w.webp">
+      Terpel Oiltec 20W-50
+    </option>
+
+    <option value="img/terpelultrek50.webp">
+      Terpel Ultrek 50
+    </option>
+
+    <option value="img/petronassyntium.webp">
+      Petronas Syntium
+    </option>
+
+    <option value="img/petronassyntium500.webp">
+      Petronas Syntium 500
+    </option>
+
+    <option value="img/aceitespirax.webp">
+      Shell Spirax
+    </option>
+
+    <option value="img/maxgear.webp">
+      GoldMax Gear
+    </option>
+
+    <option value="img/mobilhidraulico.webp">
+      Mobil Hidráulico
+    </option>
+
+    <option value="img/mobilrefrigerante.webp">
+      Mobil Refrigerante
+    </option>
+
+    <option value="img/terpelrefrigerante.webp">
+      Terpel Refrigerante
+    </option>
+
+    <option value="img/refrigerante.webp">
+      Refrigerante
+    </option>
+
+    <option value="img/aditivo.webp">
+      Aditivo
+    </option>
+
+    <option value="img/grasa.webp">
+      Grasas
+    </option>
+
+    <option value="img/lubricante.webp">
+      Lubricante
+    </option>
+
+    <option value="img/limpiadorllantas.webp">
+      Limpiador de Llantas
+    </option>
+
+    <option value="img/partesnegras.webp">
+      Partes Negras
+    </option>
+
+    <option value="img/kitcarretera.webp">
+      Kit Carretera
+    </option>
+
+    <option value="img/filtrocarro.webp">
+      Filtro Carro
+    </option>
+
+    <option value="img/filtro1.webp">
+      Filtro 1
+    </option>
+
+    <option value="img/filtro2.webp">
+      Filtro 2
+    </option>
+
+    <option value="img/filtro3.webp">
+      Filtro 3
+    </option>
+
+    <option value="img/liquidofrenos.webp">
+      Líquido de Frenos
+    </option>
+
+    <option value="img/shampoo.webp">
+      Shampoo
+    </option>
+
+    <option value="img/cuero.webp">
+      Limpiador de Cuero
+    </option>
+
+    <option value="img/silicona.webp">
+      Silicona
+    </option>
+
+    <option value="img/lubricantescadena.webp">
+      Lubricante de Cadenas
+    </option>
+
+    <option value="img/pines.webp">
+      Pines
+    </option>
+
+  </select>
+
+  <div
+    class="image-preview"
+    id="imagePreview"
+  >
+
+    <img
+      id="previewImage"
+      src=""
+      alt="Vista previa"
+    >
+
+  </div>
+
+</div>
+
+        <!-- DESCRIPCIÓN -->
+
+        <div class="form-group full">
+
+          <label>
+            Descripción
+          </label>
+
+          <textarea
+            name="description"
+            placeholder="Descripción del producto..."
+          ></textarea>
+
+        </div>
+
+
+        <!-- DATOS TÉCNICOS -->
+
+        <div class="form-group full">
+
+          <label>
+            Datos técnicos
+          </label>
+
+          <textarea
+            name="technical_data"
+            placeholder="Información técnica adicional..."
+          ></textarea>
+
+        </div>
+
+      </div>
+
+
+      <div class="modal-actions">
+
+        <button
+          type="button"
+          class="cancel-button"
+          id="cancelModal"
+        >
+          CANCELAR
+        </button>
+
+        <button
+          type="submit"
+          class="save-button"
+          id="saveProduct"
+        >
+          GUARDAR PRODUCTO
+        </button>
+
+      </div>
+
+    </form>
+
+  </div>
+
+</div>
+<!-- =========================================================
+     MODAL DETALLE DEL PEDIDO
+========================================================= -->
+
+<div
+  id="orderModal"
+  class="order-modal"
+  style="display: none;"
+>
+  <div class="order-modal-overlay"></div>
+
+  <div class="order-modal-content">
+
+    <div class="order-modal-header">
+
+      <div>
+        <span class="order-modal-label">
+          DETALLE DEL PEDIDO
+        </span>
+
+        <h2 id="orderModalTitle">
+          Pedido
+        </h2>
+      </div>
+
+      <button
+        type="button"
+        class="order-modal-close"
+        id="closeOrderModal"
+      >
+        ×
+      </button>
+
+    </div>
+
+
+    <div class="order-modal-body">
+
+      <!-- CLIENTE -->
+
+      <section class="order-detail-section">
+
+        <div class="order-detail-section-title">
+          CLIENTE
+        </div>
+
+        <div class="order-detail-grid">
+
+          <div class="order-detail-item">
+            <span>Nombre</span>
+            <strong id="orderDetailName">—</strong>
+          </div>
+
+          <div class="order-detail-item">
+            <span>Teléfono</span>
+            <strong id="orderDetailPhone">—</strong>
+          </div>
+
+          <div class="order-detail-item">
+            <span>Correo</span>
+            <strong id="orderDetailEmail">—</strong>
+          </div>
+
+          <div class="order-detail-item">
+            <span>Ciudad</span>
+            <strong id="orderDetailCity">—</strong>
+          </div>
+
+          <div class="order-detail-item order-detail-full">
+            <span>Dirección</span>
+            <strong id="orderDetailAddress">—</strong>
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- PRODUCTOS -->
+
+      <section class="order-detail-section">
+
+        <div class="order-detail-section-title">
+          PRODUCTOS
+        </div>
+
+        <div
+          id="orderDetailProducts"
+          class="order-detail-products"
+        ></div>
+
+      </section>
+
+
+      <!-- PAGO -->
+
+      <section class="order-detail-section">
+
+        <div class="order-detail-section-title">
+          RESUMEN DEL PEDIDO
+        </div>
+
+        <div class="order-summary">
+
+          <div class="order-summary-row">
+            <span>Subtotal</span>
+            <strong id="orderDetailSubtotal">
+              $ 0
+            </strong>
+          </div>
+
+          <div class="order-summary-row">
+            <span>Envío</span>
+            <strong id="orderDetailShipping">
+              $ 0
+            </strong>
+          </div>
+
+          <div class="order-summary-row order-summary-total">
+            <span>Total</span>
+            <strong id="orderDetailTotal">
+              $ 0
+            </strong>
+          </div>
+
+        </div>
+
+        <div class="order-payment-box">
+
+          <span>Método de pago</span>
+
+          <strong id="orderDetailPayment">
+            —
+          </strong>
+
+        </div>
+
+      </section>
+
+
+      <!-- ESTADO -->
+
+      <section class="order-detail-section">
+
+        <div class="order-detail-section-title">
+          ESTADO
+        </div>
+
+        <select
+          id="orderDetailStatus"
+          class="order-detail-status"
+        >
+          <option value="pendiente">
+            Pendiente
+          </option>
+
+          <option value="confirmado">
+            Confirmado
+          </option>
+
+          <option value="enviado">
+            Enviado
+          </option>
+
+          <option value="entregado">
+            Entregado
+          </option>
+
+          <option value="cancelado">
+            Cancelado
+          </option>
+        </select>
+
+      </section>
+
+    </div>
+
+
+    <div class="order-modal-footer">
+
+      <button
+        type="button"
+        class="order-modal-secondary"
+        id="cancelOrderModal"
+      >
+        CERRAR
+      </button>
+
+      <button
+        type="button"
+        class="order-modal-primary"
+        id="saveOrderStatus"
+      >
+        GUARDAR CAMBIOS
+      </button>
+
+    </div>
+
+  </div>
+</div>
+
+  </main>
+
+
+  <script>
+
+    /* =====================================================
+       CONFIGURACIÓN
+    ===================================================== */
+
+    const API_URL =
+      "https://vrturbolub.vrturbolubmiappworkersdev.workers.dev";
+
+
+    const token =
+      localStorage.getItem("vr_admin_token");
+
+
+    /* =====================================================
+       ELEMENTOS
+    ===================================================== */
+
+    const productsTable =
+      document.getElementById("productsTable");
+
+    const searchInput =
+      document.getElementById("searchInput");
+
+    const errorMessage =
+      document.getElementById("errorMessage");
+
+    const logoutButton =
+      document.getElementById("logoutButton");
+
+    const addButton =
+      document.getElementById("addButton");
+
+
+    let products = [];
+    // ID del producto que estamos editando.
+    // null = estamos creando uno nuevo.
+    let editingProductId = null;
+
+
+    /* =====================================================
+       COMPROBAR SESIÓN
+    ===================================================== */
+
+    if (!token) {
+
+      window.location.href =
+        "/admin.html";
+
+    }
+
+
+    /* =====================================================
+       FORMATO PRECIO
+    ===================================================== */
+
+    function formatPrice(price) {
+
+      if (
+        price === null ||
+        price === undefined ||
+        price === ""
+      ) {
+        return "Consultar";
+      }
+
+      return new Intl.NumberFormat(
+        "es-CO",
+        {
+          style: "currency",
+          currency: "COP",
+          maximumFractionDigits: 0
+        }
+      ).format(Number(price));
+
+    }
+
+
+    /* =====================================================
+       ESCAPAR HTML
+    ===================================================== */
+
+    function escapeHTML(value) {
+
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+
+    }
+
+
+    /* =====================================================
+       CARGAR PRODUCTOS
+    ===================================================== */
+
+    async function loadProducts() {
+
+      try {
+
+        errorMessage.style.display =
+          "none";
+
+
+        const response =
+          await fetch(
+            `${API_URL}/admin/productos`,
+            {
+              method: "GET",
+
+              headers: {
+                Authorization:
+                  `Bearer ${token}`
+              }
+            }
+          );
+
+
+        if (response.status === 401) {
+
+          localStorage.removeItem(
+            "vr_admin_token"
+          );
+
+          window.location.href =
+            "/admin.html";
+
+          return;
+
+        }
+
+
+        const data =
+          await response.json();
+
+
+        if (!response.ok || !data.ok) {
+
+          throw new Error(
+            data.error ||
+            "No se pudieron cargar los productos."
+          );
+
+        }
+
+
+        products =
+          data.products || [];
+
+
+        renderProducts(products);
+
+
+      } catch (error) {
+
+        console.error(error);
+
+        errorMessage.textContent =
+          error.message ||
+          "Error cargando productos.";
+
+        errorMessage.style.display =
+          "block";
+
+
+        productsTable.innerHTML = `
+          <tr>
+            <td colspan="6">
+              <div class="empty">
+                No se pudieron cargar los productos.
+              </div>
+            </td>
+          </tr>
+        `;
+
+      }
+
+    }
+
+
+    /* =====================================================
+       RENDER
+    ===================================================== */
+
+    function renderProducts(list) {
+
+      if (!list.length) {
+
+        productsTable.innerHTML = `
+          <tr>
+            <td colspan="6">
+              <div class="empty">
+                No hay productos para mostrar.
+              </div>
+            </td>
+          </tr>
+        `;
+
+        return;
+
+      }
+
+
+      productsTable.innerHTML =
+        list.map(product => {
+
+          const image =
+            product.image ||
+            "img/logo.webp";
+
+
+          const statusClass =
+            Number(product.active) === 1
+              ? "active"
+              : "inactive";
+
+
+          const statusText =
+            Number(product.active) === 1
+              ? "Activo"
+              : "Inactivo";
+
+
+          return `
+
+            <tr>
+
+              <td>
+
+                <div class="product-info">
+
+                  <img
+                    class="product-image"
+                    src="${escapeHTML(image)}"
+                    alt=""
+                    onerror="this.style.visibility='hidden'"
+                  >
+
+                  <div>
+
+                    <div class="product-name">
+                      ${escapeHTML(product.name)}
+                    </div>
+
+                    <div class="product-brand">
+                      ${escapeHTML(product.brand || "Sin marca")}
+                    </div>
+
+                  </div>
+
+                </div>
+
+              </td>
+
+
+              <td>
+                ${escapeHTML(product.category)}
+              </td>
+
+
+              <td>
+                ${escapeHTML(product.vehicle)}
+              </td>
+
+
+              <td>
+                ${formatPrice(product.price)}
+              </td>
+
+
+              <td>
+
+                <span class="status ${statusClass}">
+
+                  <span class="status-dot"></span>
+
+                  ${statusText}
+
+                </span>
+
+              </td>
+
+
+              <td>
+
+                <div class="actions">
+
+                  <button
+                    class="action-button"
+                    onclick="editProduct(${product.id})"
+                  >
+                    Editar
+                  </button>
+
+                  <button
+                    class="action-button delete"
+                    onclick="toggleProduct(${product.id}, ${Number(product.active)})"
+                  >
+                    ${Number(product.active) === 1
+                      ? "Desactivar"
+                      : "Activar"}
+                  </button>
+
+                </div>
+
+              </td>
+
+            </tr>
+
+          `;
+
+        }).join("");
+
+    }
+
+
+    /* =====================================================
+       BUSCADOR
+    ===================================================== */
+
+    searchInput.addEventListener(
+      "input",
+      function() {
+
+        const query =
+          this.value
+            .trim()
+            .toLowerCase();
+
+
+        if (!query) {
+
+          renderProducts(products);
+
+          return;
+
+        }
+
+
+        const filtered =
+          products.filter(product => {
+
+            const text = [
+
+              product.name,
+              product.brand,
+              product.category,
+              product.vehicle,
+              product.viscosity
+
+            ]
+              .filter(Boolean)
+              .join(" ")
+              .toLowerCase();
+
+
+            return text.includes(query);
+
+          });
+
+
+        renderProducts(filtered);
+
+      }
+    );
+
+
+/* =====================================================
+   EDITAR
+===================================================== */
+
+function editProduct(id) {
+
+  const product =
+    products.find(
+      item => Number(item.id) === Number(id)
+    );
+
+  if (!product) return;
+
+  // Guardamos el ID que estamos editando
+  editingProductId = Number(product.id);
+
+  // Cambiar título del modal
+  document.querySelector(
+    ".modal-header h2"
+  ).textContent = "Editar producto";
+
+  // Cambiar texto del botón
+  saveProduct.textContent =
+    "ACTUALIZAR PRODUCTO";
+
+  // ==============================
+  // CARGAR CAMPOS
+  // ==============================
+
+  productForm.elements.name.value =
+    product.name || "";
+
+  productForm.elements.brand.value =
+    product.brand || "";
+
+  productForm.elements.category.value =
+    product.category || "";
+
+  productForm.elements.vehicle.value =
+    product.vehicle || "";
+
+  productForm.elements.viscosity.value =
+    product.viscosity || "";
+
+  productForm.elements.api.value =
+    product.api || "";
+
+  productForm.elements.jaso.value =
+    product.jaso || "";
+
+  productForm.elements.presentation.value =
+    product.presentation || "";
+
+  productForm.elements.price.value =
+    product.price ?? "";
+
+  productForm.elements.price_min.value =
+    product.price_min ?? "";
+
+  productForm.elements.price_max.value =
+    product.price_max ?? "";
+
+  productForm.elements.description.value =
+    product.description || "";
+
+  productForm.elements.technical_data.value =
+    product.technical_data || "";
+
+  // ==============================
+  // VEHÍCULO → MOTOR
+  // ==============================
+
+  const vehicle =
+    product.vehicle || "";
+
+  engineTypeSelect.innerHTML = "";
+
+  if (!vehicle) {
+
+    engineTypeSelect.innerHTML = `
+      <option value="">
+        Selecciona primero el vehículo...
+      </option>
+    `;
+
+  } else {
+
+    engineTypeSelect.innerHTML = `
+      <option value="">
+        Seleccionar...
+      </option>
+    `;
+
+    if (engineOptions[vehicle]) {
+
+      engineOptions[vehicle].forEach(
+        option => {
+
+          const optionElement =
+            document.createElement("option");
+
+          optionElement.value =
+            option.value;
+
+          optionElement.textContent =
+            option.label;
+
+          engineTypeSelect.appendChild(
+            optionElement
+          );
+
+        }
+      );
+
+    }
+
+    engineTypeSelect.value =
+      product.engine_type || "";
+  }
+
+  // ==============================
+  // IMAGEN
+  // ==============================
+
+  productImage.value =
+    product.image || "";
+
+  if (product.image) {
+
+    previewImage.src =
+      product.image;
+
+    imagePreview.classList.add(
+      "active"
+    );
+
+  } else {
+
+    previewImage.src = "";
+
+    imagePreview.classList.remove(
+      "active"
+    );
+
+  }
+
+  // ==============================
+  // ABRIR MODAL
+  // ==============================
+
+  productModal.classList.add("show");
+}
+    /* =====================================================
+       ACTIVAR / DESACTIVAR
+    ===================================================== */
+
+    async function toggleProduct(id, currentActive) {
+
+      const product =
+        products.find(
+          item => Number(item.id) === Number(id)
+        );
+
+
+      if (!product) return;
+
+
+      const newActive =
+        Number(currentActive) === 1
+          ? 0
+          : 1;
+
+
+      const action =
+        newActive === 1
+          ? "activar"
+          : "desactivar";
+
+
+      const confirmed =
+        confirm(
+          `¿Quieres ${action} "${product.name}"?`
+        );
+
+
+      if (!confirmed) return;
+
+
+      try {
+
+        const response =
+          await fetch(
+            `${API_URL}/admin/productos/${id}`,
+            {
+              method:
+                newActive === 1
+                  ? "PUT"
+                  : "DELETE",
+
+              headers: {
+                Authorization:
+                  `Bearer ${token}`,
+
+                "Content-Type":
+                  "application/json"
+              },
+
+              ...(newActive === 1
+                ? {
+                    body: JSON.stringify({
+                      ...product,
+                      active: 1
+                    })
+                  }
+                : {})
+            }
+          );
+
+
+        const data =
+          await response.json();
+
+
+        if (!response.ok || !data.ok) {
+
+          throw new Error(
+            data.error ||
+            "No se pudo actualizar el producto."
+          );
+
+        }
+
+
+        await loadProducts();
+
+
+      } catch (error) {
+
+        console.error(error);
+
+        alert(
+          error.message ||
+          "No se pudo actualizar el producto."
+        );
+
+      }
+
+    }
+
+
+    /* =====================================================
+   MODAL PRODUCTO
+===================================================== */
+
+const productModal =
+  document.getElementById("productModal");
+
+const productForm =
+  document.getElementById("productForm");
+
+const closeModal =
+  document.getElementById("closeModal");
+
+const cancelModal =
+  document.getElementById("cancelModal");
+
+const saveProduct =
+  document.getElementById("saveProduct");
+  cancelModal.addEventListener(
+  "click",
+  function() {
+    closeProductModal();
+  }
+);
+
+closeModal.addEventListener(
+  "click",
+  function() {
+    closeProductModal();
+  }
+);
+
+
+/* =====================================================
+   ABRIR
+===================================================== */
+
+addButton.addEventListener(
+  "click",
+  function() {
+
+    // Entramos en modo CREAR
+    editingProductId = null;
+
+    // Restaurar título
+    document.querySelector(
+      ".modal-header h2"
+    ).textContent = "Agregar producto";
+
+    // Restaurar botón
+    saveProduct.textContent =
+      "GUARDAR PRODUCTO";
+
+    // Limpiar formulario
+    productForm.reset();
+
+    // Limpiar preview
+    imagePreview.classList.remove(
+      "active"
+    );
+
+    previewImage.src = "";
+
+    productImage.value = "";
+
+    // Reiniciar selector de motor
+    engineTypeSelect.innerHTML = `
+      <option value="">
+        Selecciona primero el vehículo...
+      </option>
+    `;
+
+    // Abrir modal
+    productModal.classList.add(
+      "show"
+    );
+
+  }
+);
+
+
+/* =====================================================
+   CERRAR
+===================================================== */
+
+function closeProductModal() {
+
+  productModal.classList.remove(
+    "show"
+  );
+
+  // Salimos del modo edición
+  editingProductId = null;
+
+  // Restaurar título
+  document.querySelector(
+    ".modal-header h2"
+  ).textContent =
+    "Agregar producto";
+
+  // Restaurar botón
+  saveProduct.textContent =
+    "GUARDAR PRODUCTO";
+}
+
+/* =====================================================
+   CLICK FUERA
+===================================================== */
+
+productModal.addEventListener(
+  "click",
+  function(event) {
+
+    if (event.target === productModal) {
+
+      closeProductModal();
+
+    }
+
+  }
+);
+
+
+ /* =====================================================
+    GUARDAR / ACTUALIZAR PRODUCTO
+ ===================================================== */
+
+ productForm.addEventListener(
+   "submit",
+   async function(event) {
+
+     event.preventDefault();
+
+     const isEditing =
+       editingProductId !== null;
+
+     saveProduct.disabled = true;
+
+     saveProduct.textContent =
+       isEditing
+         ? "ACTUALIZANDO..."
+         : "GUARDANDO...";
+
+     try {
+
+       const formData =
+         new FormData(productForm);
+
+       const getValue = (field) => {
+
+         const value =
+           formData.get(field);
+
+         return value === null
+           ? ""
+           : String(value).trim();
+
+       };
+
+       const product = {
+
+         name:
+           getValue("name"),
+
+         description:
+           getValue("description"),
+
+         category:
+           getValue("category"),
+
+         vehicle:
+           getValue("vehicle"),
+
+         brand:
+           getValue("brand"),
+
+         viscosity:
+           getValue("viscosity"),
+
+         engine_type:
+           getValue("engine_type"),
+
+         api:
+           getValue("api"),
+
+         jaso:
+           getValue("jaso"),
+
+         presentation:
+           getValue("presentation"),
+
+         price:
+           getValue("price")
+             ? Number(getValue("price"))
+             : null,
+
+         price_min:
+           getValue("price_min")
+             ? Number(getValue("price_min"))
+             : null,
+
+         price_max:
+           getValue("price_max")
+             ? Number(getValue("price_max"))
+             : null,
+
+         image:
+           getValue("image"),
+
+         technical_data:
+           getValue("technical_data")
+       };
+
+
+       /* =================================================
+          SI ESTAMOS EDITANDO
+       ================================================= */
+
+       if (isEditing) {
+
+         const currentProduct =
+           products.find(
+             item =>
+               Number(item.id) ===
+               Number(editingProductId)
+           );
+
+         product.active =
+           currentProduct
+             ? Number(currentProduct.active)
+             : 1;
+       }
+
+
+       /* =================================================
+          URL Y MÉTODO
+       ================================================= */
+
+       const url =
+         isEditing
+           ? `${API_URL}/admin/productos/${editingProductId}`
+           : `${API_URL}/admin/productos`;
+
+       const method =
+         isEditing
+           ? "PUT"
+           : "POST";
+
+
+       /* =================================================
+          PETICIÓN
+       ================================================= */
+
+       const response =
+         await fetch(
+           url,
+           {
+             method,
+
+             headers: {
+
+               Authorization:
+                 `Bearer ${token}`,
+
+               "Content-Type":
+                 "application/json"
+
+             },
+
+             body:
+               JSON.stringify(product)
+           }
+         );
+
+
+       const data =
+         await response.json();
+
+
+       /* =================================================
+          ERROR
+       ================================================= */
+
+       if (
+         !response.ok ||
+         !data.ok
+       ) {
+
+         throw new Error(
+           data.error ||
+           (
+             isEditing
+               ? "No se pudo actualizar el producto."
+               : "No se pudo crear el producto."
+           )
+         );
+
+       }
+
+
+       /* =================================================
+          ÉXITO
+       ================================================= */
+
+       alert(
+         isEditing
+           ? "Producto actualizado correctamente."
+           : "Producto creado correctamente."
+       );
+
+
+       /* =================================================
+          CERRAR MODAL
+       ================================================= */
+
+       closeProductModal();
+
+
+       /* =================================================
+          RECARGAR PRODUCTOS
+       ================================================= */
+
+       await loadProducts();
+
+
+     } catch (error) {
+
+       console.error(error);
+
+       alert(
+         error.message ||
+         (
+           isEditing
+             ? "No se pudo actualizar el producto."
+             : "No se pudo crear el producto."
+         )
+       );
+
+
+     } finally {
+
+       saveProduct.disabled =
+         false;
+
+       saveProduct.textContent =
+         "GUARDAR PRODUCTO";
+
+     }
+
+   }
+ );
+      
+    /* =====================================================
+       CERRAR SESIÓN
+    ===================================================== */
+
+    logoutButton.addEventListener(
+      "click",
+      function() {
+
+        localStorage.removeItem(
+          "vr_admin_token"
+        );
+
+        window.location.href =
+          "/admin.html";
+
+      }
+    );
+
+
+    /* =====================================================
+       INICIO
+    ===================================================== */
+
+    loadProducts();
+  
+    // =========================================================
+// PEDIDOS
+// =========================================================
+
+const navProducts =
+  document.getElementById("navProducts");
+
+const navOrders =
+  document.getElementById("navOrders");
+
+const productsSection =
+  document.querySelector(
+    ".admin-container > .products-container"
+  );
+
+const productsHeading =
+  document.querySelector(
+    ".admin-container > .page-heading"
+  );
+
+const productsToolbar =
+  document.querySelector(
+    ".admin-container > .toolbar"
+  );
+
+const ordersSection =
+  document.getElementById("ordersSection");
+
+const ordersTable =
+  document.getElementById("ordersTable");
+
+const ordersCount =
+  document.getElementById("ordersCount");
+
+const ordersSearchInput =
+  document.getElementById("ordersSearchInput");
+
+const ordersStatusFilter =
+  document.getElementById("ordersStatusFilter");
+
+let orders = [];
+let currentOrderId = null;
+
+
+// =========================================================
+// CARGAR PEDIDOS
+// =========================================================
+
+async function loadOrders() {
+
+  try {
+
+    const response =
+      await fetch(
+        `${API_URL}/admin/pedidos`,
+        {
+          method: "GET",
+          headers: {
+            Authorization:
+              `Bearer ${token}`
+          }
+        }
+      );
+
+    if (response.status === 401) {
+
+      localStorage.removeItem(
+        "vr_admin_token"
+      );
+
+      window.location.href =
+        "/admin.html";
+
+      return;
+    }
+
+    const data =
+      await response.json();
+
+    if (
+      !response.ok ||
+      !data.ok
+    ) {
+      throw new Error(
+        data.error ||
+        "No se pudieron cargar los pedidos."
+      );
+    }
+
+    orders =
+      data.orders || [];
+
+    ordersCount.textContent =
+      orders.length;
+
+    renderOrders(orders);
+
+  } catch (error) {
+
+    console.error(
+      "Error cargando pedidos:",
+      error
+    );
+
+    ordersTable.innerHTML = `
+      <tr>
+        <td colspan="7">
+          <div class="empty">
+            No se pudieron cargar los pedidos.
+          </div>
+        </td>
+      </tr>
+    `;
+  }
+}
+
+
+// =========================================================
+// FORMATO FECHA
+// =========================================================
+
+function formatOrderDate(date) {
+
+  if (!date) {
+    return "—";
+  }
+
+  const parsedDate =
+    new Date(
+      date.replace(" ", "T") + "Z"
+    );
+
+  if (
+    Number.isNaN(
+      parsedDate.getTime()
+    )
+  ) {
+    return date;
+  }
+
+  return new Intl.DateTimeFormat(
+    "es-CO",
+    {
+      dateStyle: "short",
+      timeStyle: "short"
+    }
+  ).format(parsedDate);
+}
+
+
+// =========================================================
+// FORMATO ESTADO
+// =========================================================
+
+function getOrderStatusClass(status) {
+
+  const validStatuses = [
+    "pendiente",
+    "confirmado",
+    "enviado",
+    "entregado",
+    "cancelado"
+  ];
+
+  return validStatuses.includes(
+    status
+  )
+    ? status
+    : "unknown";
+}
+
+
+function getOrderStatusText(status) {
+
+  const labels = {
+    pendiente: "Pendiente",
+    confirmado: "Confirmado",
+    enviado: "Enviado",
+    entregado: "Entregado",
+    cancelado: "Cancelado"
+  };
+
+  return (
+    labels[status] ||
+    status ||
+    "Desconocido"
+  );
+}
+
+
+// =========================================================
+// RENDER PEDIDOS
+// =========================================================
+
+function renderOrders(list) {
+
+  if (!list.length) {
+
+    ordersTable.innerHTML = `
+      <tr>
+        <td colspan="7">
+          <div class="empty">
+            No hay pedidos para mostrar.
+          </div>
+        </td>
+      </tr>
+    `;
+
+    return;
+  }
+
+  ordersTable.innerHTML =
+    list.map(order => {
+
+      const customerName =
+        [
+          order.customer_name,
+          order.customer_last_name
+        ]
+          .filter(Boolean)
+          .join(" ");
+
+      const status =
+        String(
+          order.status || "pendiente"
+        ).toLowerCase();
+
+      const statusClass =
+        getOrderStatusClass(status);
+
+      const statusText =
+        getOrderStatusText(status);
+
+      return `
+        <tr>
+
+          <td>
+            <div class="order-id">
+              ${escapeHTML(order.id)}
+            </div>
+          </td>
+
+          <td>
+            <div class="order-customer">
+              ${escapeHTML(
+                customerName ||
+                "Sin nombre"
+              )}
+            </div>
+
+            <div class="order-customer-small">
+              ${escapeHTML(
+                order.customer_phone ||
+                "Sin teléfono"
+              )}
+            </div>
+          </td>
+
+          <td>
+            <div class="order-payment">
+              ${escapeHTML(
+                order.payment_method_name ||
+                order.payment_method ||
+                "—"
+              )}
+            </div>
+          </td>
+
+          <td>
+            <strong>
+              ${formatPrice(order.total)}
+            </strong>
+          </td>
+
+          <td>
+            <span
+              class="order-status ${statusClass}"
+            >
+              ${statusText}
+            </span>
+          </td>
+
+          <td>
+            <div class="order-date">
+              ${formatOrderDate(
+                order.created_at
+              )}
+            </div>
+          </td>
+
+          <td>
+            <td>
+
+  <div class="order-actions">
+
+    <button
+      type="button"
+      class="view-order-button"
+      onclick="viewOrder('${escapeHTML(order.id)}')"
+    >
+      VER PEDIDO
+    </button>
+
+    ${
+      order.receipt_file_id
+        ? `
+          <button
+            type="button"
+            class="view-receipt-button"
+            onclick="viewReceipt('${escapeHTML(order.id)}')"
+          >
+            VER COMPROBANTE
+          </button>
+        `
+        : ""
+    }
+
+  </div>
+
+</td>
+          </td>
+
+        </tr>
+      `;
+
+    }).join("");
+}
+
+
+// =========================================================
+// BUSCADOR PEDIDOS
+// =========================================================
+
+function filterOrders() {
+
+  const query =
+    ordersSearchInput.value
+      .trim()
+      .toLowerCase();
+
+  const status =
+    ordersStatusFilter.value
+      .trim()
+      .toLowerCase();
+
+  const filtered =
+    orders.filter(order => {
+
+      const customerName =
+        [
+          order.customer_name,
+          order.customer_last_name
+        ]
+          .filter(Boolean)
+          .join(" ");
+
+      const searchableText = [
+        order.id,
+        customerName,
+        order.customer_phone,
+        order.customer_email,
+        order.city,
+        order.department,
+        order.payment_method,
+        order.payment_method_name
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+
+      const matchesSearch =
+        !query ||
+        searchableText.includes(
+          query
+        );
+
+      const matchesStatus =
+        !status ||
+        String(
+          order.status || ""
+        ).toLowerCase() === status;
+
+      return (
+        matchesSearch &&
+        matchesStatus
+      );
+
+    });
+
+  renderOrders(filtered);
+}
+
+
+ordersSearchInput.addEventListener(
+  "input",
+  filterOrders
+);
+
+ordersStatusFilter.addEventListener(
+  "change",
+  filterOrders
+);
+
+
+// =========================================================
+// NAVEGACIÓN PRODUCTOS
+// =========================================================
+
+navProducts.addEventListener(
+  "click",
+  function() {
+
+    navProducts.classList.add(
+      "active"
+    );
+
+    navOrders.classList.remove(
+      "active"
+    );
+
+    productsHeading.style.display =
+      "";
+
+    productsToolbar.style.display =
+      "";
+
+    productsSection.style.display =
+      "";
+
+    ordersSection.style.display =
+      "none";
+  }
+);
+
+
+// =========================================================
+// NAVEGACIÓN PEDIDOS
+// =========================================================
+
+navOrders.addEventListener(
+  "click",
+  async function() {
+
+    navOrders.classList.add(
+      "active"
+    );
+
+    navProducts.classList.remove(
+      "active"
+    );
+
+    productsHeading.style.display =
+      "none";
+
+    productsToolbar.style.display =
+      "none";
+
+    productsSection.style.display =
+      "none";
+
+    ordersSection.style.display =
+      "";
+
+    await loadOrders();
+  }
+);
+
+
+function viewOrder(orderId) {
+
+  const order =
+    orders.find(
+      item =>
+        String(item.id) ===
+        String(orderId)
+    );
+
+  if (!order) {
+    alert("No se encontró el pedido.");
+    return;
+  }
+currentOrderId = String(orderId);
+
+  // =====================================================
+  // DATOS DEL CLIENTE
+  // =====================================================
+
+  const customerName =
+    [
+      order.customer_name,
+      order.customer_last_name
+    ]
+      .filter(Boolean)
+      .join(" ");
+
+  document.getElementById(
+    "orderModalTitle"
+  ).textContent =
+    order.id || "Pedido";
+
+  document.getElementById(
+    "orderDetailName"
+  ).textContent =
+    customerName || "—";
+
+  document.getElementById(
+    "orderDetailPhone"
+  ).textContent =
+    order.customer_phone || "—";
+
+  document.getElementById(
+    "orderDetailEmail"
+  ).textContent =
+    order.customer_email || "—";
+
+  document.getElementById(
+    "orderDetailCity"
+  ).textContent =
+    [
+      order.city,
+      order.department
+    ]
+      .filter(Boolean)
+      .join(", ") || "—";
+
+  document.getElementById(
+    "orderDetailAddress"
+  ).textContent =
+    order.address || "—";
+
+
+  // =====================================================
+  // PRODUCTOS
+  // =====================================================
+
+  const productsContainer =
+    document.getElementById(
+      "orderDetailProducts"
+    );
+
+  const products =
+    order.products || [];
+
+  if (!products.length) {
+
+    productsContainer.innerHTML = `
+      <div class="empty">
+        No hay productos registrados.
+      </div>
+    `;
+
+  } else {
+
+    productsContainer.innerHTML =
+      products.map(product => {
+
+        const quantity =
+          Number(product.quantity) || 0;
+
+        const unitPrice =
+          Number(product.unit_price) || 0;
+
+        const subtotal =
+          Number(product.subtotal) ||
+          unitPrice * quantity;
+
+        return `
+          <div class="order-product-row">
+
+            <div class="order-product-info">
+
+              <div class="order-product-name">
+                ${escapeHTML(
+                  product.product_name ||
+                  "Producto"
+                )}
+              </div>
+
+              <div class="order-product-quantity">
+                Cantidad: ${quantity}
+              </div>
+
+            </div>
+
+            <div class="order-product-price">
+              ${formatPrice(unitPrice)}
+            </div>
+
+            <div class="order-product-total">
+              ${formatPrice(subtotal)}
+            </div>
+
+          </div>
+        `;
+
+      }).join("");
+  }
+
+
+  // =====================================================
+  // RESUMEN
+  // =====================================================
+
+  document.getElementById(
+    "orderDetailSubtotal"
+  ).textContent =
+    formatPrice(order.subtotal);
+
+  document.getElementById(
+    "orderDetailShipping"
+  ).textContent =
+    formatPrice(order.shipping);
+
+  document.getElementById(
+    "orderDetailTotal"
+  ).textContent =
+    formatPrice(order.total);
+
+
+  // =====================================================
+  // PAGO
+  // =====================================================
+
+  document.getElementById(
+    "orderDetailPayment"
+  ).textContent =
+    order.payment_method_name ||
+    order.payment_method ||
+    "—";
+
+
+  // =====================================================
+  // ESTADO
+  // =====================================================
+
+  document.getElementById(
+    "orderDetailStatus"
+  ).value =
+    order.status || "pendiente";
+
+
+  // =====================================================
+  // ABRIR MODAL
+  // =====================================================
+
+  document.getElementById(
+    "orderModal"
+  ).style.display = "block";
+}
+// =========================================================
+// VER COMPROBANTE
+// =========================================================
+
+async function viewReceipt(orderId) {
+
+  try {
+
+    const response =
+      await fetch(
+        `${API_URL}/admin/pedidos/${encodeURIComponent(orderId)}/comprobante`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+
+    if (response.status === 401) {
+
+      localStorage.removeItem(
+        "vr_admin_token"
+      );
+
+      window.location.href =
+        "/admin.html";
+
+      return;
+    }
+
+    const data =
+      await response.json();
+
+    if (
+      !response.ok ||
+      !data.ok ||
+      !data.url
+    ) {
+
+      throw new Error(
+        data.error ||
+        "No se pudo obtener el comprobante."
+      );
+
+    }
+
+    window.open(
+      data.url,
+      "_blank",
+      "noopener,noreferrer"
+    );
+
+  } catch (error) {
+
+    console.error(
+      "Error abriendo comprobante:",
+      error
+    );
+
+    alert(
+      error.message ||
+      "No se pudo abrir el comprobante."
+    );
+  }
+}
+
+// =========================================================
+// CERRAR MODAL PEDIDO
+// =========================================================
+
+const orderModal =
+  document.getElementById(
+    "orderModal"
+  );
+
+const closeOrderModal =
+  document.getElementById(
+    "closeOrderModal"
+  );
+
+const cancelOrderModal =
+  document.getElementById(
+    "cancelOrderModal"
+  );
+
+const orderModalOverlay =
+  document.querySelector(
+    ".order-modal-overlay"
+  );
+
+
+function closeOrderDetails() {
+
+  orderModal.style.display =
+    "none";
+}
+
+
+closeOrderModal.addEventListener(
+  "click",
+  closeOrderDetails
+);
+
+cancelOrderModal.addEventListener(
+  "click",
+  closeOrderDetails
+);
+
+orderModalOverlay.addEventListener(
+  "click",
+  closeOrderDetails
+);
+// =========================================================
+// GUARDAR ESTADO DEL PEDIDO
+// =========================================================
+
+const saveOrderStatus =
+  document.getElementById(
+    "saveOrderStatus"
+  );
+
+const orderDetailStatus =
+  document.getElementById(
+    "orderDetailStatus"
+  );
+
+saveOrderStatus.addEventListener(
+  "click",
+  async function() {
+
+    console.log(
+      "🔥 GUARDAR CAMBIOS PRESIONADO",
+      {
+        currentOrderId,
+        status: orderDetailStatus.value
+      }
+    );
+
+    if (!currentOrderId) {
+      alert(
+        "No se ha seleccionado ningún pedido."
+      );
+      return;
+    }
+
+    const newStatus =
+      orderDetailStatus.value;
+
+    try {
+
+      saveOrderStatus.disabled = true;
+
+      saveOrderStatus.textContent =
+        "GUARDANDO...";
+
+      const response =
+        await fetch(
+          `${API_URL}/admin/pedidos/${encodeURIComponent(currentOrderId)}`,
+          {
+            method: "PUT",
+
+            headers: {
+              "Content-Type": "application/json",
+
+              Authorization:
+                `Bearer ${token}`
+            },
+
+            body: JSON.stringify({
+              status: newStatus
+            })
+          }
+        );
+
+      if (response.status === 401) {
+
+        localStorage.removeItem(
+          "vr_admin_token"
+        );
+
+        window.location.href =
+          "/admin.html";
+
+        return;
+      }
+
+      const data =
+        await response.json();
+
+      console.log(
+        "Respuesta actualización:",
+        data
+      );
+
+      if (
+        !response.ok ||
+        !data.ok
+      ) {
+        throw new Error(
+          data.error ||
+          "No se pudo actualizar el pedido."
+        );
+      }
+
+      await loadOrders();
+
+      closeOrderDetails();
+
+      alert(
+        "Pedido actualizado correctamente."
+      );
+
+    } catch (error) {
+
+      console.error(
+        "Error guardando estado:",
+        error
+      );
+
+      alert(
+        error.message ||
+        "No se pudo actualizar el pedido."
+      );
+
+    } finally {
+
+      saveOrderStatus.disabled = false;
+
+      saveOrderStatus.textContent =
+        "GUARDAR CAMBIOS";
+    }
+  }
+);
+
+    // =========================================================
+// TIPO DE MOTOR SEGÚN VEHÍCULO
+// =========================================================
+
+const vehicleSelect = document.getElementById("vehicleSelect");
+const engineTypeSelect = document.getElementById("engineTypeSelect");
+
+const engineOptions = {
+
+  car: [
+    {
+      value: "gasolina",
+      label: "Gasolina"
+    },
+    {
+      value: "diesel",
+      label: "Diésel"
+    },
+    {
+      value: "hibrido",
+      label: "Híbrido"
+    },
+    {
+      value: "electrico",
+      label: "Eléctrico"
+    }
+  ],
+
+  moto: [
+    {
+      value: "2t",
+      label: "2T"
+    },
+    {
+      value: "4t",
+      label: "4T"
+    }
+  ],
+
+  truck: [
+    {
+      value: "diesel",
+      label: "Diésel"
+    },
+    {
+      value: "gasolina",
+      label: "Gasolina"
+    }
+  ],
+
+  universal: [
+    {
+      value: "general",
+      label: "General"
+    }
+  ]
+
+};
+
+
+vehicleSelect.addEventListener("change", function () {
+
+  const vehicle = this.value;
+
+  engineTypeSelect.innerHTML = "";
+
+  if (!vehicle) {
+
+    engineTypeSelect.innerHTML = `
+      <option value="">
+        Selecciona primero el vehículo...
+      </option>
+    `;
+
+    return;
+  }
+
+  engineTypeSelect.innerHTML = `
+    <option value="">
+      Seleccionar...
+    </option>
+  `;
+
+  engineOptions[vehicle].forEach(option => {
+
+    const optionElement = document.createElement("option");
+
+    optionElement.value = option.value;
+    optionElement.textContent = option.label;
+
+    engineTypeSelect.appendChild(optionElement);
+
+  });
+
+});
+
+// =========================================================
+// PREVISUALIZACIÓN DE IMAGEN
+// =========================================================
+
+const productImage =
+  document.getElementById("productImage");
+
+const imagePreview =
+  document.getElementById("imagePreview");
+
+const previewImage =
+  document.getElementById("previewImage");
+
+
+productImage.addEventListener(
+  "change",
+  function() {
+
+    const image =
+      this.value;
+
+    if (!image) {
+
+      imagePreview.classList.remove(
+        "active"
+      );
+
+      previewImage.src = "";
+
+      return;
+
+    }
+
+    previewImage.src = image;
+
+    imagePreview.classList.add(
+      "active"
+    );
+
+  }
+);
+
+  </script>
+
+</body>
+
+</html>

@@ -4,84 +4,791 @@
    + COMPROBANTES
    + CLOUDFLARE WORKER
    + HUBSPOT
+   + D1
 ===================================================== */
 
 document.addEventListener("DOMContentLoaded", () => {
 
   /* =====================================================
-     FILTROS
+     UTILIDADES GENERALES
   ===================================================== */
+
+  function formatPrice(price) {
+
+    return new Intl.NumberFormat("es-CO", {
+      style: "currency",
+      currency: "COP",
+      maximumFractionDigits: 0
+    }).format(Number(price) || 0);
+
+  }
+
+
+  function escapeHtml(value) {
+
+    if (value === null || value === undefined) {
+      return "";
+    }
+
+    return String(value)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+
+  }
+
+
+  /* =====================================================
+     CATÁLOGO DINÁMICO DESDE D1
+  ===================================================== */
+
+  const PRODUCTS_API =
+    "https://vrturbolub.vrturbolubmiappworkersdev.workers.dev/productos";
+
 
   const vehicleFilter =
     document.getElementById("vehicleFilter");
 
+
   const categoryFilter =
     document.getElementById("categoryFilter");
+
+
+  /* =====================================================
+     CREAR TARJETA DE PRODUCTO
+  ===================================================== */
+
+  function createProductCard(product) {
+
+    const card =
+      document.createElement("article");
+
+
+    /* -----------------------------------------
+       VEHÍCULO
+    ----------------------------------------- */
+
+    const vehicleMap = {
+
+      car: "carro",
+      carro: "carro",
+
+      moto: "moto",
+
+      truck: "camion",
+      camion: "camion",
+
+      universal: "all",
+      all: "all"
+
+    };
+
+
+    const vehicle =
+      vehicleMap[product.vehicle] ||
+      product.vehicle ||
+      "all";
+
+
+    const vehicleLabels = {
+
+      carro: "Carro",
+
+      moto: "Moto",
+
+      camion: "Camión",
+
+      all: "Moto y Carro"
+
+    };
+
+
+    const vehicleLabel =
+      vehicleLabels[vehicle] ||
+      "Vehículo";
+
+
+    /* -----------------------------------------
+       DATOS
+    ----------------------------------------- */
+
+    const name =
+      product.name ||
+      "Producto";
+
+
+    const category =
+      product.category ||
+      "otros";
+
+
+    const image =
+      product.image ||
+      "img/producto-default.webp";
+
+
+    const price =
+      Number(product.price) || 0;
+
+
+    const priceMin =
+      Number(product.price_min) || 0;
+
+
+    const priceMax =
+      Number(product.price_max) || 0;
+
+
+    /* -----------------------------------------
+       CATEGORÍAS
+    ----------------------------------------- */
+
+    const categoryLabels = {
+
+      aceite: "ACEITES",
+
+      refrigerante: "REFRIGERANTES",
+
+      filtros: "FILTROS",
+
+      aditivo: "ADITIVOS",
+
+      lubricante: "LUBRICANTES",
+
+      esenciales: "ESENCIALES"
+
+    };
+
+
+    const categoryLabel =
+      categoryLabels[category] ||
+      String(category).toUpperCase();
+
+
+    /* -----------------------------------------
+       DESCRIPCIÓN
+    ----------------------------------------- */
+
+    let description =
+      product.description ||
+      "";
+
+
+    if (!description) {
+
+      if (vehicle === "camion") {
+
+        description =
+          "Para Camión · Uso pesado";
+
+      } else if (vehicle === "all") {
+
+        description =
+          "Para Moto y Carro · Protección extrema";
+
+      } else {
+
+        description =
+          `Para ${vehicleLabel} · Protección extrema`;
+
+      }
+
+    }
+
+
+    /* -----------------------------------------
+       PRECIO
+    ----------------------------------------- */
+
+    let priceHTML = "";
+
+
+    if (
+      priceMin > 0 &&
+      priceMax > 0
+    ) {
+
+      priceHTML =
+        `$${formatPrice(priceMin).replace("$", "")} - $${formatPrice(priceMax).replace("$", "")}`;
+
+    } else if (price > 0) {
+
+      priceHTML =
+        formatPrice(price);
+
+    } else {
+
+      priceHTML =
+        "Cotizar";
+
+    }
+
+
+    /*
+      Si existe rango, para el carrito usamos
+      el precio principal si existe.
+    */
+
+    const cartPrice =
+      price > 0
+        ? price
+        : (
+            priceMin > 0
+              ? priceMin
+              : 0
+          );
+
+
+    /* -----------------------------------------
+       BOTÓN
+    ----------------------------------------- */
+
+    let actionHTML = "";
+
+
+    if (cartPrice > 0) {
+
+      actionHTML = `
+        <button
+          class="add-cart-btn"
+          type="button"
+        >
+          🛒 Agregar
+        </button>
+      `;
+
+    } else {
+
+      actionHTML = `
+        <a
+          href="https://wa.me/573125267295"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="add-cart-btn"
+        >
+          Cotizar
+        </a>
+      `;
+
+    }
+
+
+    /* -----------------------------------------
+       ATRIBUTOS
+    ----------------------------------------- */
+
+    card.className =
+      "product-card";
+
+
+    card.dataset.vehicle =
+      vehicle;
+
+
+    card.dataset.category =
+      category;
+
+
+    card.dataset.product =
+      name;
+
+
+    if (cartPrice > 0) {
+
+      card.dataset.price =
+        String(cartPrice);
+
+    }
+
+
+    if (product.id !== undefined) {
+
+      card.dataset.productId =
+        String(product.id);
+
+    }
+
+
+    if (product.slug) {
+
+      card.dataset.slug =
+        String(product.slug);
+
+    }
+
+
+    /* -----------------------------------------
+       HTML
+    ----------------------------------------- */
+
+    card.innerHTML = `
+
+      <div class="product-image">
+
+        <img
+          src="${escapeHtml(image)}"
+          alt="${escapeHtml(name)}"
+          loading="lazy"
+        >
+
+      </div>
+
+
+      <div class="product-info">
+
+        <span class="product-category">
+          ${escapeHtml(categoryLabel)}
+          ·
+          ${escapeHtml(vehicleLabel.toUpperCase())}
+        </span>
+
+
+        <h3>
+          ${escapeHtml(name)}
+        </h3>
+
+
+        <p>
+          ${escapeHtml(description)}
+        </p>
+
+
+        <div class="product-bottom">
+
+          <strong>
+            ${priceHTML}
+          </strong>
+
+          ${actionHTML}
+
+        </div>
+
+      </div>
+
+    `;
+
+
+    return card;
+
+  }
+
+
+ /* =====================================================
+   FILTROS + BÚSQUEDA
+===================================================== */
+
+function filterProducts() {
+
+  if (!vehicleFilter || !categoryFilter) {
+    return;
+  }
+
+
+  const vehicle =
+    vehicleFilter.value;
+
+
+  const category =
+    categoryFilter.value;
+
+
+  const searchInput =
+    document.getElementById("productSearch");
+
+
+  const search =
+    searchInput
+      ? searchInput.value
+          .trim()
+          .toLowerCase()
+      : "";
+
+
+  /*
+    IMPORTANTE:
+
+    Se vuelven a buscar las tarjetas cada vez,
+    porque D1 las crea dinámicamente.
+  */
 
   const products =
     document.querySelectorAll(".product-card");
 
 
-  function filterProducts() {
+  products.forEach(product => {
 
-    if (!vehicleFilter || !categoryFilter) {
+    const productVehicle =
+      product.dataset.vehicle || "";
+
+
+    const productCategory =
+      product.dataset.category || "";
+
+
+    /*
+      Información que utilizaremos
+      para la búsqueda.
+    */
+
+    const productName =
+      product.dataset.product || "";
+
+
+    const productText =
+      product.textContent
+        .toLowerCase();
+
+
+    /*
+      VEHÍCULO
+    */
+
+    const matchVehicle =
+      vehicle === "all" ||
+      vehicle === productVehicle ||
+      productVehicle === "all";
+
+
+    /*
+      CATEGORÍA
+    */
+
+    const matchCategory =
+      category === "all" ||
+      category === productCategory;
+
+
+    /*
+      BÚSQUEDA
+
+      Buscamos tanto en:
+      - nombre
+      - marca
+      - viscosidad
+      - categoría
+      - descripción
+      - especificaciones
+    */
+
+    const matchSearch =
+      !search ||
+      productName
+        .toLowerCase()
+        .includes(search) ||
+      productText
+        .includes(search);
+
+
+    /*
+      MOSTRAR / OCULTAR
+    */
+
+    product.style.display =
+      matchVehicle &&
+      matchCategory &&
+      matchSearch
+        ? ""
+        : "none";
+
+  });
+
+}
+/* =====================================================
+   EVENTOS FILTROS
+===================================================== */
+
+if (vehicleFilter) {
+
+  vehicleFilter.addEventListener(
+    "change",
+    filterProducts
+  );
+
+}
+
+
+if (categoryFilter) {
+
+  categoryFilter.addEventListener(
+    "change",
+    filterProducts
+  );
+
+}
+
+/* =====================================================
+   ANIMACIONES DEL CATÁLOGO
+===================================================== */
+
+function initProductAnimations() {
+
+  const catalogSection =
+    document.querySelector(".catalog-section");
+
+  const sectionHeader =
+    document.querySelector(".section-header");
+
+  const catalogFilters =
+    document.querySelector(".catalog-filters");
+
+  const products =
+    document.querySelectorAll(".product-card");
+
+
+  /* -----------------------------------------
+     ANIMACIÓN GENERAL DEL CATÁLOGO
+  ----------------------------------------- */
+
+  if (catalogSection) {
+
+    const catalogObserver =
+      new IntersectionObserver(
+        entries => {
+
+          entries.forEach(entry => {
+
+            if (entry.isIntersecting) {
+
+              entry.target.classList.add(
+                "vr-catalog-visible"
+              );
+
+            }
+
+          });
+
+        },
+        {
+          threshold: 0.12
+        }
+      );
+
+
+    catalogObserver.observe(
+      catalogSection
+    );
+
+  }
+
+
+  /* -----------------------------------------
+     HEADER
+  ----------------------------------------- */
+
+  if (sectionHeader) {
+
+    const headerObserver =
+      new IntersectionObserver(
+        entries => {
+
+          entries.forEach(entry => {
+
+            if (entry.isIntersecting) {
+
+              entry.target.classList.add(
+                "vr-catalog-visible"
+              );
+
+            }
+
+          });
+
+        },
+        {
+          threshold: 0.2
+        }
+      );
+
+
+    headerObserver.observe(
+      sectionHeader
+    );
+
+  }
+
+
+  /* -----------------------------------------
+     FILTROS
+  ----------------------------------------- */
+
+  if (catalogFilters) {
+
+    const filtersObserver =
+      new IntersectionObserver(
+        entries => {
+
+          entries.forEach(entry => {
+
+            if (entry.isIntersecting) {
+
+              entry.target.classList.add(
+                "vr-catalog-visible"
+              );
+
+            }
+
+          });
+
+        },
+        {
+          threshold: 0.2
+        }
+      );
+
+
+    filtersObserver.observe(
+      catalogFilters
+    );
+
+  }
+
+
+  /* -----------------------------------------
+     PRODUCTOS
+  ----------------------------------------- */
+
+  if (!products.length) {
+    return;
+  }
+
+
+  const productObserver =
+    new IntersectionObserver(
+      entries => {
+
+        entries.forEach(entry => {
+
+          if (
+            entry.isIntersecting
+          ) {
+
+            entry.target.classList.add(
+              "vr-product-visible"
+            );
+
+          }
+
+        });
+
+      },
+      {
+        threshold: 0.08
+      }
+    );
+
+
+  products.forEach(
+    (product, index) => {
+
+      product.style.transitionDelay =
+        `${index * 70}ms`;
+
+      productObserver.observe(
+        product
+      );
+
+    }
+  );
+
+}
+/* =====================================================
+   BUSCADOR
+===================================================== */
+
+const productSearch =
+  document.getElementById("productSearch");
+
+
+if (productSearch) {
+
+  productSearch.addEventListener(
+    "input",
+    filterProducts
+  );
+
+}
+
+async function loadProductsFromD1() {
+  const productGrid = document.querySelector(".product-grid");
+
+  if (!productGrid) {
+    console.warn("⚠️ No se encontró .product-grid");
+    return;
+  }
+
+  productGrid.innerHTML = `
+    <div class="products-loading">
+      Cargando productos...
+    </div>
+  `;
+
+  try {
+    const response = await fetch(PRODUCTS_API, {
+      method: "GET",
+      headers: {
+        "Accept": "application/json"
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error HTTP ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    if (!data.ok || !Array.isArray(data.products)) {
+      throw new Error("Respuesta inválida del servidor.");
+    }
+
+    const productsFromD1 = data.products;
+
+    productGrid.innerHTML = "";
+
+    if (!productsFromD1.length) {
+      productGrid.innerHTML = `
+        <div class="products-empty">
+          No hay productos disponibles.
+        </div>
+      `;
+
+      filterProducts();
+      initProductAnimations();
       return;
     }
 
-    const vehicle =
-      vehicleFilter.value;
-
-    const category =
-      categoryFilter.value;
-
-
-    products.forEach(product => {
-
-      const productVehicle =
-        product.dataset.vehicle;
-
-      const productCategory =
-        product.dataset.category;
-
-
-      const matchVehicle =
-        vehicle === "all" ||
-        vehicle === productVehicle;
-
-
-      const matchCategory =
-        category === "all" ||
-        category === productCategory;
-
-
-      product.style.display =
-        matchVehicle && matchCategory
-          ? ""
-          : "none";
-
+    productsFromD1.forEach(product => {
+      const card = createProductCard(product);
+      productGrid.appendChild(card);
     });
 
-  }
+    filterProducts();
+    initProductAnimations();
 
-
-  if (vehicleFilter) {
-
-    vehicleFilter.addEventListener(
-      "change",
-      filterProducts
+    console.log(
+      `✅ ${productsFromD1.length} productos cargados desde D1`
     );
 
-  }
+  } catch (error) {
 
-
-  if (categoryFilter) {
-
-    categoryFilter.addEventListener(
-      "change",
-      filterProducts
+    console.error(
+      "❌ Error cargando productos desde D1:",
+      error
     );
 
+    productGrid.innerHTML = `
+      <div class="products-error">
+        No fue posible cargar los productos.
+        Intenta nuevamente.
+      </div>
+    `;
+
+    filterProducts();
+    initProductAnimations();
   }
+}
+
 
   /* =====================================================
      CARRITO
@@ -90,85 +797,110 @@ document.addEventListener("DOMContentLoaded", () => {
   const cartButton =
     document.getElementById("cartButton");
 
+
   const cartSidebar =
     document.getElementById("cartSidebar");
+
 
   const cartOverlay =
     document.getElementById("cartOverlay");
 
+
   const closeCart =
     document.getElementById("closeCart");
+
 
   const cartItems =
     document.getElementById("cartItems");
 
+
   const cartCount =
     document.getElementById("cartCount");
+
 
   const cartTotal =
     document.getElementById("cartTotal");
 
+
   const clearCart =
     document.getElementById("clearCart");
+
 
   const checkoutButton =
     document.getElementById("checkoutButton");
 
 
   /* =====================================================
-     CHECKOUT
+     CHECKOUT ELEMENTOS
   ===================================================== */
 
   const checkoutOverlay =
     document.getElementById("checkoutOverlay");
 
+
   const closeCheckout =
     document.getElementById("closeCheckout");
+
 
   const cancelCheckout =
     document.getElementById("cancelCheckout");
 
+
   const customerForm =
     document.getElementById("customerForm");
+
 
   const backToCustomer =
     document.getElementById("backToCustomer");
 
+
   const continueToSummary =
     document.getElementById("continueToSummary");
+
 
   const backToPayment =
     document.getElementById("backToPayment");
 
+
   const editCustomer =
     document.getElementById("editCustomer");
+
 
   const editPayment =
     document.getElementById("editPayment");
 
+
   const confirmOrder =
     document.getElementById("confirmOrder");
+
 
   const finishCheckout =
     document.getElementById("finishCheckout");
 
+
   const customerSummary =
     document.getElementById("customerSummary");
+
 
   const paymentSummary =
     document.getElementById("paymentSummary");
 
+
   const orderSummaryItems =
     document.getElementById("orderSummaryItems");
+
 
   const checkoutTotal =
     document.getElementById("checkoutTotal");
 
+
   const paymentMessage =
     document.getElementById("paymentMessage");
 
+
   const successMessage =
     document.getElementById("successMessage");
+
 
   const orderNumber =
     document.getElementById("orderNumber");
@@ -189,15 +921,18 @@ document.addEventListener("DOMContentLoaded", () => {
       "nequiInstructions"
     );
 
+
   const transferInstructions =
     document.getElementById(
       "transferInstructions"
     );
 
+
   const cardInstructions =
     document.getElementById(
       "cardInstructions"
     );
+
 
   const cashInstructions =
     document.getElementById(
@@ -209,6 +944,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById(
       "nequiReceipt"
     );
+
 
   const transferReceipt =
     document.getElementById(
@@ -234,9 +970,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     if (!Array.isArray(cart)) {
-
       cart = [];
-
     }
 
   } catch (error) {
@@ -245,6 +979,7 @@ document.addEventListener("DOMContentLoaded", () => {
       "Error cargando carrito:",
       error
     );
+
 
     cart = [];
 
@@ -265,72 +1000,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
   /* =====================================================
-     FORMATO PRECIO
-  ===================================================== */
-
-  function formatPrice(price) {
-
-    return new Intl.NumberFormat(
-      "es-CO",
-      {
-        style: "currency",
-        currency: "COP",
-        maximumFractionDigits: 0
-      }
-    ).format(
-      Number(price) || 0
-    );
-
-  }
-
-
-  /* =====================================================
-     ESCAPAR HTML
-  ===================================================== */
-
-  function escapeHtml(value) {
-
-    if (
-      value === null ||
-      value === undefined
-    ) {
-
-      return "";
-
-    }
-
-
-    return String(value)
-
-      .replace(
-        /&/g,
-        "&amp;"
-      )
-
-      .replace(
-        /</g,
-        "&lt;"
-      )
-
-      .replace(
-        />/g,
-        "&gt;"
-      )
-
-      .replace(
-        /"/g,
-        "&quot;"
-      )
-
-      .replace(
-        /'/g,
-        "&#039;"
-      );
-
-  }
-
-
-  /* =====================================================
      GUARDAR CARRITO
   ===================================================== */
 
@@ -345,7 +1014,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
   /* =====================================================
-     TOTAL PRODUCTOS
+     TOTAL CARRITO
   ===================================================== */
 
   function getCartTotal() {
@@ -356,8 +1025,8 @@ document.addEventListener("DOMContentLoaded", () => {
         return (
           total +
           (
-            Number(item.price) *
-            Number(item.quantity)
+            Number(item.price || 0) *
+            Number(item.quantity || 0)
           )
         );
 
@@ -369,18 +1038,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
   /* =====================================================
-     CALCULAR ENVÍO
-     
-     REGLAS:
-     - Contra entrega = GRATIS
-     - $100.000 o más = GRATIS
-     - Menos de $100.000 = $10.000
+     ENVÍO
   ===================================================== */
 
   function getShippingCost() {
 
     const subtotal =
       getCartTotal();
+
 
     const paymentMethod =
       checkoutData.paymentMethod;
@@ -415,16 +1080,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function getFinalTotal() {
 
-    const subtotal =
-      getCartTotal();
-
-    const shipping =
-      getShippingCost();
-
-
     return (
-      subtotal +
-      shipping
+      getCartTotal() +
+      getShippingCost()
     );
 
   }
@@ -440,19 +1098,13 @@ document.addEventListener("DOMContentLoaded", () => {
       !cartSidebar ||
       !cartOverlay
     ) {
-
       return;
-
     }
 
 
-    cartSidebar.classList.add(
-      "active"
-    );
+    cartSidebar.classList.add("active");
 
-    cartOverlay.classList.add(
-      "active"
-    );
+    cartOverlay.classList.add("active");
 
     document.body.style.overflow =
       "hidden";
@@ -470,19 +1122,13 @@ document.addEventListener("DOMContentLoaded", () => {
       !cartSidebar ||
       !cartOverlay
     ) {
-
       return;
-
     }
 
 
-    cartSidebar.classList.remove(
-      "active"
-    );
+    cartSidebar.classList.remove("active");
 
-    cartOverlay.classList.remove(
-      "active"
-    );
+    cartOverlay.classList.remove("active");
 
     document.body.style.overflow =
       "";
@@ -520,112 +1166,143 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
 
-  /* =====================================================
+/* =====================================================
      AGREGAR PRODUCTO
   ===================================================== */
 
-  function addToCart(productCard) {
+function addToCart(productCard) {
 
-    const name =
-      productCard.dataset.product;
-
-    const price =
-      Number(
-        productCard.dataset.price
-      );
+  const name =
+    productCard.dataset.product;
 
 
-    const image =
-      productCard.querySelector(
-        ".product-image img"
-      )?.src || "";
+  const productId =
+    Number(
+      productCard.dataset.productId
+    );
 
 
-    if (
-      !name ||
-      !Number.isFinite(price) ||
-      price <= 0
-    ) {
-
-      console.error(
-        "Producto inválido:",
-        productCard
-      );
-
-      return;
-
-    }
+  const price =
+    Number(
+      productCard.dataset.price
+    );
 
 
-    const existingProduct =
-      cart.find(
-        item =>
-          item.name === name
-      );
+  const image =
+    productCard.querySelector(
+      ".product-image img"
+    )?.src || "";
 
 
-    if (existingProduct) {
+  if (
+    !name ||
+    !Number.isFinite(price) ||
+    price <= 0
+  ) {
 
-      existingProduct.quantity += 1;
+    console.error(
+      "Producto inválido:",
+      productCard
+    );
 
-    } else {
-
-      cart.push({
-
-        name,
-
-        price,
-
-        image,
-
-        quantity: 1
-
-      });
-
-    }
-
-
-    saveCart();
-
-    renderCart();
-
-    openCart();
+    return;
 
   }
 
 
-  /* =====================================================
-     BOTONES AGREGAR
-  ===================================================== */
-
-  document
-    .querySelectorAll(
-      ".add-cart-btn"
-    )
-    .forEach(button => {
-
-      button.addEventListener(
-        "click",
-        () => {
-
-          const productCard =
-            button.closest(
-              ".product-card"
-            );
+  const existingProduct =
+    cart.find(
+      item =>
+        item.name === name
+    );
 
 
-          if (productCard) {
+  if (existingProduct) {
 
-            addToCart(
-              productCard
-            );
+    existingProduct.quantity =
+      Number(existingProduct.quantity || 0) + 1;
 
-          }
+  } else {
 
-        }
-      );
+    cart.push({
+
+      productId,
+
+      name,
+
+      price,
+
+      image,
+
+      quantity: 1
 
     });
+
+  }
+
+
+  saveCart();
+
+  renderCart();
+
+  openCart();
+
+}
+
+
+  /* =====================================================
+     BOTONES AGREGAR
+     
+     EVENT DELEGATION
+     
+     Esto permite que funcionen los productos
+     creados dinámicamente desde D1.
+  ===================================================== */
+
+  document.addEventListener(
+    "click",
+    event => {
+
+      const button =
+        event.target.closest(
+          ".add-cart-btn"
+        );
+
+
+      if (!button) {
+        return;
+      }
+
+
+      /*
+        Los enlaces de WhatsApp "Cotizar"
+        no entran al carrito.
+      */
+
+      if (
+        button.tagName.toLowerCase() === "a"
+      ) {
+
+        return;
+
+      }
+
+
+      const productCard =
+        button.closest(
+          ".product-card"
+        );
+
+
+      if (!productCard) {
+        return;
+      }
+
+
+      addToCart(productCard);
+
+    }
+  );
 
 
   /* =====================================================
@@ -638,26 +1315,20 @@ document.addEventListener("DOMContentLoaded", () => {
   ) {
 
     if (!cart[index]) {
-
       return;
-
     }
 
 
     cart[index].quantity =
-      Number(
-        cart[index].quantity
-      ) + change;
+      Number(cart[index].quantity || 0) +
+      change;
 
 
     if (
       cart[index].quantity <= 0
     ) {
 
-      cart.splice(
-        index,
-        1
-      );
+      cart.splice(index, 1);
 
     }
 
@@ -670,23 +1341,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
   /* =====================================================
-     ELIMINAR
+     ELIMINAR PRODUCTO
   ===================================================== */
 
   function removeItem(index) {
 
     if (!cart[index]) {
-
       return;
-
     }
 
 
-    cart.splice(
-      index,
-      1
-    );
-
+    cart.splice(index, 1);
 
     saveCart();
 
@@ -702,9 +1367,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function renderCart() {
 
     if (!cartItems) {
-
       return;
-
     }
 
 
@@ -750,14 +1413,12 @@ document.addEventListener("DOMContentLoaded", () => {
       (item, index) => {
 
         const itemTotal =
-          Number(item.price) *
-          Number(item.quantity);
+          Number(item.price || 0) *
+          Number(item.quantity || 0);
 
 
         const cartItem =
-          document.createElement(
-            "div"
-          );
+          document.createElement("div");
 
 
         cartItem.className =
@@ -775,15 +1436,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
           </div>
 
+
           <div class="cart-item-info">
 
             <h3>
               ${escapeHtml(item.name)}
             </h3>
 
+
             <div class="cart-item-price">
               ${formatPrice(itemTotal)}
             </div>
+
 
             <div class="cart-item-controls">
 
@@ -797,9 +1461,11 @@ document.addEventListener("DOMContentLoaded", () => {
                   −
                 </button>
 
+
                 <span>
-                  ${item.quantity}
+                  ${Number(item.quantity || 0)}
                 </span>
+
 
                 <button
                   type="button"
@@ -810,6 +1476,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 </button>
 
               </div>
+
 
               <button
                 type="button"
@@ -834,7 +1501,11 @@ document.addEventListener("DOMContentLoaded", () => {
     );
 
 
-    document
+    /*
+      Eventos controles carrito
+    */
+
+    cartItems
       .querySelectorAll(
         ".quantity-minus"
       )
@@ -845,9 +1516,7 @@ document.addEventListener("DOMContentLoaded", () => {
           () => {
 
             changeQuantity(
-              Number(
-                button.dataset.index
-              ),
+              Number(button.dataset.index),
               -1
             );
 
@@ -857,7 +1526,7 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
 
-    document
+    cartItems
       .querySelectorAll(
         ".quantity-plus"
       )
@@ -868,9 +1537,7 @@ document.addEventListener("DOMContentLoaded", () => {
           () => {
 
             changeQuantity(
-              Number(
-                button.dataset.index
-              ),
+              Number(button.dataset.index),
               1
             );
 
@@ -880,7 +1547,7 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
 
-    document
+    cartItems
       .querySelectorAll(
         ".remove-item"
       )
@@ -891,9 +1558,7 @@ document.addEventListener("DOMContentLoaded", () => {
           () => {
 
             removeItem(
-              Number(
-                button.dataset.index
-              )
+              Number(button.dataset.index)
             );
 
           }
@@ -906,9 +1571,7 @@ document.addEventListener("DOMContentLoaded", () => {
       cart.reduce(
         (total, item) =>
           total +
-          Number(
-            item.quantity
-          ),
+          Number(item.quantity || 0),
         0
       );
 
@@ -943,12 +1606,8 @@ document.addEventListener("DOMContentLoaded", () => {
       "click",
       () => {
 
-        if (
-          cart.length === 0
-        ) {
-
+        if (cart.length === 0) {
           return;
-
         }
 
 
@@ -959,9 +1618,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
         if (!confirmed) {
-
           return;
-
         }
 
 
@@ -978,14 +1635,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
   /* =====================================================
-     ABRIR CHECKOUT
+     CHECKOUT
   ===================================================== */
 
   function openCheckout() {
 
-    if (
-      cart.length === 0
-    ) {
+    if (cart.length === 0) {
 
       alert(
         "Tu carrito está vacío."
@@ -997,9 +1652,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     if (!checkoutOverlay) {
-
       return;
-
     }
 
 
@@ -1037,9 +1690,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function closeCheckoutModal() {
 
     if (!checkoutOverlay) {
-
       return;
-
     }
 
 
@@ -1085,15 +1736,18 @@ document.addEventListener("DOMContentLoaded", () => {
         "checkoutStep1"
       );
 
+
     const step2 =
       document.getElementById(
         "checkoutStep2"
       );
 
+
     const step3 =
       document.getElementById(
         "checkoutStep3"
       );
+
 
     const success =
       document.getElementById(
@@ -1127,8 +1781,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const indicatorStep =
           Number(
-            indicator.dataset
-              .stepIndicator
+            indicator.dataset.stepIndicator
           );
 
 
@@ -1151,9 +1804,7 @@ document.addEventListener("DOMContentLoaded", () => {
       step1
     ) {
 
-      step1.classList.add(
-        "active"
-      );
+      step1.classList.add("active");
 
     }
 
@@ -1163,9 +1814,7 @@ document.addEventListener("DOMContentLoaded", () => {
       step2
     ) {
 
-      step2.classList.add(
-        "active"
-      );
+      step2.classList.add("active");
 
     }
 
@@ -1175,9 +1824,7 @@ document.addEventListener("DOMContentLoaded", () => {
       step3
     ) {
 
-      step3.classList.add(
-        "active"
-      );
+      step3.classList.add("active");
 
     }
 
@@ -1187,9 +1834,7 @@ document.addEventListener("DOMContentLoaded", () => {
       success
     ) {
 
-      success.classList.add(
-        "active"
-      );
+      success.classList.add("active");
 
     }
 
@@ -1224,12 +1869,14 @@ document.addEventListener("DOMContentLoaded", () => {
               ) || ""
             ).trim(),
 
+
           lastName:
             String(
               formData.get(
                 "customerLastName"
               ) || ""
             ).trim(),
+
 
           phone:
             String(
@@ -1238,12 +1885,14 @@ document.addEventListener("DOMContentLoaded", () => {
               ) || ""
             ).trim(),
 
+
           email:
             String(
               formData.get(
                 "customerEmail"
               ) || ""
             ).trim(),
+
 
           address:
             String(
@@ -1252,6 +1901,7 @@ document.addEventListener("DOMContentLoaded", () => {
               ) || ""
             ).trim(),
 
+
           city:
             String(
               formData.get(
@@ -1259,12 +1909,14 @@ document.addEventListener("DOMContentLoaded", () => {
               ) || ""
             ).trim(),
 
+
           department:
             String(
               formData.get(
                 "customerDepartment"
               ) || ""
             ).trim(),
+
 
           notes:
             String(
@@ -1348,14 +2000,13 @@ document.addEventListener("DOMContentLoaded", () => {
     return (
       icons[method] ||
       "💰"
-
     );
 
   }
 
 
   /* =====================================================
-     INSTRUCCIONES
+     INSTRUCCIONES DE PAGO
   ===================================================== */
 
   function hidePaymentInstructions() {
@@ -1379,9 +2030,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
 
-  function showPaymentInstructions(
-    method
-  ) {
+  function showPaymentInstructions(method) {
 
     hidePaymentInstructions();
 
@@ -1448,6 +2097,7 @@ document.addEventListener("DOMContentLoaded", () => {
           paymentMessage.textContent =
             "";
 
+
           paymentMessage.classList.remove(
             "active"
           );
@@ -1501,16 +2151,15 @@ document.addEventListener("DOMContentLoaded", () => {
         };
 
 
-        reader.onerror =
-          () => {
+        reader.onerror = () => {
 
-            reject(
-              new Error(
-                "No se pudo leer el comprobante."
-              )
-            );
+          reject(
+            new Error(
+              "No se pudo leer el comprobante."
+            )
+          );
 
-          };
+        };
 
 
         reader.readAsDataURL(
@@ -1524,7 +2173,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
   /* =====================================================
-     OBTENER ARCHIVO
+     OBTENER COMPROBANTE
   ===================================================== */
 
   function getSelectedReceiptFile() {
@@ -1538,9 +2187,8 @@ document.addEventListener("DOMContentLoaded", () => {
     ) {
 
       return (
-        nequiReceipt
-          ?.files
-          ?.[0] || null
+        nequiReceipt?.files?.[0] ||
+        null
       );
 
     }
@@ -1551,9 +2199,8 @@ document.addEventListener("DOMContentLoaded", () => {
     ) {
 
       return (
-        transferReceipt
-          ?.files
-          ?.[0] || null
+        transferReceipt?.files?.[0] ||
+        null
       );
 
     }
@@ -1730,6 +2377,7 @@ document.addEventListener("DOMContentLoaded", () => {
             paymentMessage.textContent =
               validation.message;
 
+
             paymentMessage.classList.add(
               "active"
             );
@@ -1749,6 +2397,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
           paymentMessage.textContent =
             "";
+
 
           paymentMessage.classList.remove(
             "active"
@@ -1847,6 +2496,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             radio.checked = true;
 
+
             showPaymentInstructions(
               currentPayment
             );
@@ -1865,7 +2515,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
   /* =====================================================
-     RESUMEN
+     RESUMEN CHECKOUT
   ===================================================== */
 
   function renderCheckoutSummary() {
@@ -1972,14 +2622,12 @@ document.addEventListener("DOMContentLoaded", () => {
       cart.forEach(item => {
 
         const itemTotal =
-          Number(item.price) *
-          Number(item.quantity);
+          Number(item.price || 0) *
+          Number(item.quantity || 0);
 
 
         const row =
-          document.createElement(
-            "div"
-          );
+          document.createElement("div");
 
 
         row.className =
@@ -1995,11 +2643,12 @@ document.addEventListener("DOMContentLoaded", () => {
             </strong>
 
             <span>
-              ${item.quantity} ×
+              ${Number(item.quantity || 0)} ×
               ${formatPrice(item.price)}
             </span>
 
           </div>
+
 
           <strong>
             ${formatPrice(itemTotal)}
@@ -2015,14 +2664,10 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
 
-      /* ================================================
-         SUBTOTAL
-      ================================================ */
+      /* SUBTOTAL */
 
       const subtotalRow =
-        document.createElement(
-          "div"
-        );
+        document.createElement("div");
 
 
       subtotalRow.className =
@@ -2049,14 +2694,10 @@ document.addEventListener("DOMContentLoaded", () => {
       );
 
 
-      /* ================================================
-         ENVÍO
-      ================================================ */
+      /* ENVÍO */
 
       const shippingRow =
-        document.createElement(
-          "div"
-        );
+        document.createElement("div");
 
 
       shippingRow.className =
@@ -2102,7 +2743,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
   /* =====================================================
-     NÚMERO DE PEDIDO
+     GENERAR ID PEDIDO
   ===================================================== */
 
   function generateOrderId() {
@@ -2118,19 +2759,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const month =
       String(
         now.getMonth() + 1
-      ).padStart(
-        2,
-        "0"
-      );
+      ).padStart(2, "0");
 
 
     const day =
       String(
         now.getDate()
-      ).padStart(
-        2,
-        "0"
-      );
+      ).padStart(2, "0");
 
 
     const random =
@@ -2158,16 +2793,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     if (!file) {
-
       return null;
-
     }
 
 
     const base64 =
-      await fileToBase64(
-        file
-      );
+      await fileToBase64(file);
 
 
     return {
@@ -2199,9 +2830,7 @@ document.addEventListener("DOMContentLoaded", () => {
       "click",
       async () => {
 
-        if (
-          cart.length === 0
-        ) {
+        if (cart.length === 0) {
 
           alert(
             "Tu carrito está vacío."
@@ -2224,7 +2853,9 @@ document.addEventListener("DOMContentLoaded", () => {
             paymentValidation.message
           );
 
+
           showCheckoutStep(2);
+
 
           return;
 
@@ -2239,7 +2870,9 @@ document.addEventListener("DOMContentLoaded", () => {
             "Selecciona un método de pago."
           );
 
+
           showCheckoutStep(2);
+
 
           return;
 
@@ -2249,31 +2882,26 @@ document.addEventListener("DOMContentLoaded", () => {
         confirmOrder.disabled =
           true;
 
+
         confirmOrder.textContent =
           "Preparando pedido...";
 
 
         try {
 
-          /* =============================================
-             PEDIDO
-          ============================================= */
+          /* PEDIDO */
 
           const orderId =
             generateOrderId();
 
 
-          /* =============================================
-             COMPROBANTE
-          ============================================= */
+          /* COMPROBANTE */
 
           const receipt =
             await prepareReceipt();
 
 
-          /* =============================================
-             CALCULAR VALORES
-          ============================================= */
+          /* VALORES */
 
           const subtotal =
             getCartTotal();
@@ -2288,9 +2916,7 @@ document.addEventListener("DOMContentLoaded", () => {
             shipping;
 
 
-          /* =============================================
-             OBJETO PEDIDO
-          ============================================= */
+          /* PEDIDO */
 
           const order = {
 
@@ -2311,42 +2937,36 @@ document.addEventListener("DOMContentLoaded", () => {
                 checkoutData.paymentMethod
               ),
 
-            products:
-              cart.map(item => ({
+           products:
+  cart.map(item => ({
+    productId:
+      Number(item.productId),
 
-                name:
-                  item.name,
+    name:
+      item.name,
 
-                price:
-                  Number(item.price),
+    price:
+      Number(item.price),
 
-                quantity:
-                  Number(item.quantity),
+    quantity:
+      Number(item.quantity),
 
-                subtotal:
-                  Number(item.price) *
-                  Number(item.quantity)
+    subtotal:
+      Number(item.price) *
+      Number(item.quantity)
+  })),
 
-              })),
+            subtotal,
 
-            subtotal:
-              subtotal,
+            shipping,
 
-            shipping:
-              shipping,
-
-            total:
-              total,
+            total,
 
             status:
               "pendiente"
 
           };
 
-
-          /* =============================================
-             PAYLOAD
-          ============================================= */
 
           const payload = {
 
@@ -2360,10 +2980,6 @@ document.addEventListener("DOMContentLoaded", () => {
           confirmOrder.textContent =
             "Enviando pedido...";
 
-
-          /* =============================================
-             CLOUDFLARE WORKER
-          ============================================= */
 
           const response =
             await fetch(
@@ -2380,17 +2996,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 },
 
                 body:
-                  JSON.stringify(
-                    payload
-                  )
+                  JSON.stringify(payload)
 
               }
             );
 
-
-          /* =============================================
-             LEER RESPUESTA
-          ============================================= */
 
           let result = {};
 
@@ -2407,14 +3017,8 @@ document.addEventListener("DOMContentLoaded", () => {
               jsonError
             );
 
-            result = {};
-
           }
 
-
-          /* =============================================
-             VALIDAR RESPUESTA DEL WORKER
-          ============================================= */
 
           if (
             !response.ok ||
@@ -2430,9 +3034,7 @@ document.addEventListener("DOMContentLoaded", () => {
           }
 
 
-          /* =============================================
-             GUARDAR ÚLTIMO PEDIDO
-          ============================================= */
+          /* GUARDAR ÚLTIMO PEDIDO */
 
           localStorage.setItem(
             "vrTurbolubLastOrder",
@@ -2443,9 +3045,7 @@ document.addEventListener("DOMContentLoaded", () => {
           );
 
 
-          /* =============================================
-             MOSTRAR CONFIRMACIÓN
-          ============================================= */
+          /* CONFIRMACIÓN */
 
           if (orderNumber) {
 
@@ -2506,6 +3106,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
           confirmOrder.disabled =
             false;
+
 
           confirmOrder.textContent =
             "Confirmar pedido";
@@ -2591,35 +3192,83 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
   /* =====================================================
-     INICIALIZAR
+     INICIALIZAR CARRITO
   ===================================================== */
 
   hidePaymentInstructions();
 
   renderCart();
 
+
+  /* =====================================================
+     CARGAR D1
+  ===================================================== */
+
+  loadProductsFromD1();
+
 });
 
 
-/* =========================================
-   TOP BAR - CARRUSEL DE MENSAJES
-========================================= */
+/* =====================================================
+   TOP BAR — CARRUSEL DE MENSAJES
+===================================================== */
 
 document.addEventListener("DOMContentLoaded", () => {
 
-  const marqueeContent = document.getElementById("marquee-content");
-  const prevButton = document.querySelector(".top-bar .prev");
-  const nextButton = document.querySelector(".top-bar .next");
-  const topBar = document.getElementById("top-bar");
-  const mainHeader = document.querySelector(".main-header");
+  const marqueeContent =
+    document.getElementById(
+      "marquee-content"
+    );
 
-  if (!marqueeContent || !prevButton || !nextButton) {
+
+  const prevButton =
+    document.querySelector(
+      ".top-bar .prev"
+    );
+
+
+  const nextButton =
+    document.querySelector(
+      ".top-bar .next"
+    );
+
+
+  const topBar =
+    document.getElementById(
+      "top-bar"
+    );
+
+
+  const mainHeader =
+    document.querySelector(
+      ".main-header"
+    );
+
+
+  if (
+    !marqueeContent ||
+    !prevButton ||
+    !nextButton
+  ) {
+
+    return;
+
+  }
+
+
+  const items =
+    marqueeContent.querySelectorAll(
+      ".marquee-item"
+    );
+
+
+  if (!items.length) {
     return;
   }
 
-  const items = marqueeContent.querySelectorAll(".marquee-item");
 
   let currentIndex = 0;
+
   let autoScrollInterval;
 
 
@@ -2627,90 +3276,146 @@ document.addEventListener("DOMContentLoaded", () => {
 
     currentIndex += direction;
 
-    if (currentIndex < 0) {
-      currentIndex = items.length - 1;
+
+    if (
+      currentIndex < 0
+    ) {
+
+      currentIndex =
+        items.length - 1;
+
     }
 
-    if (currentIndex >= items.length) {
+
+    if (
+      currentIndex >= items.length
+    ) {
+
       currentIndex = 0;
+
     }
+
 
     marqueeContent.style.transform =
       `translateX(-${currentIndex * 100}%)`;
+
   }
 
 
   function startAutoScroll() {
 
-    clearInterval(autoScrollInterval);
+    clearInterval(
+      autoScrollInterval
+    );
 
-    autoScrollInterval = setInterval(() => {
-      changeMarquee(1);
-    }, 5000);
+
+    autoScrollInterval =
+      setInterval(
+        () => {
+
+          changeMarquee(1);
+
+        },
+        5000
+      );
 
   }
 
 
-  prevButton.addEventListener("click", () => {
+  prevButton.addEventListener(
+    "click",
+    () => {
 
-    changeMarquee(-1);
+      changeMarquee(-1);
 
-    startAutoScroll();
+      startAutoScroll();
 
-  });
-
-
-  nextButton.addEventListener("click", () => {
-
-    changeMarquee(1);
-
-    startAutoScroll();
-
-  });
+    }
+  );
 
 
-  /* Iniciar carrusel */
+  nextButton.addEventListener(
+    "click",
+    () => {
+
+      changeMarquee(1);
+
+      startAutoScroll();
+
+    }
+  );
+
 
   startAutoScroll();
 
 
-  /* =========================================
+  /* =====================================================
      OCULTAR TOP BAR AL HACER SCROLL
-  ========================================= */
+  ===================================================== */
 
   let lastScrollTop = 0;
 
-  window.addEventListener("scroll", () => {
 
-    const scrollTop =
-      window.pageYOffset ||
-      document.documentElement.scrollTop;
+  window.addEventListener(
+    "scroll",
+    () => {
 
-    if (scrollTop > lastScrollTop && scrollTop > 40) {
+      const scrollTop =
+        window.pageYOffset ||
+        document.documentElement.scrollTop;
 
-      // Bajando
-      topBar.style.top = "-40px";
 
-      if (mainHeader) {
-        mainHeader.style.top = "0";
+      if (
+        scrollTop > lastScrollTop &&
+        scrollTop > 40
+      ) {
+
+        if (topBar) {
+
+          topBar.style.top =
+            "-40px";
+
+        }
+
+
+        if (mainHeader) {
+
+          mainHeader.style.top =
+            "0";
+
+        }
+
+      } else {
+
+        if (topBar) {
+
+          topBar.style.top =
+            "0";
+
+        }
+
+
+        if (mainHeader) {
+
+          mainHeader.style.top =
+            "40px";
+
+        }
+
       }
 
-    } else {
 
-      // Subiendo
-      topBar.style.top = "0";
-
-      if (mainHeader) {
-        mainHeader.style.top = "40px";
-      }
+      lastScrollTop =
+        Math.max(
+          scrollTop,
+          0
+        );
 
     }
-
-    lastScrollTop = Math.max(scrollTop, 0);
-
-  });
+  );
 
 });
+
 
 /* =====================================================
    VR TURBOLUB IA
@@ -2719,39 +3424,72 @@ document.addEventListener("DOMContentLoaded", () => {
 document.addEventListener("DOMContentLoaded", () => {
 
   /* =====================================================
-     ELEMENTOS IA GRANDE
+     IA GRANDE
   ===================================================== */
 
-  const input = document.getElementById("vrIaInput");
-  const sendButton = document.getElementById("vrIaSend");
-  const messages = document.getElementById("vrIaMessages");
+  const input =
+    document.getElementById(
+      "vrIaInput"
+    );
 
-  const quickButtons = document.querySelectorAll(
-    ".vr-ia-options button"
-  );
+
+  const sendButton =
+    document.getElementById(
+      "vrIaSend"
+    );
+
+
+  const messages =
+    document.getElementById(
+      "vrIaMessages"
+    );
+
+
+  const quickButtons =
+    document.querySelectorAll(
+      ".vr-ia-options button"
+    );
 
 
   /* =====================================================
-     ELEMENTOS MINI IA
+     MINI IA
   ===================================================== */
 
   const floatingButton =
-    document.getElementById("vrIaFloating");
+    document.getElementById(
+      "vrIaFloating"
+    );
+
 
   const miniChat =
-    document.getElementById("vrIaMini");
+    document.getElementById(
+      "vrIaMini"
+    );
+
 
   const miniClose =
-    document.getElementById("vrIaMiniClose");
+    document.getElementById(
+      "vrIaMiniClose"
+    );
+
 
   const miniInput =
-    document.getElementById("vrIaMiniInput");
+    document.getElementById(
+      "vrIaMiniInput"
+    );
+
 
   const miniSend =
-    document.getElementById("vrIaMiniSend");
+    document.getElementById(
+      "vrIaMiniSend"
+    );
+
 
   const miniMessages =
-    miniChat?.querySelector(".vr-ia-mini-messages");
+    miniChat?.querySelector(
+      ".vr-ia-mini-messages"
+    );
+
 
   const miniQuickButtons =
     miniChat?.querySelectorAll(
@@ -2760,164 +3498,111 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
   /* =====================================================
-     HISTORIAL DE CONVERSACIÓN
+     HISTORIAL
   ===================================================== */
 
   let conversationHistory = [];
 
 
   /* =====================================================
-     ABRIR / CERRAR MINI IA
+     MINI IA ABRIR / CERRAR
   ===================================================== */
 
-  if (floatingButton && miniChat) {
+  if (
+    floatingButton &&
+    miniChat
+  ) {
 
-    floatingButton.addEventListener("click", () => {
+    floatingButton.addEventListener(
+      "click",
+      () => {
 
-      miniChat.classList.toggle("active");
+        miniChat.classList.toggle(
+          "active"
+        );
 
-      if (miniChat.classList.contains("active")) {
 
-        setTimeout(() => {
+        if (
+          miniChat.classList.contains(
+            "active"
+          )
+        ) {
 
-          if (miniInput) {
-            miniInput.focus();
-          }
+          setTimeout(
+            () => {
 
-        }, 250);
+              if (miniInput) {
+
+                miniInput.focus();
+
+              }
+
+            },
+            250
+          );
+
+        }
 
       }
-
-    });
-
-  }
-
-
-  if (miniClose && miniChat) {
-
-    miniClose.addEventListener("click", () => {
-
-      miniChat.classList.remove("active");
-
-    });
-
-  }
-
-
-  /* =====================================================
-     AGREGAR MENSAJE IA GRANDE
-  ===================================================== */
-
-  function addMessage(text, type = "ai") {
-
-    if (!messages) return;
-
-    const message = document.createElement("div");
-
-    message.classList.add(
-      "vr-message",
-      type === "user"
-        ? "vr-message-user"
-        : "vr-message-ai"
     );
 
-
-    if (type === "ai") {
-
-      message.innerHTML = `
-        <div class="vr-message-icon">
-          VR
-        </div>
-
-        <div class="vr-message-content">
-          <p>
-            ${formatAIResponse(text)}
-          </p>
-        </div>
-      `;
-
-    } else {
-
-      message.innerHTML = `
-        <div class="vr-message-content">
-          <p>
-            ${escapeHTML(text)}
-          </p>
-        </div>
-      `;
-
-    }
-
-
-    messages.appendChild(message);
-
-    messages.scrollTop =
-      messages.scrollHeight;
   }
 
 
-  /* =====================================================
-     AGREGAR MENSAJE MINI IA
-  ===================================================== */
+  if (
+    miniClose &&
+    miniChat
+  ) {
 
-  function addMiniMessage(text, type = "ai") {
+    miniClose.addEventListener(
+      "click",
+      () => {
 
-    if (!miniMessages) return;
+        miniChat.classList.remove(
+          "active"
+        );
 
-    const message =
-      document.createElement("div");
-
-    message.classList.add(
-      "vr-message",
-      type === "user"
-        ? "vr-message-user"
-        : "vr-message-ai"
+      }
     );
 
-
-    if (type === "ai") {
-
-      message.innerHTML = `
-        <div class="vr-message-icon">
-          VR
-        </div>
-
-        <div class="vr-message-content">
-          <p>
-            ${formatAIResponse(text)}
-          </p>
-        </div>
-      `;
-
-    } else {
-
-      message.innerHTML = `
-        <div class="vr-message-content">
-          <p>
-            ${escapeHTML(text)}
-          </p>
-        </div>
-      `;
-
-    }
-
-
-    miniMessages.appendChild(message);
-
-    miniMessages.scrollTop =
-      miniMessages.scrollHeight;
   }
 
 
   /* =====================================================
-     FORMATEAR RESPUESTA IA
+     ESCAPAR HTML IA
+  ===================================================== */
+
+  function escapeHTML(text) {
+
+    const div =
+      document.createElement(
+        "div"
+      );
+
+
+    div.textContent =
+      text;
+
+
+    return div.innerHTML;
+
+  }
+
+
+  /* =====================================================
+     FORMATEAR IA
   ===================================================== */
 
   function formatAIResponse(text) {
 
-    if (!text) return "";
+    if (!text) {
+      return "";
+    }
 
-    return escapeHTML(String(text))
+
+    return escapeHTML(
+      String(text)
+    )
 
       .replace(
         /\*\*(.*?)\*\*/g,
@@ -2933,49 +3618,197 @@ document.addEventListener("DOMContentLoaded", () => {
         /\n/g,
         "<br>"
       );
+
   }
 
 
   /* =====================================================
-     SEGURIDAD HTML
+     MENSAJE IA GRANDE
   ===================================================== */
 
-  function escapeHTML(text) {
+  function addMessage(
+    text,
+    type = "ai"
+  ) {
 
-    const div =
-      document.createElement("div");
+    if (!messages) {
+      return;
+    }
 
-    div.textContent = text;
 
-    return div.innerHTML;
+    const message =
+      document.createElement(
+        "div"
+      );
+
+
+    message.classList.add(
+      "vr-message",
+      type === "user"
+        ? "vr-message-user"
+        : "vr-message-ai"
+    );
+
+
+    if (
+      type === "ai"
+    ) {
+
+      message.innerHTML = `
+
+        <div class="vr-message-icon">
+          VR
+        </div>
+
+        <div class="vr-message-content">
+
+          <p>
+            ${formatAIResponse(text)}
+          </p>
+
+        </div>
+
+      `;
+
+    } else {
+
+      message.innerHTML = `
+
+        <div class="vr-message-content">
+
+          <p>
+            ${escapeHTML(text)}
+          </p>
+
+        </div>
+
+      `;
+
+    }
+
+
+    messages.appendChild(
+      message
+    );
+
+
+    messages.scrollTop =
+      messages.scrollHeight;
+
   }
 
 
   /* =====================================================
-     INDICADOR ESCRIBIENDO - IA GRANDE
+     MENSAJE MINI IA
+  ===================================================== */
+
+  function addMiniMessage(
+    text,
+    type = "ai"
+  ) {
+
+    if (!miniMessages) {
+      return;
+    }
+
+
+    const message =
+      document.createElement(
+        "div"
+      );
+
+
+    message.classList.add(
+      "vr-message",
+      type === "user"
+        ? "vr-message-user"
+        : "vr-message-ai"
+    );
+
+
+    if (
+      type === "ai"
+    ) {
+
+      message.innerHTML = `
+
+        <div class="vr-message-icon">
+          VR
+        </div>
+
+        <div class="vr-message-content">
+
+          <p>
+            ${formatAIResponse(text)}
+          </p>
+
+        </div>
+
+      `;
+
+    } else {
+
+      message.innerHTML = `
+
+        <div class="vr-message-content">
+
+          <p>
+            ${escapeHTML(text)}
+          </p>
+
+        </div>
+
+      `;
+
+    }
+
+
+    miniMessages.appendChild(
+      message
+    );
+
+
+    miniMessages.scrollTop =
+      miniMessages.scrollHeight;
+
+  }
+
+
+  /* =====================================================
+     TYPING GRANDE
   ===================================================== */
 
   function showTyping() {
 
     if (
-      document.getElementById("vrTyping")
+      document.getElementById(
+        "vrTyping"
+      )
     ) {
+
       return;
+
     }
 
 
     const typing =
-      document.createElement("div");
+      document.createElement(
+        "div"
+      );
+
 
     typing.classList.add(
       "vr-message",
       "vr-message-ai"
     );
 
-    typing.id = "vrTyping";
+
+    typing.id =
+      "vrTyping";
 
 
     typing.innerHTML = `
+
       <div class="vr-message-icon">
         VR
       </div>
@@ -2983,50 +3816,68 @@ document.addEventListener("DOMContentLoaded", () => {
       <div class="vr-message-content">
 
         <div class="vr-typing">
+
           <span></span>
           <span></span>
           <span></span>
+
         </div>
 
       </div>
+
     `;
 
 
     if (messages) {
 
-      messages.appendChild(typing);
+      messages.appendChild(
+        typing
+      );
+
 
       messages.scrollTop =
         messages.scrollHeight;
+
     }
+
   }
 
 
   /* =====================================================
-     INDICADOR ESCRIBIENDO - MINI IA
+     TYPING MINI
   ===================================================== */
 
   function showMiniTyping() {
 
     if (
-      document.getElementById("vrMiniTyping")
+      document.getElementById(
+        "vrMiniTyping"
+      )
     ) {
+
       return;
+
     }
 
 
     const typing =
-      document.createElement("div");
+      document.createElement(
+        "div"
+      );
+
 
     typing.classList.add(
       "vr-message",
       "vr-message-ai"
     );
 
-    typing.id = "vrMiniTyping";
+
+    typing.id =
+      "vrMiniTyping";
 
 
     typing.innerHTML = `
+
       <div class="vr-message-icon">
         VR
       </div>
@@ -3034,22 +3885,30 @@ document.addEventListener("DOMContentLoaded", () => {
       <div class="vr-message-content">
 
         <div class="vr-typing">
+
           <span></span>
           <span></span>
           <span></span>
+
         </div>
 
       </div>
+
     `;
 
 
     if (miniMessages) {
 
-      miniMessages.appendChild(typing);
+      miniMessages.appendChild(
+        typing
+      );
+
 
       miniMessages.scrollTop =
         miniMessages.scrollHeight;
+
     }
+
   }
 
 
@@ -3060,7 +3919,10 @@ document.addEventListener("DOMContentLoaded", () => {
   function removeTyping() {
 
     const typing =
-      document.getElementById("vrTyping");
+      document.getElementById(
+        "vrTyping"
+      );
+
 
     if (typing) {
       typing.remove();
@@ -3072,38 +3934,49 @@ document.addEventListener("DOMContentLoaded", () => {
         "vrMiniTyping"
       );
 
+
     if (miniTyping) {
       miniTyping.remove();
     }
+
   }
 
 
   /* =====================================================
-     CONEXIÓN CON LA IA
+     CONEXIÓN IA
   ===================================================== */
 
-  async function askAI(userQuestion) {
+  async function askAI(
+    userQuestion
+  ) {
 
-    const response = await fetch(
-      "https://vrturbolub.vrturbolubmiappworkersdev.workers.dev/ia",
-      {
-        method: "POST",
+    const response =
+      await fetch(
+        "https://vrturbolub.vrturbolubmiappworkersdev.workers.dev/ia",
+        {
 
-        headers: {
-          "Content-Type":
-            "application/json"
-        },
+          method: "POST",
 
-        body: JSON.stringify({
+          headers: {
 
-          message: userQuestion,
+            "Content-Type":
+              "application/json"
 
-          history:
-            conversationHistory
+          },
 
-        })
-      }
-    );
+          body:
+            JSON.stringify({
+
+              message:
+                userQuestion,
+
+              history:
+                conversationHistory
+
+            })
+
+        }
+      );
 
 
     const data =
@@ -3120,9 +3993,11 @@ document.addEventListener("DOMContentLoaded", () => {
         data
       );
 
+
       throw new Error(
         "La IA respondió con error."
       );
+
     }
 
 
@@ -3136,20 +4011,26 @@ document.addEventListener("DOMContentLoaded", () => {
       throw new Error(
         "Gemini no devolvió respuesta."
       );
+
     }
 
 
     return answer;
+
   }
 
 
   /* =====================================================
-     ENVIAR PREGUNTA - IA GRANDE
+     IA GRANDE
   ===================================================== */
 
-  async function sendQuestion(question = null) {
+  async function sendQuestion(
+    question = null
+  ) {
 
-    if (!input) return;
+    if (!input) {
+      return;
+    }
 
 
     const userQuestion =
@@ -3162,31 +4043,24 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
 
-    /* Mostrar usuario */
-
     addMessage(
       userQuestion,
       "user"
     );
 
 
-    /* Historial */
-
     conversationHistory.push({
 
       role: "user",
 
-      content: userQuestion
+      content:
+        userQuestion
 
     });
 
 
-    /* Limpiar */
-
     input.value = "";
 
-
-    /* Typing */
 
     showTyping();
 
@@ -3194,7 +4068,9 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
 
       const answer =
-        await askAI(userQuestion);
+        await askAI(
+          userQuestion
+        );
 
 
       removeTyping();
@@ -3210,10 +4086,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
         role: "assistant",
 
-        content: answer
+        content:
+          answer
 
       });
-
 
     } catch (error) {
 
@@ -3230,23 +4106,26 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
       addMessage(
-
         "No pude conectarme con el asistente 🤖. Inténtalo nuevamente en unos segundos.",
-
         "ai"
-
       );
+
     }
+
   }
 
 
   /* =====================================================
-     ENVIAR PREGUNTA - MINI IA
+     MINI IA
   ===================================================== */
 
-  async function sendMiniQuestion(question = null) {
+  async function sendMiniQuestion(
+    question = null
+  ) {
 
-    if (!miniInput) return;
+    if (!miniInput) {
+      return;
+    }
 
 
     const userQuestion =
@@ -3259,31 +4138,24 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
 
-    /* Mostrar pregunta */
-
     addMiniMessage(
       userQuestion,
       "user"
     );
 
 
-    /* Guardar historial */
-
     conversationHistory.push({
 
       role: "user",
 
-      content: userQuestion
+      content:
+        userQuestion
 
     });
 
 
-    /* Limpiar input */
-
     miniInput.value = "";
 
-
-    /* Mostrar escribiendo */
 
     showMiniTyping();
 
@@ -3291,7 +4163,9 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
 
       const answer =
-        await askAI(userQuestion);
+        await askAI(
+          userQuestion
+        );
 
 
       removeTyping();
@@ -3307,10 +4181,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
         role: "assistant",
 
-        content: answer
+        content:
+          answer
 
       });
-
 
     } catch (error) {
 
@@ -3327,18 +4201,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
       addMiniMessage(
-
         "No pude conectarme con el asistente 🤖. Inténtalo nuevamente en unos segundos.",
-
         "ai"
-
       );
+
     }
+
   }
 
 
   /* =====================================================
-     BOTÓN ENVIAR - IA GRANDE
+     IA GRANDE — BOTÓN
   ===================================================== */
 
   if (sendButton) {
@@ -3351,20 +4224,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
       }
     );
+
   }
 
 
   /* =====================================================
-     ENTER - IA GRANDE
+     IA GRANDE — ENTER
   ===================================================== */
 
   if (input) {
 
     input.addEventListener(
       "keydown",
-      (event) => {
+      event => {
 
-        if (event.key === "Enter") {
+        if (
+          event.key === "Enter"
+        ) {
 
           event.preventDefault();
 
@@ -3374,15 +4250,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
       }
     );
+
   }
 
 
   /* =====================================================
-     BOTONES RÁPIDOS - IA GRANDE
+     IA GRANDE — BOTONES RÁPIDOS
   ===================================================== */
 
   quickButtons.forEach(
-    (button) => {
+    button => {
 
       button.addEventListener(
         "click",
@@ -3408,7 +4285,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
   /* =====================================================
-     BOTÓN ENVIAR - MINI IA
+     MINI IA — BOTÓN
   ===================================================== */
 
   if (miniSend) {
@@ -3421,20 +4298,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
       }
     );
+
   }
 
 
   /* =====================================================
-     ENTER - MINI IA
+     MINI IA — ENTER
   ===================================================== */
 
   if (miniInput) {
 
     miniInput.addEventListener(
       "keydown",
-      (event) => {
+      event => {
 
-        if (event.key === "Enter") {
+        if (
+          event.key === "Enter"
+        ) {
 
           event.preventDefault();
 
@@ -3444,15 +4324,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
       }
     );
+
   }
 
 
   /* =====================================================
-     BOTONES RÁPIDOS - MINI IA
+     MINI IA — BOTONES RÁPIDOS
   ===================================================== */
 
   miniQuickButtons.forEach(
-    (button) => {
+    button => {
 
       button.addEventListener(
         "click",
@@ -3478,147 +4359,122 @@ document.addEventListener("DOMContentLoaded", () => {
 
 });
 
-/* =====================================================
-   PRODUCTOS — ANIMACIÓN PREMIUM AL HACER SCROLL
-===================================================== */
-
-document.addEventListener("DOMContentLoaded", () => {
-
-  const catalog = document.querySelector(".catalog-section");
-
-  if (!catalog) return;
-
-  const header = catalog.querySelector(".section-header");
-  const filters = catalog.querySelector(".catalog-filters");
-  const products = catalog.querySelectorAll(".product-card");
-
-  /* -----------------------------------------
-     OBSERVADOR DEL CATÁLOGO
-  ----------------------------------------- */
-
-  const catalogObserver = new IntersectionObserver(
-    (entries) => {
-
-      entries.forEach(entry => {
-
-        if (!entry.isIntersecting) return;
-
-        catalog.classList.add("vr-catalog-visible");
-
-        catalogObserver.unobserve(entry.target);
-
-      });
-
-    },
-    {
-      threshold: 0.12
-    }
-  );
-
-  catalogObserver.observe(catalog);
-
-
-  /* -----------------------------------------
-     PRODUCTOS
-  ----------------------------------------- */
-
-  const productObserver = new IntersectionObserver(
-    (entries) => {
-
-      entries.forEach(entry => {
-
-        if (!entry.isIntersecting) return;
-
-        const card = entry.target;
-
-        const index = [...products].indexOf(card);
-
-        card.style.transitionDelay =
-          `${Math.min(index % 4, 3) * 90}ms`;
-
-        card.classList.add("vr-product-visible");
-
-        productObserver.unobserve(card);
-
-      });
-
-    },
-    {
-      threshold: 0.12,
-      rootMargin: "0px 0px -50px 0px"
-    }
-  );
-
-
-  products.forEach(card => {
-    productObserver.observe(card);
-  });
-
-});
-
 
 /* =====================================================
    MENÚ MOBILE
 ===================================================== */
 
-const mobileMenuButton = document.querySelector(".menu-toggle");
-const mobileNav = document.querySelector(".main-nav");
+document.addEventListener(
+  "DOMContentLoaded",
+  () => {
 
-if (mobileMenuButton && mobileNav) {
-
-  mobileMenuButton.setAttribute("aria-expanded", "false");
-
-  mobileMenuButton.addEventListener("click", (event) => {
-
-    event.preventDefault();
-    event.stopPropagation();
-
-    mobileNav.classList.toggle("active");
-
-    const isOpen = mobileNav.classList.contains("active");
-
-    mobileMenuButton.setAttribute(
-      "aria-expanded",
-      String(isOpen)
-    );
-
-  });
-
-
-  /* CERRAR AL TOCAR UN ENLACE */
-
-  mobileNav.querySelectorAll("a").forEach(link => {
-
-    link.addEventListener("click", () => {
-
-      mobileNav.classList.remove("active");
-
-      mobileMenuButton.setAttribute(
-        "aria-expanded",
-        "false"
+    const mobileMenuButton =
+      document.querySelector(
+        ".menu-toggle"
       );
 
-    });
 
-  });
-
-
-  /* CERRAR AL VOLVER A ESCRITORIO */
-
-  window.addEventListener("resize", () => {
-
-    if (window.innerWidth > 768) {
-
-      mobileNav.classList.remove("active");
-
-      mobileMenuButton.setAttribute(
-        "aria-expanded",
-        "false"
+    const mobileNav =
+      document.querySelector(
+        ".main-nav"
       );
+
+
+    if (
+      !mobileMenuButton ||
+      !mobileNav
+    ) {
+
+      return;
 
     }
 
-  });
 
-}
+    mobileMenuButton.setAttribute(
+      "aria-expanded",
+      "false"
+    );
 
+
+    mobileMenuButton.addEventListener(
+      "click",
+      event => {
+
+        event.preventDefault();
+
+        event.stopPropagation();
+
+
+        mobileNav.classList.toggle(
+          "active"
+        );
+
+
+        const isOpen =
+          mobileNav.classList.contains(
+            "active"
+          );
+
+
+        mobileMenuButton.setAttribute(
+          "aria-expanded",
+          String(isOpen)
+        );
+
+      }
+    );
+
+
+    /* CERRAR AL TOCAR ENLACE */
+
+    mobileNav
+      .querySelectorAll("a")
+      .forEach(link => {
+
+        link.addEventListener(
+          "click",
+          () => {
+
+            mobileNav.classList.remove(
+              "active"
+            );
+
+
+            mobileMenuButton.setAttribute(
+              "aria-expanded",
+              "false"
+            );
+
+          }
+        );
+
+      });
+
+
+    /* CERRAR AL VOLVER A ESCRITORIO */
+
+    window.addEventListener(
+      "resize",
+      () => {
+
+        if (
+          window.innerWidth > 768
+        ) {
+
+          mobileNav.classList.remove(
+            "active"
+          );
+
+
+          mobileMenuButton.setAttribute(
+            "aria-expanded",
+            "false"
+          );
+
+        }
+
+      }
+    );
+
+  }
+);

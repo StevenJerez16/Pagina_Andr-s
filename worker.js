@@ -82,6 +82,206 @@ if (request.method === "GET" && url.pathname === "/ia") {
     corsHeaders
   );
 }
+// --------------------------------------------------------
+// POST /admin/login
+// --------------------------------------------------------
+
+if (
+  request.method === "POST" &&
+  url.pathname === "/admin/login"
+) {
+  return adminLogin(
+    request,
+    env,
+    corsHeaders
+  );
+}
+// --------------------------------------------------------
+// GET /admin/productos
+// --------------------------------------------------------
+
+if (
+  request.method === "GET" &&
+  url.pathname === "/admin/productos"
+) {
+  return obtenerProductosAdmin(
+    request,
+    env,
+    corsHeaders
+  );
+}
+
+// --------------------------------------------------------
+// GET /admin/pedidos
+// Obtener pedidos con sus productos
+// --------------------------------------------------------
+
+if (
+  request.method === "GET" &&
+  url.pathname === "/admin/pedidos"
+) {
+
+  return obtenerPedidosAdmin(
+    request,
+    env,
+    corsHeaders
+  );
+
+}
+// --------------------------------------------------------
+// GET /admin/pedidos/:id/comprobante
+// Obtener URL temporal del comprobante
+// --------------------------------------------------------
+
+if (
+  request.method === "GET" &&
+  /^\/admin\/pedidos\/[^/]+\/comprobante$/.test(url.pathname)
+) {
+
+  const parts =
+    url.pathname.split("/");
+
+  const orderId =
+    decodeURIComponent(parts[3]);
+
+  return obtenerComprobantePedido(
+    request,
+    env,
+    corsHeaders,
+    orderId
+  );
+}
+// --------------------------------------------------------
+// PUT /admin/productos/:id
+// --------------------------------------------------------
+
+if (
+  request.method === "PUT" &&
+  url.pathname.startsWith("/admin/productos/")
+) {
+  const id = url.pathname.split("/").pop();
+
+  return editarProducto(
+    request,
+    env,
+    corsHeaders,
+    id
+  );
+}
+// =========================================================
+// ACTUALIZAR ESTADO DE PEDIDO
+// =========================================================
+
+if (
+  request.method === "PUT" &&
+  url.pathname.startsWith("/admin/pedidos/")
+) {
+  const orderId =
+    decodeURIComponent(
+      url.pathname.replace(
+        "/admin/pedidos/",
+        ""
+      )
+    );
+
+  return actualizarEstadoPedido(
+    request,
+    env,
+    corsHeaders,
+    orderId
+  );
+}
+// --------------------------------------------------------
+// DELETE /admin/productos/:id
+// --------------------------------------------------------
+
+if (
+  request.method === "DELETE" &&
+  url.pathname.startsWith("/admin/productos/")
+) {
+  const id = url.pathname.split("/").pop();
+
+  return eliminarProducto(
+    request,
+    env,
+    corsHeaders,
+    id
+  );
+}
+// --------------------------------------------------------
+// POST /admin/productos
+// Crear producto
+// --------------------------------------------------------
+
+if (
+  request.method === "POST" &&
+  url.pathname === "/admin/productos"
+) {
+  return crearProducto(
+    request,
+    env,
+    corsHeaders
+  );
+}
+
+    // --------------------------------------------------------
+    // GET /productos
+    // Catálogo público desde D1
+    // --------------------------------------------------------
+
+    if (
+      request.method === "GET" &&
+      url.pathname === "/productos"
+    ) {
+      try {
+        const result = await env.DB
+          .prepare(`
+            SELECT
+              id,
+              name,
+              description,
+              category,
+              vehicle,
+              brand,
+              viscosity,
+              engine_type,
+              api,
+              jaso,
+              presentation,
+              price,
+              price_min,
+              price_max,
+              image,
+              slug,
+              technical_data
+            FROM products
+            WHERE active = 1
+            ORDER BY id ASC
+          `)
+          .all();
+
+        return jsonResponse(
+          {
+            ok: true,
+            products: result.results || []
+          },
+          200,
+          corsHeaders
+        );
+
+      } catch (error) {
+        console.error("Error obteniendo productos:", error);
+
+        return jsonResponse(
+          {
+            ok: false,
+            error: "No se pudieron obtener los productos"
+          },
+          500,
+          corsHeaders
+        );
+      }
+    }
 
 
     // --------------------------------------------------------
@@ -145,6 +345,527 @@ if (request.method === "GET" && url.pathname === "/ia") {
 };
 
 
+// ============================================================
+// OBTENER PEDIDOS ADMIN
+// ============================================================
+
+async function obtenerPedidosAdmin(
+  request,
+  env,
+  corsHeaders
+) {
+
+  try {
+
+    // --------------------------------------------------------
+    // VERIFICAR TOKEN DE ADMIN
+    // --------------------------------------------------------
+
+    const autorizado =
+      await verifyAdminToken(
+        request,
+        env
+      );
+
+    if (!autorizado) {
+
+      return jsonResponse(
+        {
+          ok: false,
+          error: "No autorizado"
+        },
+        401,
+        corsHeaders
+      );
+
+    }
+
+    // --------------------------------------------------------
+    // OBTENER PEDIDOS
+    // --------------------------------------------------------
+
+    const pedidosResult =
+      await env.DB
+        .prepare(`
+          SELECT
+            id,
+            customer_name,
+            customer_last_name,
+            customer_phone,
+            customer_email,
+            address,
+            city,
+            department,
+            notes,
+            payment_method,
+            payment_method_name,
+            subtotal,
+            shipping,
+            total,
+            status,
+            receipt_name,
+            receipt_type,
+            receipt_size,
+            receipt_file_id,
+            created_at,
+            updated_at
+          FROM orders
+          ORDER BY datetime(created_at) DESC
+        `)
+        .all();
+
+    const pedidos =
+      pedidosResult.results || [];
+
+    // --------------------------------------------------------
+    // OBTENER PRODUCTOS DE LOS PEDIDOS
+    // --------------------------------------------------------
+
+    const itemsResult =
+      await env.DB
+        .prepare(`
+          SELECT
+            id,
+            order_id,
+            product_id,
+            product_name,
+            quantity,
+            unit_price,
+            subtotal
+          FROM order_items
+          ORDER BY id ASC
+        `)
+        .all();
+
+    const items =
+      itemsResult.results || [];
+
+    // --------------------------------------------------------
+    // AGRUPAR PRODUCTOS POR PEDIDO
+    // --------------------------------------------------------
+
+    const itemsPorPedido = {};
+
+    for (const item of items) {
+
+      if (!itemsPorPedido[item.order_id]) {
+
+        itemsPorPedido[item.order_id] = [];
+
+      }
+
+      itemsPorPedido[item.order_id].push(item);
+
+    }
+
+    // --------------------------------------------------------
+    // UNIR PEDIDOS + PRODUCTOS
+    // --------------------------------------------------------
+
+    const pedidosCompletos =
+      pedidos.map((pedido) => {
+
+        return {
+
+          ...pedido,
+
+          products:
+            itemsPorPedido[pedido.id] || []
+
+        };
+
+      });
+
+    // --------------------------------------------------------
+    // RESPUESTA
+    // --------------------------------------------------------
+
+    return jsonResponse(
+      {
+        ok: true,
+        orders: pedidosCompletos
+      },
+      200,
+      corsHeaders
+    );
+
+  } catch (error) {
+
+    console.error(
+      "Error obteniendo pedidos admin:",
+      error
+    );
+
+    return jsonResponse(
+      {
+        ok: false,
+        error:
+          "No se pudieron obtener los pedidos"
+      },
+      500,
+      corsHeaders
+    );
+
+  }
+
+}
+
+// ============================================================
+// OBTENER COMPROBANTE DE PEDIDO
+// ============================================================
+
+async function obtenerComprobantePedido(
+  request,
+  env,
+  corsHeaders,
+  orderId
+) {
+
+  try {
+
+    // --------------------------------------------------------
+    // VERIFICAR TOKEN DE ADMIN
+    // --------------------------------------------------------
+
+    const autorizado =
+      await verifyAdminToken(
+        request,
+        env
+      );
+
+    if (!autorizado) {
+
+      return jsonResponse(
+        {
+          ok: false,
+          error: "No autorizado"
+        },
+        401,
+        corsHeaders
+      );
+
+    }
+
+    // --------------------------------------------------------
+    // BUSCAR COMPROBANTE EN D1
+    // --------------------------------------------------------
+
+    const result =
+      await env.DB
+        .prepare(`
+          SELECT
+            id,
+            receipt_file_id,
+            receipt_type
+          FROM orders
+          WHERE id = ?
+          LIMIT 1
+        `)
+        .bind(orderId)
+        .first();
+
+    if (!result) {
+
+      return jsonResponse(
+        {
+          ok: false,
+          error: "Pedido no encontrado."
+        },
+        404,
+        corsHeaders
+      );
+
+    }
+
+    if (!result.receipt_file_id) {
+
+      return jsonResponse(
+        {
+          ok: false,
+          error: "Este pedido no tiene comprobante."
+        },
+        404,
+        corsHeaders
+      );
+
+    }
+
+    // --------------------------------------------------------
+    // PEDIR URL FIRMADA A HUBSPOT
+    // --------------------------------------------------------
+
+    const response =
+      await fetch(
+        `${HUBSPOT_API}/files/v3/files/${encodeURIComponent(
+          result.receipt_file_id
+        )}/signed-url`,
+        {
+          method: "GET",
+          headers: {
+            Authorization:
+              `Bearer ${env.HUBSPOT_TOKEN}`
+          }
+        }
+      );
+
+    const data =
+      await safeJson(response);
+
+    if (!response.ok) {
+
+      console.error(
+        "Error obteniendo URL firmada de HubSpot:",
+        data
+      );
+
+      return jsonResponse(
+        {
+          ok: false,
+          error:
+            data?.message ||
+            "HubSpot no pudo generar el enlace del comprobante."
+        },
+        502,
+        corsHeaders
+      );
+
+    }
+
+    if (!data?.url) {
+
+      console.error(
+        "HubSpot no devolvió URL firmada:",
+        data
+      );
+
+      return jsonResponse(
+        {
+          ok: false,
+          error:
+            "HubSpot no devolvió un enlace válido."
+        },
+        502,
+        corsHeaders
+      );
+
+    }
+
+    // --------------------------------------------------------
+    // DEVOLVER URL TEMPORAL
+    // --------------------------------------------------------
+
+    return jsonResponse(
+      {
+        ok: true,
+        url: data.url,
+        type:
+          result.receipt_type || null
+      },
+      200,
+      corsHeaders
+    );
+
+  } catch (error) {
+
+    console.error(
+      "Error obteniendo comprobante:",
+      error
+    );
+
+    return jsonResponse(
+      {
+        ok: false,
+        error:
+          "No se pudo obtener el comprobante."
+      },
+      500,
+      corsHeaders
+    );
+
+  }
+}
+// =========================================================
+// ACTUALIZAR ESTADO DE PEDIDO
+// =========================================================
+
+async function actualizarEstadoPedido(
+  request,
+  env,
+  corsHeaders,
+  orderId
+) {
+
+  try {
+
+    // -----------------------------------------
+    // AUTENTICACIÓN
+    // -----------------------------------------
+
+    const autorizado =
+      await verifyAdminToken(
+        request,
+        env
+      );
+
+    if (!autorizado) {
+
+      return jsonResponse(
+        {
+          ok: false,
+          error: "No autorizado"
+        },
+        401,
+        corsHeaders
+      );
+
+    }
+
+
+    // -----------------------------------------
+    // VALIDAR ID
+    // -----------------------------------------
+
+    if (!orderId) {
+
+      return jsonResponse(
+        {
+          ok: false,
+          error: "ID de pedido requerido"
+        },
+        400,
+        corsHeaders
+      );
+
+    }
+
+
+    // -----------------------------------------
+    // LEER BODY
+    // -----------------------------------------
+
+    const body =
+      await request.json();
+
+
+    const status =
+      String(
+        body.status || ""
+      )
+        .trim()
+        .toLowerCase();
+
+
+    // -----------------------------------------
+    // ESTADOS PERMITIDOS
+    // -----------------------------------------
+
+    const validStatuses = [
+      "pendiente",
+      "confirmado",
+      "enviado",
+      "entregado",
+      "cancelado"
+    ];
+
+
+    if (
+      !validStatuses.includes(
+        status
+      )
+    ) {
+
+      return jsonResponse(
+        {
+          ok: false,
+          error:
+            "Estado de pedido inválido"
+        },
+        400,
+        corsHeaders
+      );
+
+    }
+
+
+    // -----------------------------------------
+    // ACTUALIZAR D1
+    // -----------------------------------------
+
+    const result =
+      await env.DB
+        .prepare(`
+          UPDATE orders
+          SET
+            status = ?,
+            updated_at = CURRENT_TIMESTAMP
+          WHERE id = ?
+        `)
+        .bind(
+          status,
+          orderId
+        )
+        .run();
+
+
+    // -----------------------------------------
+    // VERIFICAR QUE EXISTE
+    // -----------------------------------------
+
+    if (
+      !result.meta ||
+      result.meta.changes === 0
+    ) {
+
+      return jsonResponse(
+        {
+          ok: false,
+          error:
+            "No se encontró el pedido"
+        },
+        404,
+        corsHeaders
+      );
+
+    }
+
+
+    // -----------------------------------------
+    // RESPUESTA
+    // -----------------------------------------
+
+    return jsonResponse(
+      {
+        ok: true,
+        message:
+          "Estado del pedido actualizado",
+        orderId,
+        status
+      },
+      200,
+      corsHeaders
+    );
+
+
+  } catch (error) {
+
+    console.error(
+      "Error actualizando estado del pedido:",
+      error
+    );
+
+    return jsonResponse(
+      {
+        ok: false,
+        error:
+          "No se pudo actualizar el estado del pedido"
+      },
+      500,
+      corsHeaders
+    );
+
+  }
+
+}
 // ============================================================
 // CREAR PEDIDO
 // ============================================================
@@ -377,7 +1098,134 @@ async function crearPedido(request, env, corsHeaders) {
 
     const total =
       subtotal + shipping;
+    // ========================================================
+    // 0. GUARDAR PEDIDO EN D1
+    // ========================================================
 
+    try {
+
+      // ------------------------------------------------------
+      // Insertar pedido
+      // ------------------------------------------------------
+
+      await env.DB
+        .prepare(`
+          INSERT INTO orders (
+            id,
+            customer_name,
+            customer_last_name,
+            customer_phone,
+            customer_email,
+            address,
+            city,
+            department,
+            notes,
+            payment_method,
+            payment_method_name,
+            subtotal,
+            shipping,
+            total,
+            status,
+            receipt_name,
+            receipt_type,
+            receipt_size
+          )
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `)
+        .bind(
+          order.id,
+          customer.name,
+          customer.lastName || null,
+          customer.phone,
+          customer.email || null,
+          customer.address || null,
+          customer.city || null,
+          customer.department || null,
+          customer.notes || null,
+          paymentMethod,
+          paymentName,
+          subtotal,
+          shipping,
+          total,
+          "pendiente",
+          validatedReceipt?.name || null,
+          validatedReceipt?.type || null,
+          validatedReceipt?.size || null
+        )
+        .run();
+
+
+      // ------------------------------------------------------
+      // Insertar productos del pedido
+      // ------------------------------------------------------
+
+      for (const product of order.products) {
+
+        const productId =
+          product.productId ||
+          product.id ||
+          null;
+
+        const productName =
+          String(
+            product.name || "Producto"
+          );
+
+        const quantity =
+          Number(product.quantity) || 0;
+
+        const unitPrice =
+          Number(product.price) || 0;
+
+        const productSubtotal =
+          unitPrice * quantity;
+
+
+        await env.DB
+          .prepare(`
+            INSERT INTO order_items (
+              order_id,
+              product_id,
+              product_name,
+              quantity,
+              unit_price,
+              subtotal
+            )
+            VALUES (?, ?, ?, ?, ?, ?)
+          `)
+          .bind(
+            order.id,
+            productId,
+            productName,
+            quantity,
+            unitPrice,
+            productSubtotal
+          )
+          .run();
+      }
+
+
+      console.log(
+        `Pedido ${order.id} guardado correctamente en D1`
+      );
+
+    } catch (d1Error) {
+
+      console.error(
+        "Error guardando pedido en D1:",
+        d1Error
+      );
+
+      return jsonResponse(
+        {
+          ok: false,
+          error:
+            "No se pudo guardar el pedido en la base de datos."
+        },
+        500,
+        corsHeaders
+      );
+    }
 
     // --------------------------------------------------------
     // HEADERS HUBSPOT
@@ -666,9 +1514,12 @@ Pendiente
     // 5. SUBIR COMPROBANTE A HUBSPOT
     // ========================================================
 
+        // ========================================================
+    // 5. SUBIR COMPROBANTE A HUBSPOT
+    // ========================================================
+
     let fileId = null;
     let fileWarning = null;
-
 
     if (validatedReceipt) {
       try {
@@ -679,15 +1530,39 @@ Pendiente
             order.id
           );
 
-
         if (uploadResult.ok) {
           fileId =
             uploadResult.fileId;
+
+          // Guardar el ID del archivo de HubSpot en D1
+          try {
+            await env.DB
+              .prepare(`
+                UPDATE orders
+                SET
+                  receipt_file_id = ?,
+                  updated_at = CURRENT_TIMESTAMP
+                WHERE id = ?
+              `)
+              .bind(
+                String(fileId),
+                order.id
+              )
+              .run();
+
+          } catch (dbError) {
+            console.error(
+              "Error guardando receipt_file_id en D1:",
+              dbError
+            );
+          }
+
         } else {
           fileWarning =
             uploadResult.error ||
             "No se pudo subir el comprobante.";
         }
+
       } catch (error) {
         console.error(
           "Error subiendo comprobante:",
@@ -698,7 +1573,6 @@ Pendiente
           "No se pudo subir el comprobante a HubSpot.";
       }
     }
-
 
     // ========================================================
     // 6. CREAR NOTA EN HUBSPOT
@@ -4088,3 +4962,802 @@ async function safeJson(response) {
   }
 }
 
+// ============================================================
+// AUTENTICACIÓN ADMIN
+// ============================================================
+
+async function adminLogin(request, env, corsHeaders) {
+  try {
+    const body = await request.json();
+
+    const password = String(body.password || "");
+
+    if (!password) {
+      return jsonResponse(
+        {
+          ok: false,
+          error: "Contraseña requerida"
+        },
+        400,
+        corsHeaders
+      );
+    }
+
+    if (!env.ADMIN_PASSWORD) {
+      return jsonResponse(
+        {
+          ok: false,
+          error: "ADMIN_PASSWORD no está configurada"
+        },
+        500,
+        corsHeaders
+      );
+    }
+
+    if (password !== env.ADMIN_PASSWORD) {
+      return jsonResponse(
+        {
+          ok: false,
+          error: "Contraseña incorrecta"
+        },
+        401,
+        corsHeaders
+      );
+    }
+
+    const token = await createAdminToken(env);
+
+    return jsonResponse(
+      {
+        ok: true,
+        token
+      },
+      200,
+      corsHeaders
+    );
+
+  } catch (error) {
+    console.error("Error login admin:", error);
+
+    return jsonResponse(
+      {
+        ok: false,
+        error: "No se pudo iniciar sesión"
+      },
+      500,
+      corsHeaders
+    );
+  }
+}
+
+
+// ============================================================
+// CREAR TOKEN ADMIN
+// ============================================================
+
+async function createAdminToken(env) {
+  const payload = {
+    role: "admin",
+    exp: Math.floor(Date.now() / 1000) + (8 * 60 * 60)
+  };
+
+  const encodedPayload = base64UrlEncode(
+    JSON.stringify(payload)
+  );
+
+  const signature = await signAdminToken(
+    encodedPayload,
+    env.ADMIN_PASSWORD
+  );
+
+  return `${encodedPayload}.${signature}`;
+}
+
+
+// ============================================================
+// VALIDAR TOKEN ADMIN
+// ============================================================
+
+async function verifyAdminToken(request, env) {
+  const authorization = request.headers.get("Authorization") || "";
+
+  if (!authorization.startsWith("Bearer ")) {
+    return false;
+  }
+
+  const token = authorization.slice(7).trim();
+
+  const parts = token.split(".");
+
+  if (parts.length !== 2) {
+    return false;
+  }
+
+  const [payloadEncoded, signature] = parts;
+
+  const expectedSignature = await signAdminToken(
+    payloadEncoded,
+    env.ADMIN_PASSWORD
+  );
+
+  if (!timingSafeEqual(signature, expectedSignature)) {
+    return false;
+  }
+
+  try {
+    const payload = JSON.parse(
+      base64UrlDecode(payloadEncoded)
+    );
+
+    if (payload.role !== "admin") {
+      return false;
+    }
+
+    if (
+      !payload.exp ||
+      payload.exp < Math.floor(Date.now() / 1000)
+    ) {
+      return false;
+    }
+
+    return true;
+
+  } catch {
+    return false;
+  }
+}
+
+
+// ============================================================
+// FIRMAR TOKEN
+// ============================================================
+
+async function signAdminToken(value, secret) {
+  const encoder = new TextEncoder();
+
+  const key = await crypto.subtle.importKey(
+    "raw",
+    encoder.encode(secret),
+    {
+      name: "HMAC",
+      hash: "SHA-256"
+    },
+    false,
+    ["sign"]
+  );
+
+  const signature = await crypto.subtle.sign(
+    "HMAC",
+    key,
+    encoder.encode(value)
+  );
+
+  return arrayBufferToBase64Url(signature);
+}
+
+
+// ============================================================
+// COMPARACIÓN SEGURA
+// ============================================================
+
+function timingSafeEqual(a, b) {
+  if (a.length !== b.length) {
+    return false;
+  }
+
+  let result = 0;
+
+  for (let i = 0; i < a.length; i++) {
+    result |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  }
+
+  return result === 0;
+}
+
+
+// ============================================================
+// BASE64 URL SAFE
+// ============================================================
+
+function base64UrlEncode(value) {
+  const bytes = new TextEncoder().encode(value);
+
+  let binary = "";
+
+  for (const byte of bytes) {
+    binary += String.fromCharCode(byte);
+  }
+
+  return btoa(binary)
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
+}
+
+
+function base64UrlDecode(value) {
+  const normalized = value
+    .replace(/-/g, "+")
+    .replace(/_/g, "/");
+
+  const padding =
+    "=".repeat((4 - (normalized.length % 4)) % 4);
+
+  const binary = atob(normalized + padding);
+
+  const bytes = Uint8Array.from(
+    binary,
+    char => char.charCodeAt(0)
+  );
+
+  return new TextDecoder().decode(bytes);
+}
+
+
+function arrayBufferToBase64Url(buffer) {
+  const bytes = new Uint8Array(buffer);
+
+  let binary = "";
+
+  for (const byte of bytes) {
+    binary += String.fromCharCode(byte);
+  }
+
+  return btoa(binary)
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
+}
+
+// ============================================================
+// CREAR PRODUCTO
+// ============================================================
+
+async function crearProducto(request, env, corsHeaders) {
+  try {
+
+    // --------------------------------------------------------
+    // Verificar autenticación
+    // --------------------------------------------------------
+
+    const autorizado = await verifyAdminToken(
+      request,
+      env
+    );
+
+    if (!autorizado) {
+      return jsonResponse(
+        {
+          ok: false,
+          error: "No autorizado"
+        },
+        401,
+        corsHeaders
+      );
+    }
+
+
+    // --------------------------------------------------------
+    // Leer datos
+    // --------------------------------------------------------
+
+    const body = await request.json();
+
+    const name = String(body.name || "").trim();
+    const description = String(body.description || "").trim();
+    const category = String(body.category || "").trim();
+    const vehicle = String(body.vehicle || "").trim();
+
+    const brand = String(body.brand || "").trim();
+    const viscosity = String(body.viscosity || "").trim();
+    const engine_type = String(body.engine_type || "").trim();
+    const api = String(body.api || "").trim();
+    const jaso = String(body.jaso || "").trim();
+    const presentation = String(body.presentation || "").trim();
+
+    const price =
+      body.price === null ||
+      body.price === undefined ||
+      body.price === ""
+        ? null
+        : Number(body.price);
+
+    const price_min =
+      body.price_min === null ||
+      body.price_min === undefined ||
+      body.price_min === ""
+        ? null
+        : Number(body.price_min);
+
+    const price_max =
+      body.price_max === null ||
+      body.price_max === undefined ||
+      body.price_max === ""
+        ? null
+        : Number(body.price_max);
+
+    const image = String(body.image || "").trim();
+    const slug = String(body.slug || "").trim();
+    const technical_data =
+      String(body.technical_data || "").trim();
+
+
+    // --------------------------------------------------------
+    // Validaciones básicas
+    // --------------------------------------------------------
+
+    if (!name) {
+      return jsonResponse(
+        {
+          ok: false,
+          error: "El nombre del producto es obligatorio"
+        },
+        400,
+        corsHeaders
+      );
+    }
+
+    if (!category) {
+      return jsonResponse(
+        {
+          ok: false,
+          error: "La categoría es obligatoria"
+        },
+        400,
+        corsHeaders
+      );
+    }
+
+    if (!vehicle) {
+      return jsonResponse(
+        {
+          ok: false,
+          error: "El tipo de vehículo es obligatorio"
+        },
+        400,
+        corsHeaders
+      );
+    }
+
+
+    // --------------------------------------------------------
+    // Validar precios
+    // --------------------------------------------------------
+
+    if (
+      price !== null &&
+      (!Number.isFinite(price) || price < 0)
+    ) {
+      return jsonResponse(
+        {
+          ok: false,
+          error: "El precio no es válido"
+        },
+        400,
+        corsHeaders
+      );
+    }
+
+    if (
+      price_min !== null &&
+      (!Number.isFinite(price_min) || price_min < 0)
+    ) {
+      return jsonResponse(
+        {
+          ok: false,
+          error: "El precio mínimo no es válido"
+        },
+        400,
+        corsHeaders
+      );
+    }
+
+    if (
+      price_max !== null &&
+      (!Number.isFinite(price_max) || price_max < 0)
+    ) {
+      return jsonResponse(
+        {
+          ok: false,
+          error: "El precio máximo no es válido"
+        },
+        400,
+        corsHeaders
+      );
+    }
+
+
+    // --------------------------------------------------------
+    // Slug automático
+    // --------------------------------------------------------
+
+    const finalSlug =
+      slug ||
+      name
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "");
+
+
+    // --------------------------------------------------------
+    // Insertar producto
+    // --------------------------------------------------------
+
+    const result = await env.DB
+      .prepare(`
+        INSERT INTO products (
+          name,
+          description,
+          category,
+          vehicle,
+          brand,
+          viscosity,
+          engine_type,
+          api,
+          jaso,
+          presentation,
+          price,
+          price_min,
+          price_max,
+          image,
+          slug,
+          technical_data,
+          active
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
+      `)
+      .bind(
+        name,
+        description || null,
+        category,
+        vehicle,
+        brand || null,
+        viscosity || null,
+        engine_type || null,
+        api || null,
+        jaso || null,
+        presentation || null,
+        price,
+        price_min,
+        price_max,
+        image || null,
+        finalSlug || null,
+        technical_data || null
+      )
+      .run();
+
+
+    return jsonResponse(
+      {
+        ok: true,
+        message: "Producto creado correctamente",
+        id: result.meta.last_row_id
+      },
+      201,
+      corsHeaders
+    );
+
+  } catch (error) {
+
+    console.error(
+      "Error creando producto:",
+      error
+    );
+
+    return jsonResponse(
+      {
+        ok: false,
+        error: "No se pudo crear el producto"
+      },
+      500,
+      corsHeaders
+    );
+  }
+}
+
+
+// ============================================================
+// OBTENER PRODUCTOS ADMIN
+// ============================================================
+
+async function obtenerProductosAdmin(request, env, corsHeaders) {
+  try {
+    const autorizado = await verifyAdminToken(request, env);
+
+    if (!autorizado) {
+      return jsonResponse(
+        {
+          ok: false,
+          error: "No autorizado"
+        },
+        401,
+        corsHeaders
+      );
+    }
+
+    const result = await env.DB
+      .prepare(`
+        SELECT *
+        FROM products
+        ORDER BY id DESC
+      `)
+      .all();
+
+    return jsonResponse(
+      {
+        ok: true,
+        products: result.results || []
+      },
+      200,
+      corsHeaders
+    );
+
+  } catch (error) {
+    console.error("Error obteniendo productos admin:", error);
+
+    return jsonResponse(
+      {
+        ok: false,
+        error: "No se pudieron obtener los productos"
+      },
+      500,
+      corsHeaders
+    );
+  }
+}
+
+// ============================================================
+// EDITAR PRODUCTO
+// ============================================================
+
+async function editarProducto(request, env, corsHeaders, id) {
+  try {
+    const autorizado = await verifyAdminToken(request, env);
+
+    if (!autorizado) {
+      return jsonResponse(
+        {
+          ok: false,
+          error: "No autorizado"
+        },
+        401,
+        corsHeaders
+      );
+    }
+
+    const productId = Number(id);
+
+    if (!Number.isInteger(productId)) {
+      return jsonResponse(
+        {
+          ok: false,
+          error: "ID de producto inválido"
+        },
+        400,
+        corsHeaders
+      );
+    }
+
+    const body = await request.json();
+
+    const name = String(body.name || "").trim();
+    const description = String(body.description || "").trim();
+    const category = String(body.category || "").trim();
+    const vehicle = String(body.vehicle || "").trim();
+    const brand = String(body.brand || "").trim();
+    const viscosity = String(body.viscosity || "").trim();
+    const engine_type = String(body.engine_type || "").trim();
+    const api = String(body.api || "").trim();
+    const jaso = String(body.jaso || "").trim();
+    const presentation = String(body.presentation || "").trim();
+
+    const price =
+      body.price === null ||
+      body.price === undefined ||
+      body.price === ""
+        ? null
+        : Number(body.price);
+
+    const price_min =
+      body.price_min === null ||
+      body.price_min === undefined ||
+      body.price_min === ""
+        ? null
+        : Number(body.price_min);
+
+    const price_max =
+      body.price_max === null ||
+      body.price_max === undefined ||
+      body.price_max === ""
+        ? null
+        : Number(body.price_max);
+
+    const image = String(body.image || "").trim();
+
+    const slug =
+      String(body.slug || "").trim() ||
+      name
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "");
+
+    const technical_data =
+      String(body.technical_data || "").trim();
+
+    const active =
+      body.active === false ||
+      body.active === 0
+        ? 0
+        : 1;
+
+    if (!name || !category || !vehicle) {
+      return jsonResponse(
+        {
+          ok: false,
+          error: "Nombre, categoría y vehículo son obligatorios"
+        },
+        400,
+        corsHeaders
+      );
+    }
+
+    const result = await env.DB
+      .prepare(`
+        UPDATE products
+        SET
+          name = ?,
+          description = ?,
+          category = ?,
+          vehicle = ?,
+          brand = ?,
+          viscosity = ?,
+          engine_type = ?,
+          api = ?,
+          jaso = ?,
+          presentation = ?,
+          price = ?,
+          price_min = ?,
+          price_max = ?,
+          image = ?,
+          slug = ?,
+          technical_data = ?,
+          active = ?,
+          updated_at = CURRENT_TIMESTAMP
+        WHERE id = ?
+      `)
+      .bind(
+        name,
+        description || null,
+        category,
+        vehicle,
+        brand || null,
+        viscosity || null,
+        engine_type || null,
+        api || null,
+        jaso || null,
+        presentation || null,
+        price,
+        price_min,
+        price_max,
+        image || null,
+        slug || null,
+        technical_data || null,
+        active,
+        productId
+      )
+      .run();
+
+    if (!result.meta.changes) {
+      return jsonResponse(
+        {
+          ok: false,
+          error: "Producto no encontrado"
+        },
+        404,
+        corsHeaders
+      );
+    }
+
+    return jsonResponse(
+      {
+        ok: true,
+        message: "Producto actualizado correctamente"
+      },
+      200,
+      corsHeaders
+    );
+
+  } catch (error) {
+    console.error("Error editando producto:", error);
+
+    return jsonResponse(
+      {
+        ok: false,
+        error: "No se pudo actualizar el producto"
+      },
+      500,
+      corsHeaders
+    );
+  }
+}
+
+// ============================================================
+// DESACTIVAR PRODUCTO
+// ============================================================
+
+async function eliminarProducto(request, env, corsHeaders, id) {
+  try {
+    const autorizado = await verifyAdminToken(request, env);
+
+    if (!autorizado) {
+      return jsonResponse(
+        {
+          ok: false,
+          error: "No autorizado"
+        },
+        401,
+        corsHeaders
+      );
+    }
+
+    const productId = Number(id);
+
+    if (!Number.isInteger(productId)) {
+      return jsonResponse(
+        {
+          ok: false,
+          error: "ID de producto inválido"
+        },
+        400,
+        corsHeaders
+      );
+    }
+
+    const result = await env.DB
+      .prepare(`
+        UPDATE products
+        SET
+          active = 0,
+          updated_at = CURRENT_TIMESTAMP
+        WHERE id = ?
+      `)
+      .bind(productId)
+      .run();
+
+    if (!result.meta.changes) {
+      return jsonResponse(
+        {
+          ok: false,
+          error: "Producto no encontrado"
+        },
+        404,
+        corsHeaders
+      );
+    }
+
+    return jsonResponse(
+      {
+        ok: true,
+        message: "Producto desactivado correctamente"
+      },
+      200,
+      corsHeaders
+    );
+
+  } catch (error) {
+    console.error("Error desactivando producto:", error);
+
+    return jsonResponse(
+      {
+        ok: false,
+        error: "No se pudo desactivar el producto"
+      },
+      500,
+      corsHeaders
+    );
+  }
+}
